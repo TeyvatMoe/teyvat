@@ -1,0 +1,22 @@
+{
+	"entryPoints": ["lib/index.ts"],
+	"out": "docs",
+	"plugin": ["typedoc-github-theme"],
+	"excludeExternals": true,
+	"externalSymbolLinkMappings": {
+		"bun-types": {
+			"*": "https://bun.sh/docs"
+		},
+		"@types/node": {
+			"*": "https://bun.sh/docs/runtime/nodejs-apis"
+		},
+		"typescript": {
+			"Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+		}
+	},
+	"navigationLinks": {
+		"GitHub": "https://github.com/itss0n1c/teyvat",
+		"My Site": "https://s0n1c.ca"
+	},
+	"sort": ["documents-first", "kind"]
+}
