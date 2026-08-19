@@ -4,3 +4,6 @@ dist/
 .env*
 !.envrc
 .direnv/
+
+test/
+.tmp/
