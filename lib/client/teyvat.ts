@@ -2,19 +2,22 @@ import type { TeyvatCookies } from '../types/index.ts';
 import { _parse_cookies } from '../utils/cookies.ts';
 import { TeyvatAccount } from './account.ts';
 import { TeyvatError } from './errors.ts';
+import { getHttpClient, initializeHttpClient } from './request.ts';
 
 export interface TeyvatOptions {
 	cookies?: TeyvatCookies | string;
 }
 
 export class Teyvat {
-	cookies?: TeyvatCookies;
-
 	_accounts = new Map<number, TeyvatAccount>();
 
 	constructor(opts: TeyvatOptions) {
 		if (!opts.cookies) throw new TeyvatError('missing cookies');
-		this.cookies = typeof opts.cookies !== 'string' ? opts.cookies : _parse_cookies(opts.cookies);
+		initializeHttpClient(this, _parse_cookies(opts.cookies));
+	}
+
+	get cookies(): TeyvatCookies {
+		return getHttpClient(this).cookies.toJSON();
 	}
 
 	async accounts(): Promise<Array<TeyvatAccount>> {
