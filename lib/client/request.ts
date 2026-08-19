@@ -21,10 +21,10 @@ export interface TeyvatRequestOptions<schema extends Type> {
 
 export interface TeyvatHttpClientOptions {
 	fetch?: Fetch;
-	timeoutMs?: number;
+	timeout_ms?: number;
 }
 
-function buildUrl(domain: TeyvatDomain, path: string, params?: Readonly<Record<string, QueryValue>>): URL {
+function _build_url(domain: TeyvatDomain, path: string, params?: Readonly<Record<string, QueryValue>>): URL {
 	const base = domain.endsWith('/') ? domain : `${domain}/`;
 	const url = new URL(path.replace(/^\/+/, ''), base);
 
@@ -35,11 +35,11 @@ function buildUrl(domain: TeyvatDomain, path: string, params?: Readonly<Record<s
 	return url;
 }
 
-function safeEndpoint(url: URL): string {
+function _safe_endpoint(url: URL): string {
 	return `${url.origin}${url.pathname}`;
 }
 
-function validationIssues(cause: unknown): string[] {
+function _validation_issues(cause: unknown): string[] {
 	if (cause instanceof Error && cause.message) return [cause.message];
 	return [String(cause)];
 }
@@ -47,27 +47,27 @@ function validationIssues(cause: unknown): string[] {
 export class TeyvatHttpClient {
 	readonly cookies: CookieJar;
 	readonly #fetch: Fetch;
-	readonly #timeoutMs: number;
+	readonly #timeout_ms: number;
 
 	constructor(cookies: CookieInput, options: TeyvatHttpClientOptions = {}) {
 		this.cookies = new CookieJar(cookies);
 		this.#fetch = options.fetch ?? globalThis.fetch;
-		this.#timeoutMs = options.timeoutMs ?? 30_000;
+		this.#timeout_ms = options.timeout_ms ?? 30_000;
 
-		if (!Number.isFinite(this.#timeoutMs) || this.#timeoutMs <= 0) {
-			throw new RangeError('timeoutMs must be a positive finite number');
+		if (!Number.isFinite(this.#timeout_ms) || this.#timeout_ms <= 0) {
+			throw new RangeError('timeout_ms must be a positive finite number');
 		}
 	}
 
 	async request<schema extends Type>(options: TeyvatRequestOptions<schema>): Promise<ResponseData<schema>> {
 		const method = (options.method ?? 'GET').toUpperCase();
-		const url = buildUrl(options.domain, options.path, options.params);
-		const endpoint = safeEndpoint(url);
+		const url = _build_url(options.domain, options.path, options.params);
+		const endpoint = _safe_endpoint(url);
 		const headers = new Headers(options.headers);
 		if (!headers.has('Accept')) headers.set('Accept', 'application/json');
 
-		const cookieHeader = this.cookies.toHeader();
-		if (cookieHeader) headers.set('Cookie', cookieHeader);
+		const cookie_header = this.cookies.to_header();
+		if (cookie_header) headers.set('Cookie', cookie_header);
 
 		let body: string | undefined;
 		if (options.body !== undefined) {
@@ -88,30 +88,30 @@ export class TeyvatHttpClient {
 		}
 
 		const controller = new AbortController();
-		let timedOut = false;
-		const onAbort = () => controller.abort(options.signal?.reason);
-		if (options.signal?.aborted) onAbort();
-		else options.signal?.addEventListener('abort', onAbort, { once: true });
+		let timed_out = false;
+		const on_abort = () => controller.abort(options.signal?.reason);
+		if (options.signal?.aborted) on_abort();
+		else options.signal?.addEventListener('abort', on_abort, { once: true });
 		const timeout = setTimeout(() => {
-			timedOut = true;
+			timed_out = true;
 			controller.abort(new Error('Request timed out'));
-		}, this.#timeoutMs);
+		}, this.#timeout_ms);
 
 		let response: Response;
 		try {
 			response = await this.#fetch(url, { method, headers, body, signal: controller.signal });
 		} catch (cause) {
-			const kind = timedOut ? 'timeout' : 'network';
-			const message = timedOut
+			const kind = timed_out ? 'timeout' : 'network';
+			const message = timed_out
 				? `HoYoLAB request timed out for ${method} ${endpoint}`
 				: `HoYoLAB request failed for ${method} ${endpoint}`;
 			throw new TeyvatRequestError(kind, method, endpoint, message, { cause });
 		} finally {
 			clearTimeout(timeout);
-			options.signal?.removeEventListener('abort', onAbort);
+			options.signal?.removeEventListener('abort', on_abort);
 		}
 
-		this.cookies.updateFromResponse(response.headers);
+		this.cookies.update_from_response(response.headers);
 
 		let raw: unknown;
 		try {
@@ -131,8 +131,8 @@ export class TeyvatHttpClient {
 
 		if (typeof raw === 'object' && raw !== null && 'retcode' in raw && typeof raw.retcode === 'number') {
 			if (raw.retcode !== 0) {
-				const upstreamMessage = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
-				throw new TeyvatApiError(raw.retcode, upstreamMessage, method, endpoint);
+				const upstream_message = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
+				throw new TeyvatApiError(raw.retcode, upstream_message, method, endpoint);
 			}
 		}
 
@@ -150,7 +150,7 @@ export class TeyvatHttpClient {
 		try {
 			validated = options.schema.assert(raw);
 		} catch (cause) {
-			throw new TeyvatResponseValidationError(method, endpoint, validationIssues(cause), { cause });
+			throw new TeyvatResponseValidationError(method, endpoint, _validation_issues(cause), { cause });
 		}
 
 		return (validated as { data: ResponseData<schema> }).data;
@@ -159,11 +159,11 @@ export class TeyvatHttpClient {
 
 const clients = new WeakMap<object, TeyvatHttpClient>();
 
-export function initializeHttpClient(owner: object, cookies: CookieInput): void {
+export function _initialize_http_client(owner: object, cookies: CookieInput): void {
 	clients.set(owner, new TeyvatHttpClient(cookies));
 }
 
-export function getHttpClient(owner: object): TeyvatHttpClient {
+export function _get_http_client(owner: object): TeyvatHttpClient {
 	const client = clients.get(owner);
 	if (!client) throw new Error('Teyvat HTTP client has not been initialized');
 	return client;

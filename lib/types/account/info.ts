@@ -25,9 +25,9 @@ export type TeyvatAccountChests = typeof schema_teyvat_account_chests.infer;
 
 export const schema_teyvat_account_imaginarium_theater = type({
 	unlocked: 'boolean',
-	maxAct: 'number.integer',
-	hasData: 'boolean',
-	hasDetailData: 'boolean',
+	max_act: 'number.integer',
+	has_data: 'boolean',
+	has_detail_data: 'boolean',
 });
 
 export type TeyvatAccountImaginariumTheater = typeof schema_teyvat_account_imaginarium_theater.infer;
@@ -36,23 +36,23 @@ export const schema_teyvat_account_stygian_onslaught = type({
 	unlocked: 'boolean',
 	difficulty: 'number.integer',
 	name: 'string',
-	hasData: 'boolean',
+	has_data: 'boolean',
 });
 
 export type TeyvatAccountStygianOnslaught = typeof schema_teyvat_account_stygian_onslaught.infer;
 
 export const schema_teyvat_account_stats = type({
 	achievements: 'number.integer',
-	activeDays: 'number.integer',
+	active_days: 'number.integer',
 	characters: 'number.integer',
-	spiralAbyss: 'string',
+	spiral_abyss: 'string',
 	oculi: schema_teyvat_account_oculi,
 	chests: schema_teyvat_account_chests,
-	unlockedWaypoints: 'number.integer',
-	unlockedDomains: 'number.integer',
-	maxFriendshipCharacters: 'number.integer',
-	imaginariumTheater: schema_teyvat_account_imaginarium_theater,
-	stygianOnslaught: schema_teyvat_account_stygian_onslaught,
+	unlocked_waypoints: 'number.integer',
+	unlocked_domains: 'number.integer',
+	max_friendship_characters: 'number.integer',
+	imaginarium_theater: schema_teyvat_account_imaginarium_theater,
+	stygian_onslaught: schema_teyvat_account_stygian_onslaught,
 });
 
 export type TeyvatAccountStats = typeof schema_teyvat_account_stats.infer;

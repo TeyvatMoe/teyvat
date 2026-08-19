@@ -1,18 +1,20 @@
+import type { TeyvatAccountDailyNotes, TeyvatDailyNotesOptions } from '../../types/account/daily_notes.ts';
 import type { TeyvatAccountInfo } from '../../types/account/info.ts';
 import type { TeyvatServer } from '../../types/account/server.ts';
 import { _recognize_genshin_server } from '../../utils/uid.ts';
 import type { Teyvat } from '../teyvat.ts';
+import { _get_account_daily_notes } from './daily_notes.ts';
 import { _get_account_info } from './info.ts';
 
 interface TeyvatAccountDetails {
 	nickname: string;
-	serverName: string;
+	server_name: string;
 	level: number;
-	isSelected: boolean;
-	isOfficial: boolean;
+	is_selected: boolean;
+	is_official: boolean;
 }
 
-const accountDetails = new WeakMap<TeyvatAccount, TeyvatAccountDetails>();
+const account_details = new WeakMap<TeyvatAccount, TeyvatAccountDetails>();
 
 export class TeyvatAccount {
 	readonly inst: Teyvat;
@@ -26,36 +28,38 @@ export class TeyvatAccount {
 	}
 
 	get nickname(): string | undefined {
-		return accountDetails.get(this)?.nickname;
+		return account_details.get(this)?.nickname;
 	}
 
-	get serverName(): string | undefined {
-		return accountDetails.get(this)?.serverName;
+	get server_name(): string | undefined {
+		return account_details.get(this)?.server_name;
 	}
 
 	get level(): number | undefined {
-		return accountDetails.get(this)?.level;
+		return account_details.get(this)?.level;
 	}
 
-	get isSelected(): boolean | undefined {
-		return accountDetails.get(this)?.isSelected;
+	get is_selected(): boolean | undefined {
+		return account_details.get(this)?.is_selected;
 	}
 
-	get isOfficial(): boolean | undefined {
-		return accountDetails.get(this)?.isOfficial;
+	get is_official(): boolean | undefined {
+		return account_details.get(this)?.is_official;
 	}
 
 	async info(): Promise<TeyvatAccountInfo> {
 		return await _get_account_info(this);
 	}
 
-	async characters() {}
+	async daily_notes(options?: TeyvatDailyNotesOptions): Promise<TeyvatAccountDailyNotes> {
+		return await _get_account_daily_notes(this, options);
+	}
 
-	async daily_notes() {}
+	async characters() {}
 
 	async spiral_abyss() {}
 }
 
 export function _set_account_details(account: TeyvatAccount, details: TeyvatAccountDetails): void {
-	accountDetails.set(account, details);
+	account_details.set(account, details);
 }

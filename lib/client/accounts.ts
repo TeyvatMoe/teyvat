@@ -2,11 +2,11 @@ import { _get_hoyolab_game_roles } from '../endpoints/hoyolab/accounts.ts';
 import { _recognize_genshin_server } from '../utils/uid.ts';
 import { _set_account_details } from './account/index.ts';
 import { TeyvatResponseValidationError } from './errors.ts';
-import { getHttpClient } from './request.ts';
+import { _get_http_client } from './request.ts';
 import type { Teyvat } from './teyvat.ts';
 
 export async function _get_accounts(teyvat: Teyvat) {
-	const data = await _get_hoyolab_game_roles(getHttpClient(teyvat));
+	const data = await _get_hoyolab_game_roles(_get_http_client(teyvat));
 	return data.list.map((role) => {
 		const uid = Number(role.game_uid);
 		const server = _recognize_genshin_server(uid);
@@ -18,10 +18,10 @@ export async function _get_accounts(teyvat: Teyvat) {
 		const account = teyvat.account(uid);
 		_set_account_details(account, {
 			nickname: role.nickname,
-			serverName: role.region_name,
+			server_name: role.region_name,
 			level: role.level,
-			isSelected: role.is_chosen,
-			isOfficial: role.is_official,
+			is_selected: role.is_chosen,
+			is_official: role.is_official,
 		});
 		return account;
 	});

@@ -1,0 +1,78 @@
+import { type } from 'arktype';
+import type { TeyvatHttpClient } from '../../../client/request.ts';
+import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
+import type { TeyvatServer } from '../../../types/account/server.ts';
+import { _hoyolab_headers } from '../headers.ts';
+
+const schema_countdown = type('string');
+
+export const schema_hoyolab_genshin_daily_notes_response = type({
+	retcode: '0',
+	message: 'string',
+	data: {
+		current_resin: 'number.integer',
+		max_resin: 'number.integer',
+		resin_recovery_time: schema_countdown,
+		current_home_coin: 'number.integer',
+		max_home_coin: 'number.integer',
+		home_coin_recovery_time: schema_countdown,
+		finished_task_num: 'number.integer',
+		total_task_num: 'number.integer',
+		is_extra_task_reward_received: 'boolean',
+		remain_resin_discount_num: 'number.integer',
+		resin_discount_num_limit: 'number.integer',
+		max_expedition_num: 'number.integer',
+		expeditions: [
+			{
+				avatar_side_icon: 'string',
+				status: 'string',
+				remained_time: schema_countdown,
+			},
+			'[]',
+		],
+		transformer: {
+			obtained: 'boolean',
+			'recovery_time?': {
+				Day: 'number.integer',
+				Hour: 'number.integer',
+				Minute: 'number.integer',
+				Second: 'number.integer',
+				reached: 'boolean',
+			},
+		},
+		daily_task: {
+			total_num: 'number.integer',
+			finished_num: 'number.integer',
+			is_extra_task_reward_received: 'boolean',
+			task_rewards: [{ status: 'string' }, '[]'],
+			attendance_rewards: [{ status: 'string', progress: 'number.integer' }, '[]'],
+			attendance_visible: 'boolean',
+			stored_attendance: 'string',
+			'attendance_refresh_time?': 'string | null',
+		},
+		archon_quest_progress: {
+			list: [
+				{
+					id: 'number.integer',
+					status: 'string',
+					chapter_num: 'string',
+					chapter_title: 'string',
+				},
+				'[]',
+			],
+			is_finish_all_mainline: 'boolean',
+			is_open_archon_quest: 'boolean',
+			is_finish_all_interchapter: 'boolean',
+		},
+	},
+});
+
+export async function _get_hoyolab_genshin_daily_notes(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
+	return await client.request({
+		domain: TEYVAT_DOMAINS.genshin_record,
+		path: 'dailyNote',
+		params: { role_id: uid, server },
+		schema: schema_hoyolab_genshin_daily_notes_response,
+		headers: _hoyolab_headers(),
+	});
+}

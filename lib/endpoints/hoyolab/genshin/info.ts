@@ -53,7 +53,7 @@ export const schema_hoyolab_genshin_info_response = type({
 
 export async function _get_hoyolab_genshin_info(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshinRecord,
+		domain: TEYVAT_DOMAINS.genshin_record,
 		path: 'index',
 		params: { role_id: uid, server },
 		schema: schema_hoyolab_genshin_info_response,

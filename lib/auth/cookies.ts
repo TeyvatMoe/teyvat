@@ -4,7 +4,7 @@ export type CookieInput = TeyvatCookies | string;
 
 const COOKIE_NAME = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 
-function hasInvalidCookieValueCharacter(value: string): boolean {
+function _has_invalid_cookie_value_character(value: string): boolean {
 	for (const character of value) {
 		const code = character.charCodeAt(0);
 		if (code <= 31 || code === 127 || character === ';') return true;
@@ -12,12 +12,12 @@ function hasInvalidCookieValueCharacter(value: string): boolean {
 	return false;
 }
 
-function assertCookiePair(name: string, value: string): void {
+function _assert_cookie_pair(name: string, value: string): void {
 	if (!COOKIE_NAME.test(name)) throw new TypeError(`Invalid cookie name: ${name || '<empty>'}`);
-	if (hasInvalidCookieValueCharacter(value)) throw new TypeError(`Invalid value for cookie ${name}`);
+	if (_has_invalid_cookie_value_character(value)) throw new TypeError(`Invalid value for cookie ${name}`);
 }
 
-export function parseCookieHeader(header: string): TeyvatCookies {
+export function _parse_cookie_header(header: string): TeyvatCookies {
 	const cookies: TeyvatCookies = {};
 
 	for (const part of header.split(';')) {
@@ -29,23 +29,23 @@ export function parseCookieHeader(header: string): TeyvatCookies {
 
 		const name = cookie.slice(0, separator).trim();
 		const value = cookie.slice(separator + 1).trim();
-		assertCookiePair(name, value);
+		_assert_cookie_pair(name, value);
 		cookies[name] = value;
 	}
 
 	return cookies;
 }
 
-function splitSetCookieHeader(header: string): string[] {
+function _split_set_cookie_header(header: string): string[] {
 	return header.split(/,(?=\s*[!#$%&'*+\-.^_`|~0-9A-Za-z]+=)/);
 }
 
-function getSetCookieHeaders(headers: Headers): string[] {
-	const getSetCookie = (headers as Headers & { getSetCookie?: () => string[] }).getSetCookie;
-	if (typeof getSetCookie === 'function') return getSetCookie.call(headers);
+function _get_set_cookie_headers(headers: Headers): string[] {
+	const get_set_cookie = (headers as Headers & { getSetCookie?: () => string[] }).getSetCookie;
+	if (typeof get_set_cookie === 'function') return get_set_cookie.call(headers);
 
 	const combined = headers.get('set-cookie');
-	return combined ? splitSetCookieHeader(combined) : [];
+	return combined ? _split_set_cookie_header(combined) : [];
 }
 
 export class CookieJar {
@@ -56,24 +56,24 @@ export class CookieJar {
 	}
 
 	replace(cookies: CookieInput): void {
-		const parsed = typeof cookies === 'string' ? parseCookieHeader(cookies) : cookies;
+		const parsed = typeof cookies === 'string' ? _parse_cookie_header(cookies) : cookies;
 		const entries = Object.entries(parsed);
-		for (const [name, value] of entries) assertCookiePair(name, value);
+		for (const [name, value] of entries) _assert_cookie_pair(name, value);
 
 		this.#cookies.clear();
 		for (const [name, value] of entries) this.#cookies.set(name, value);
 	}
 
-	toJSON(): TeyvatCookies {
+	to_json(): TeyvatCookies {
 		return Object.fromEntries(this.#cookies);
 	}
 
-	toHeader(): string {
+	to_header(): string {
 		return [...this.#cookies].map(([name, value]) => `${name}=${value}`).join('; ');
 	}
 
-	updateFromResponse(headers: Headers, now = Date.now()): void {
-		for (const header of getSetCookieHeaders(headers)) {
+	update_from_response(headers: Headers, now = Date.now()): void {
+		for (const header of _get_set_cookie_headers(headers)) {
 			const segments = header.split(';').map((segment) => segment.trim());
 			const pair = segments.shift();
 			if (!pair) continue;
@@ -83,24 +83,24 @@ export class CookieJar {
 
 			const name = pair.slice(0, separator).trim();
 			const value = pair.slice(separator + 1).trim();
-			if (!COOKIE_NAME.test(name) || hasInvalidCookieValueCharacter(value)) continue;
+			if (!COOKIE_NAME.test(name) || _has_invalid_cookie_value_character(value)) continue;
 
-			let shouldDelete = false;
+			let should_delete = false;
 			for (const segment of segments) {
-				const attributeSeparator = segment.indexOf('=');
-				const attributeName = (attributeSeparator === -1 ? segment : segment.slice(0, attributeSeparator))
+				const attribute_separator = segment.indexOf('=');
+				const attribute_name = (attribute_separator === -1 ? segment : segment.slice(0, attribute_separator))
 					.trim()
 					.toLowerCase();
-				const attributeValue = attributeSeparator === -1 ? '' : segment.slice(attributeSeparator + 1).trim();
+				const attribute_value = attribute_separator === -1 ? '' : segment.slice(attribute_separator + 1).trim();
 
-				if (attributeName === 'max-age' && Number(attributeValue) <= 0) shouldDelete = true;
-				if (attributeName === 'expires') {
-					const expiresAt = Date.parse(attributeValue);
-					if (!Number.isNaN(expiresAt) && expiresAt <= now) shouldDelete = true;
+				if (attribute_name === 'max-age' && Number(attribute_value) <= 0) should_delete = true;
+				if (attribute_name === 'expires') {
+					const expires_at = Date.parse(attribute_value);
+					if (!Number.isNaN(expires_at) && expires_at <= now) should_delete = true;
 				}
 			}
 
-			if (shouldDelete) this.#cookies.delete(name);
+			if (should_delete) this.#cookies.delete(name);
 			else this.#cookies.set(name, value);
 		}
 	}
