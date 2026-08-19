@@ -20,7 +20,7 @@
 		"build:docs": "typedoc --options typedoc.json",
 		"build": "bun build:lib && bun build:docs",
 		"check": "biome check",
-		"test": "bun test tests"
+		"dev": "bun test"
 	},
 	"devDependencies": {
 		"@types/bun": "1.3.13",

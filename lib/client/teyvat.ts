@@ -1,6 +1,8 @@
 import type { TeyvatCookies } from '../types/index.ts';
 import { _parse_cookies } from '../utils/cookies.ts';
-import { TeyvatAccount } from './account.ts';
+import { _recognize_genshin_server } from '../utils/uid.ts';
+import { TeyvatAccount } from './account/index.ts';
+import { _get_accounts } from './accounts.ts';
 import { TeyvatError } from './errors.ts';
 import { getHttpClient, initializeHttpClient } from './request.ts';
 
@@ -10,6 +12,7 @@ export interface TeyvatOptions {
 
 export class Teyvat {
 	_accounts = new Map<number, TeyvatAccount>();
+	#accountsRequest?: Promise<Array<TeyvatAccount>>;
 
 	constructor(opts: TeyvatOptions) {
 		if (!opts.cookies) throw new TeyvatError('missing cookies');
@@ -21,10 +24,15 @@ export class Teyvat {
 	}
 
 	async accounts(): Promise<Array<TeyvatAccount>> {
-		return [...this._accounts.values()];
+		this.#accountsRequest ??= _get_accounts(this).catch((error: unknown) => {
+			this.#accountsRequest = undefined;
+			throw error;
+		});
+		return await this.#accountsRequest;
 	}
 
-	account(uid: number) {
+	account(uid: number): TeyvatAccount {
+		_recognize_genshin_server(uid);
 		const account = this._accounts.get(uid) ?? new TeyvatAccount(this, uid);
 		if (!this._accounts.has(uid)) this._accounts.set(uid, account);
 		return account;
