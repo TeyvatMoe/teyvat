@@ -1,8 +1,16 @@
-import type { TeyvatAccountsOptions, TeyvatCookies, TeyvatOptions } from '../types/index.ts';
-import { _parse_cookies } from '../utils/cookies.ts';
+import { _hoyolab_complete_cookies } from '../endpoints/hoyolab/auth.ts';
+import type {
+	TeyvatAccountsOptions,
+	TeyvatAuthOptions,
+	TeyvatAuthSession,
+	TeyvatCookies,
+	TeyvatOptions,
+} from '../types/index.ts';
+import { _hoyolab_id_from_cookies, _parse_cookies } from '../utils/cookies.ts';
 import { _recognize_genshin_server } from '../utils/uid.ts';
 import { TeyvatAccount } from './account/index.ts';
 import { _get_accounts } from './accounts.ts';
+import { _TeyvatAuthSession } from './auth.ts';
 import { TeyvatError } from './errors.ts';
 import { _get_http_client, _initialize_http_client } from './request.ts';
 
@@ -12,9 +20,17 @@ export class Teyvat {
 	#accounts_cache_updated_at = 0;
 	#accounts_refresh?: Promise<Array<TeyvatAccount>>;
 	readonly #accounts_cache_ttl: number;
+	#cookies_completion?: Promise<boolean>;
+	readonly hoyolab_id: string;
+
+	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
+		return new _TeyvatAuthSession(options);
+	}
 
 	constructor(opts: TeyvatOptions) {
 		if (!opts.cookies) throw new TeyvatError('missing cookies');
+		const cookies = _parse_cookies(opts.cookies);
+		this.hoyolab_id = _hoyolab_id_from_cookies(cookies, opts.hoyolab_id);
 		if (
 			opts.accounts_cache_ttl !== undefined &&
 			(!Number.isFinite(opts.accounts_cache_ttl) || opts.accounts_cache_ttl < 0)
@@ -22,7 +38,16 @@ export class Teyvat {
 			throw new TeyvatError('accounts_cache_ttl must be a finite, nonnegative number');
 		}
 		this.#accounts_cache_ttl = opts.accounts_cache_ttl ?? 3_600_000;
-		_initialize_http_client(this, _parse_cookies(opts.cookies));
+		_initialize_http_client(this, cookies, {
+			prepare_auth: async () => {
+				await this.#complete_cookies(false);
+			},
+			repair_auth: async () => await this.#complete_cookies(true),
+			on_cookies_update: async (updated_cookies) => {
+				_hoyolab_id_from_cookies(updated_cookies, this.hoyolab_id);
+				await opts.on_cookies_update?.({ hoyolab_id: this.hoyolab_id, cookies: updated_cookies });
+			},
+		});
 	}
 
 	get cookies(): TeyvatCookies {
@@ -60,5 +85,24 @@ export class Teyvat {
 			});
 		this.#accounts_refresh = refresh;
 		return refresh;
+	}
+
+	async #complete_cookies(force: boolean): Promise<boolean> {
+		const client = _get_http_client(this);
+		if (!client.cookies.has('stoken')) return false;
+		if (!force && client.cookies.has('ltoken_v2') && client.cookies.has('cookie_token_v2')) return false;
+		if (this.#cookies_completion) return await this.#cookies_completion;
+
+		const completion = (async () => {
+			const cookies = await _hoyolab_complete_cookies(client);
+			await client.merge_cookies(cookies);
+			return true;
+		})();
+		this.#cookies_completion = completion;
+		try {
+			return await completion;
+		} finally {
+			if (this.#cookies_completion === completion) this.#cookies_completion = undefined;
+		}
 	}
 }

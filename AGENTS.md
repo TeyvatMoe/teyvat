@@ -30,11 +30,11 @@ One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account 
 
 The live integration suite is `lib/index.test.ts` and uses credentials supplied through `.env`. Agents may run the `bun dev` integration command, but must never edit `lib/index.test.ts`.
 
-Agents may also run static TypeScript checks, non-mutating Biome checks, and library or documentation builds. Never print, inspect, or expose `.env` values or cookies.
+Agents may run static TypeScript checks and non-mutating Biome checks. Do not run library or documentation builds while the package is under active implementation. Never print, inspect, or expose `.env` values or cookies.
 
 ## Roadmap
 
 - Complete the account surface: characters, daily notes, Spiral Abyss, exploration, and activities.
 - Add configurable language after the English endpoint surface is stable.
-- Add authentication flows after cookie-authenticated account features are established.
+- Expand the app-authentication flow only when concrete session behavior requires it.
 - Add caching and specialized API errors only when concrete endpoint behavior requires them.

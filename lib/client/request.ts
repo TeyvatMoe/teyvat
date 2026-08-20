@@ -1,7 +1,8 @@
 import type { Type } from 'arktype';
 import { type CookieInput, CookieJar } from '../auth/cookies.ts';
 import type { TeyvatDomain } from '../consts/domains.ts';
-import { TeyvatApiError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
+import type { TeyvatCookies } from '../types/cookies.ts';
+import { TeyvatApiError, TeyvatError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
 
 type Fetch = (input: Request | string | URL, init?: RequestInit) => Promise<Response>;
 type QueryValue = boolean | number | string | null | undefined;
@@ -17,12 +18,25 @@ export interface TeyvatRequestOptions<schema extends Type> {
 	body?: unknown;
 	headers?: HeaderInput;
 	signal?: AbortSignal;
+	skip_auth?: boolean;
 }
 
 export interface TeyvatHttpClientOptions {
 	fetch?: Fetch;
 	timeout_ms?: number;
+	prepare_auth?: () => Promise<void>;
+	repair_auth?: () => Promise<boolean>;
+	on_cookies_update?: (cookies: TeyvatCookies) => Promise<void> | void;
 }
+
+export type TeyvatRawRequestOptions = Omit<TeyvatRequestOptions<Type>, 'schema'>;
+
+export interface TeyvatRawResponse {
+	data: unknown;
+	headers: Headers;
+}
+
+const AUTH_RETCODES = new Set([-1071, -100, 10001]);
 
 function _build_url(domain: TeyvatDomain, path: string, params?: Readonly<Record<string, QueryValue>>): URL {
 	const base = domain.endsWith('/') ? domain : `${domain}/`;
@@ -48,11 +62,19 @@ export class TeyvatHttpClient {
 	readonly cookies: CookieJar;
 	readonly #fetch: Fetch;
 	readonly #timeout_ms: number;
+	readonly #prepare_auth?: () => Promise<void>;
+	readonly #repair_auth?: () => Promise<boolean>;
+	readonly #on_cookies_update?: (cookies: TeyvatCookies) => Promise<void> | void;
+	#cookies_dirty = false;
+	#cookies_persisting?: Promise<void>;
 
 	constructor(cookies: CookieInput, options: TeyvatHttpClientOptions = {}) {
 		this.cookies = new CookieJar(cookies);
 		this.#fetch = options.fetch ?? globalThis.fetch;
 		this.#timeout_ms = options.timeout_ms ?? 30_000;
+		this.#prepare_auth = options.prepare_auth;
+		this.#repair_auth = options.repair_auth;
+		this.#on_cookies_update = options.on_cookies_update;
 
 		if (!Number.isFinite(this.#timeout_ms) || this.#timeout_ms <= 0) {
 			throw new RangeError('timeout_ms must be a positive finite number');
@@ -60,6 +82,45 @@ export class TeyvatHttpClient {
 	}
 
 	async request<schema extends Type>(options: TeyvatRequestOptions<schema>): Promise<ResponseData<schema>> {
+		return await this.#request(options, false);
+	}
+
+	async #request<schema extends Type>(
+		options: TeyvatRequestOptions<schema>,
+		retried: boolean,
+	): Promise<ResponseData<schema>> {
+		const method = (options.method ?? 'GET').toUpperCase();
+		const url = _build_url(options.domain, options.path, options.params);
+		const endpoint = _safe_endpoint(url);
+		if (!options.skip_auth) await this.#prepare_auth?.();
+		if (this.#cookies_dirty) await this.#persist_cookies();
+
+		const response = await this.raw_request(options);
+		const raw = response.data;
+
+		if (typeof raw === 'object' && raw !== null && 'retcode' in raw && typeof raw.retcode === 'number') {
+			if (raw.retcode !== 0) {
+				const upstream_message = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
+				const error = new TeyvatApiError(raw.retcode, upstream_message, method, endpoint);
+				if (!retried && !options.skip_auth && AUTH_RETCODES.has(raw.retcode) && this.#repair_auth) {
+					const repaired = await this.#repair_auth();
+					if (repaired && (method === 'GET' || method === 'HEAD')) return await this.#request(options, true);
+				}
+				throw error;
+			}
+		}
+
+		let validated: unknown;
+		try {
+			validated = options.schema.assert(raw);
+		} catch (cause) {
+			throw new TeyvatResponseValidationError(method, endpoint, _validation_issues(cause), { cause });
+		}
+
+		return (validated as { data: ResponseData<schema> }).data;
+	}
+
+	async raw_request(options: TeyvatRawRequestOptions): Promise<TeyvatRawResponse> {
 		const method = (options.method ?? 'GET').toUpperCase();
 		const url = _build_url(options.domain, options.path, options.params);
 		const endpoint = _safe_endpoint(url);
@@ -67,7 +128,7 @@ export class TeyvatHttpClient {
 		if (!headers.has('Accept')) headers.set('Accept', 'application/json');
 
 		const cookie_header = this.cookies.to_header();
-		if (cookie_header) headers.set('Cookie', cookie_header);
+		if (cookie_header && !headers.has('Cookie')) headers.set('Cookie', cookie_header);
 
 		let body: string | undefined;
 		if (options.body !== undefined) {
@@ -111,7 +172,9 @@ export class TeyvatHttpClient {
 			options.signal?.removeEventListener('abort', on_abort);
 		}
 
+		const revision = this.cookies.revision;
 		this.cookies.update_from_response(response.headers);
+		if (this.cookies.revision !== revision) await this.#persist_cookies();
 
 		let raw: unknown;
 		try {
@@ -129,13 +192,6 @@ export class TeyvatHttpClient {
 			);
 		}
 
-		if (typeof raw === 'object' && raw !== null && 'retcode' in raw && typeof raw.retcode === 'number') {
-			if (raw.retcode !== 0) {
-				const upstream_message = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
-				throw new TeyvatApiError(raw.retcode, upstream_message, method, endpoint);
-			}
-		}
-
 		if (!response.ok) {
 			throw new TeyvatRequestError(
 				'http',
@@ -146,21 +202,48 @@ export class TeyvatHttpClient {
 			);
 		}
 
-		let validated: unknown;
-		try {
-			validated = options.schema.assert(raw);
-		} catch (cause) {
-			throw new TeyvatResponseValidationError(method, endpoint, _validation_issues(cause), { cause });
-		}
+		return { data: raw, headers: response.headers };
+	}
 
-		return (validated as { data: ResponseData<schema> }).data;
+	async merge_cookies(cookies: TeyvatCookies): Promise<void> {
+		const revision = this.cookies.revision;
+		this.cookies.merge(cookies);
+		if (this.cookies.revision !== revision) await this.#persist_cookies();
+	}
+
+	async #persist_cookies(): Promise<void> {
+		if (!this.#on_cookies_update) return;
+		this.#cookies_dirty = true;
+		if (this.#cookies_persisting) return await this.#cookies_persisting;
+
+		const persistence = (async () => {
+			while (this.#cookies_dirty) {
+				this.#cookies_dirty = false;
+				try {
+					await this.#on_cookies_update?.(this.cookies.to_json());
+				} catch (cause) {
+					this.#cookies_dirty = true;
+					throw new TeyvatError('Could not persist updated cookies', { cause });
+				}
+			}
+		})();
+		this.#cookies_persisting = persistence;
+		try {
+			await persistence;
+		} finally {
+			if (this.#cookies_persisting === persistence) this.#cookies_persisting = undefined;
+		}
 	}
 }
 
 const clients = new WeakMap<object, TeyvatHttpClient>();
 
-export function _initialize_http_client(owner: object, cookies: CookieInput): void {
-	clients.set(owner, new TeyvatHttpClient(cookies));
+export function _initialize_http_client(
+	owner: object,
+	cookies: CookieInput,
+	options: TeyvatHttpClientOptions = {},
+): void {
+	clients.set(owner, new TeyvatHttpClient(cookies, options));
 }
 
 export function _get_http_client(owner: object): TeyvatHttpClient {

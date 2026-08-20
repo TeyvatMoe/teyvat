@@ -50,6 +50,7 @@ function _get_set_cookie_headers(headers: Headers): string[] {
 
 export class CookieJar {
 	readonly #cookies = new Map<string, string>();
+	#revision = 0;
 
 	constructor(cookies: CookieInput) {
 		this.replace(cookies);
@@ -62,17 +63,47 @@ export class CookieJar {
 
 		this.#cookies.clear();
 		for (const [name, value] of entries) this.#cookies.set(name, value);
+		this.#revision++;
+	}
+
+	get revision(): number {
+		return this.#revision;
+	}
+
+	get(name: string): string | undefined {
+		return this.#cookies.get(name);
+	}
+
+	has(name: string): boolean {
+		return this.#cookies.has(name);
+	}
+
+	merge(cookies: TeyvatCookies): void {
+		let changed = false;
+		for (const [name, value] of Object.entries(cookies)) {
+			_assert_cookie_pair(name, value);
+			if (this.#cookies.get(name) === value) continue;
+			this.#cookies.set(name, value);
+			changed = true;
+		}
+		if (changed) this.#revision++;
 	}
 
 	to_json(): TeyvatCookies {
 		return Object.fromEntries(this.#cookies);
 	}
 
-	to_header(): string {
-		return [...this.#cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+	to_header(overrides: TeyvatCookies = {}): string {
+		const cookies = new Map(this.#cookies);
+		for (const [name, value] of Object.entries(overrides)) {
+			_assert_cookie_pair(name, value);
+			cookies.set(name, value);
+		}
+		return [...cookies].map(([name, value]) => `${name}=${value}`).join('; ');
 	}
 
 	update_from_response(headers: Headers, now = Date.now()): void {
+		let changed = false;
 		for (const header of _get_set_cookie_headers(headers)) {
 			const segments = header.split(';').map((segment) => segment.trim());
 			const pair = segments.shift();
@@ -100,8 +131,12 @@ export class CookieJar {
 				}
 			}
 
-			if (should_delete) this.#cookies.delete(name);
-			else this.#cookies.set(name, value);
+			if (should_delete) changed = this.#cookies.delete(name) || changed;
+			else if (this.#cookies.get(name) !== value) {
+				this.#cookies.set(name, value);
+				changed = true;
+			}
 		}
+		if (changed) this.#revision++;
 	}
 }
