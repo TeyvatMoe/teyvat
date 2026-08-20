@@ -14,6 +14,7 @@ import { _TeyvatAuthSession } from './auth.ts';
 import { TeyvatError } from './errors.ts';
 import { _get_http_client, _initialize_http_client } from './request.ts';
 
+/** @category Core */
 export class Teyvat {
 	#accounts = new Map<number, TeyvatAccount>();
 	#accounts_cache?: Array<TeyvatAccount>;

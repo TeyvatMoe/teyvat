@@ -5,37 +5,47 @@ export interface TeyvatCharactersOptions {
 	auto_enable?: boolean;
 }
 
-export const schema_teyvat_character_element = type.enumerated(
-	'anemo',
-	'geo',
-	'electro',
-	'dendro',
-	'hydro',
-	'pyro',
-	'cryo',
-);
+const schema_teyvat_character_element = type.enumerated('anemo', 'geo', 'electro', 'dendro', 'hydro', 'pyro', 'cryo');
+/**
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterElement = typeof schema_teyvat_character_element.infer;
 
-export const schema_teyvat_weapon_type = type.enumerated('sword', 'catalyst', 'claymore', 'bow', 'polearm');
+const schema_teyvat_weapon_type = type.enumerated('sword', 'catalyst', 'claymore', 'bow', 'polearm');
+/**
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatWeaponType = typeof schema_teyvat_weapon_type.infer;
 
-export const schema_teyvat_property_info = type({
+const schema_teyvat_property_info = type({
 	type: 'number.integer',
 	name: 'string',
 	icon: 'string | null',
 	filter_name: 'string',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatPropertyInfo = typeof schema_teyvat_property_info.infer;
 
-export const schema_teyvat_property_value = type({
+const schema_teyvat_property_value = type({
 	base: 'string',
 	add: 'string',
 	final: 'string',
 	info: schema_teyvat_property_info,
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatPropertyValue = typeof schema_teyvat_property_value.infer;
 
-export const schema_teyvat_character_weapon = type({
+const schema_teyvat_character_weapon = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
@@ -48,30 +58,50 @@ export const schema_teyvat_character_weapon = type({
 	sub_stat: schema_teyvat_property_value.or('null'),
 	wiki_url: 'string | null',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterWeapon = typeof schema_teyvat_character_weapon.infer;
 
-export const schema_teyvat_artifact_stat = type({
+const schema_teyvat_artifact_stat = type({
 	value: 'string',
 	times: 'number.integer',
 	info: schema_teyvat_property_info,
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatArtifactStat = typeof schema_teyvat_artifact_stat.infer;
 
-export const schema_teyvat_artifact_set_effect = type({
+const schema_teyvat_artifact_set_effect = type({
 	required_pieces: 'number.integer',
 	effect: 'string',
 	active: 'boolean',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatArtifactSetEffect = typeof schema_teyvat_artifact_set_effect.infer;
 
-export const schema_teyvat_artifact_set = type({
+const schema_teyvat_artifact_set = type({
 	id: 'number.integer',
 	name: 'string',
 	effects: schema_teyvat_artifact_set_effect.array(),
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatArtifactSet = typeof schema_teyvat_artifact_set.infer;
 
-export const schema_teyvat_character_artifact = type({
+const schema_teyvat_character_artifact = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
@@ -84,9 +114,14 @@ export const schema_teyvat_character_artifact = type({
 	sub_stats: schema_teyvat_artifact_stat.array(),
 	wiki_url: 'string | null',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterArtifact = typeof schema_teyvat_character_artifact.infer;
 
-export const schema_teyvat_character_constellation = type({
+const schema_teyvat_character_constellation = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
@@ -97,15 +132,30 @@ export const schema_teyvat_character_constellation = type({
 	enhanced_effect: 'string',
 	can_be_enhanced: 'boolean',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterConstellation = typeof schema_teyvat_character_constellation.infer;
 
-export const schema_teyvat_character_costume = type({ id: 'number.integer', name: 'string', icon: 'string' });
+const schema_teyvat_character_costume = type({ id: 'number.integer', name: 'string', icon: 'string' });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterCostume = typeof schema_teyvat_character_costume.infer;
 
-export const schema_teyvat_character_skill_affix = type({ name: 'string', value: 'string' });
+const schema_teyvat_character_skill_affix = type({ name: 'string', value: 'string' });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterSkillAffix = typeof schema_teyvat_character_skill_affix.infer;
 
-export const schema_teyvat_character_skill = type({
+const schema_teyvat_character_skill = type({
 	id: 'number.integer',
 	type: 'number.integer',
 	name: 'string',
@@ -118,6 +168,11 @@ export const schema_teyvat_character_skill = type({
 	enhanced_description: 'string',
 	can_be_enhanced: 'boolean',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatCharacterSkill = typeof schema_teyvat_character_skill.infer;
 
 export const schema_teyvat_account_character = type({
@@ -145,4 +200,9 @@ export const schema_teyvat_account_character = type({
 	element_properties: schema_teyvat_property_value.array(),
 	wiki_url: 'string | null',
 });
+/**
+ * @interface
+ * @useDeclaredType
+ * @category Characters
+ */
 export type TeyvatAccountCharacter = typeof schema_teyvat_account_character.infer;

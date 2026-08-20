@@ -1,7 +1,7 @@
 {
 	"entryPoints": ["lib/index.ts"],
 	"out": "docs",
-	"plugin": ["typedoc-github-theme"],
+	"plugin": ["typedoc-github-theme", "./typedoc-plugin.mjs"],
 	"excludeExternals": true,
 	"externalSymbolLinkMappings": {
 		"bun-types": {
@@ -15,8 +15,24 @@
 		}
 	},
 	"navigationLinks": {
-		"GitHub": "https://github.com/itss0n1c/teyvat",
-		"My Site": "https://s0n1c.ca"
+		"GitHub": "https://github.com/TeyvatMoe/teyvat",
+		"teyvat.moe": "https://teyvat.moe"
 	},
+	"navigation": {
+		"includeCategories": true,
+		"includeGroups": false,
+		"includeFolders": false,
+		"excludeReferences": true
+	},
+	"categoryOrder": [
+		"Core",
+		"Authentication",
+		"Account Info",
+		"Daily Notes",
+		"Characters",
+		"Spiral Abyss",
+		"Errors",
+		"*"
+	],
 	"sort": ["documents-first", "kind"]
 }

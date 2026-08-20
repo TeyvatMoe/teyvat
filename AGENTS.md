@@ -21,6 +21,8 @@ One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account 
 
 - Public classes and inferred types use `Teyvat` prefixes.
 - ArkType schema constants use `schema_teyvat_*` for public models and `schema_hoyolab_*` for private raw responses.
+- Keep composition-only ArkType schemas file-local; export a schema from its module only when another module uses it, and expose only intentional boundary schemas from root barrels.
+- Add `/** @interface */` to exported ArkType-inferred object type aliases so TypeDoc renders them as interfaces; do not add it to unions or enumerations.
 - Private functions use a leading underscore and remain outside root exports.
 - Teyvat-owned functions, variables, options, properties, and public model fields use `snake_case`, never `camelCase`. Class and type names remain PascalCase, and upstream wire keys retain their exact spelling.
 - Reusable private helpers belong in `lib/utils/` and use a leading underscore.

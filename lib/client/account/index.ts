@@ -20,6 +20,7 @@ interface TeyvatAccountDetails {
 
 const account_details = new WeakMap<TeyvatAccount, TeyvatAccountDetails>();
 
+/** @category Core */
 export class TeyvatAccount {
 	readonly inst: Teyvat;
 	readonly uid: number;

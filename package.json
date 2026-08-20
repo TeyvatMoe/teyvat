@@ -1,7 +1,7 @@
 {
 	"name": "teyvat",
 	"version": "1.0.0",
-	"description": "",
+	"description": "A type-safe TypeScript library for exploring your Genshin Impact account.",
 	"license": "MIT",
 	"type": "module",
 	"files": [
@@ -37,10 +37,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com/itss0n1c/teyvat.git"
+		"url": "git+ssh://git@github.com/TeyvatMoe/teyvat.git"
 	},
 	"bugs": {
-		"url": "https://github.com/itss0n1c/teyvat/issues"
+		"url": "https://github.com/TeyvatMoe/teyvat/issues"
 	},
-	"homepage": "https://s0n1c.ca/teyvat"
+	"homepage": "https://lib.teyvat.moe"
 }

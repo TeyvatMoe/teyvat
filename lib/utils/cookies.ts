@@ -1,6 +1,6 @@
 import { _parse_cookie_header } from '../auth/cookies.ts';
 import { TeyvatError } from '../client/errors.ts';
-import { schema_teyvat_cookies, type TeyvatCookies } from '../types/index.ts';
+import { schema_teyvat_cookies, type TeyvatCookies } from '../types/cookies.ts';
 
 export function _parse_cookies(cookies: TeyvatCookies | string): TeyvatCookies {
 	try {

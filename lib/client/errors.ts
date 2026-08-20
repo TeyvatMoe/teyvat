@@ -1,3 +1,4 @@
+/** @category Errors */
 export class TeyvatError extends Error {
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options);
@@ -5,8 +6,10 @@ export class TeyvatError extends Error {
 	}
 }
 
+/** @category Errors */
 export type TeyvatRequestErrorKind = 'network' | 'timeout' | 'http' | 'json' | 'body';
 
+/** @category Errors */
 export class TeyvatRequestError extends TeyvatError {
 	readonly kind: TeyvatRequestErrorKind;
 	readonly method: string;
@@ -28,6 +31,7 @@ export class TeyvatRequestError extends TeyvatError {
 	}
 }
 
+/** @category Errors */
 export class TeyvatApiError extends TeyvatError {
 	readonly retcode: number;
 	readonly upstream_message: string;
@@ -43,6 +47,7 @@ export class TeyvatApiError extends TeyvatError {
 	}
 }
 
+/** @category Errors */
 export class TeyvatResponseValidationError extends TeyvatError {
 	readonly method: string;
 	readonly endpoint: string;
