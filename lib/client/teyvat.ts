@@ -1,4 +1,4 @@
-import type { TeyvatCookies } from '../types/index.ts';
+import type { TeyvatAccountsOptions, TeyvatCookies, TeyvatOptions } from '../types/index.ts';
 import { _parse_cookies } from '../utils/cookies.ts';
 import { _recognize_genshin_server } from '../utils/uid.ts';
 import { TeyvatAccount } from './account/index.ts';
@@ -6,16 +6,22 @@ import { _get_accounts } from './accounts.ts';
 import { TeyvatError } from './errors.ts';
 import { _get_http_client, _initialize_http_client } from './request.ts';
 
-export interface TeyvatOptions {
-	cookies?: TeyvatCookies | string;
-}
-
 export class Teyvat {
-	_accounts = new Map<number, TeyvatAccount>();
-	#accounts_request?: Promise<Array<TeyvatAccount>>;
+	#accounts = new Map<number, TeyvatAccount>();
+	#accounts_cache?: Array<TeyvatAccount>;
+	#accounts_cache_updated_at = 0;
+	#accounts_refresh?: Promise<Array<TeyvatAccount>>;
+	readonly #accounts_cache_ttl: number;
 
 	constructor(opts: TeyvatOptions) {
 		if (!opts.cookies) throw new TeyvatError('missing cookies');
+		if (
+			opts.accounts_cache_ttl !== undefined &&
+			(!Number.isFinite(opts.accounts_cache_ttl) || opts.accounts_cache_ttl < 0)
+		) {
+			throw new TeyvatError('accounts_cache_ttl must be a finite, nonnegative number');
+		}
+		this.#accounts_cache_ttl = opts.accounts_cache_ttl ?? 3_600_000;
 		_initialize_http_client(this, _parse_cookies(opts.cookies));
 	}
 
@@ -23,18 +29,36 @@ export class Teyvat {
 		return _get_http_client(this).cookies.to_json();
 	}
 
-	async accounts(): Promise<Array<TeyvatAccount>> {
-		this.#accounts_request ??= _get_accounts(this).catch((error: unknown) => {
-			this.#accounts_request = undefined;
-			throw error;
-		});
-		return await this.#accounts_request;
+	async accounts(options: TeyvatAccountsOptions = {}): Promise<Array<TeyvatAccount>> {
+		if (!this.#accounts_cache || options.update) return await this.#refresh_accounts();
+
+		if (Date.now() - this.#accounts_cache_updated_at >= this.#accounts_cache_ttl) {
+			void this.#refresh_accounts().catch(() => undefined);
+		}
+
+		return [...this.#accounts_cache];
 	}
 
 	account(uid: number): TeyvatAccount {
 		_recognize_genshin_server(uid);
-		const account = this._accounts.get(uid) ?? new TeyvatAccount(this, uid);
-		if (!this._accounts.has(uid)) this._accounts.set(uid, account);
+		const account = this.#accounts.get(uid) ?? new TeyvatAccount(this, uid);
+		if (!this.#accounts.has(uid)) this.#accounts.set(uid, account);
 		return account;
+	}
+
+	#refresh_accounts(): Promise<Array<TeyvatAccount>> {
+		if (this.#accounts_refresh) return this.#accounts_refresh;
+
+		const refresh = _get_accounts(this)
+			.then((accounts) => {
+				this.#accounts_cache = [...accounts];
+				this.#accounts_cache_updated_at = Date.now();
+				return [...accounts];
+			})
+			.finally(() => {
+				if (this.#accounts_refresh === refresh) this.#accounts_refresh = undefined;
+			});
+		this.#accounts_refresh = refresh;
+		return refresh;
 	}
 }
