@@ -37,6 +37,8 @@ export type {
 	TeyvatSpiralAbyssOptions,
 	TeyvatSpiralAbyssPeriod,
 } from './spiral_abyss.ts';
+/** @category Stygian Onslaught */
+export type { TeyvatAccountStygianOnslaught, TeyvatStygianOnslaughtOptions } from './stygian_onslaught.ts';
 
 /** @category Core */
 export interface TeyvatAccountsOptions {

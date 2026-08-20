@@ -8,6 +8,10 @@ import type {
 import type { TeyvatAccountInfo } from '../../types/account/info.ts';
 import type { TeyvatServer } from '../../types/account/server.ts';
 import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '../../types/account/spiral_abyss.ts';
+import type {
+	TeyvatAccountStygianOnslaught,
+	TeyvatStygianOnslaughtOptions,
+} from '../../types/account/stygian_onslaught.ts';
 import { _recognize_genshin_server } from '../../utils/uid.ts';
 import type { Teyvat } from '../teyvat.ts';
 import { _get_account_characters } from './characters.ts';
@@ -16,6 +20,7 @@ import { _get_account_exploration } from './exploration.ts';
 import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
 import { _get_account_info } from './info.ts';
 import { _get_account_spiral_abyss } from './spiral_abyss.ts';
+import { _get_account_stygian_onslaught } from './stygian_onslaught.ts';
 
 interface TeyvatAccountDetails {
 	nickname: string;
@@ -81,6 +86,10 @@ export class TeyvatAccount {
 
 	async spiral_abyss(options?: TeyvatSpiralAbyssOptions): Promise<TeyvatAccountSpiralAbyss> {
 		return await _get_account_spiral_abyss(this, options);
+	}
+
+	async stygian_onslaught(options?: TeyvatStygianOnslaughtOptions): Promise<TeyvatAccountStygianOnslaught[]> {
+		return await _get_account_stygian_onslaught(this, options);
 	}
 }
 

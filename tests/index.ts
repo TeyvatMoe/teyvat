@@ -249,3 +249,5 @@ const exploration = await account.exploration({ auto_enable: true });
 console.log({ exploration });
 const imaginarium_theater = await account.imaginarium_theater({ auto_enable: true });
 console.log({ imaginarium_theater });
+const stygian_onslaught = await account.stygian_onslaught({ auto_enable: true });
+console.log({ stygian_onslaught });
