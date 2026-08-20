@@ -11,13 +11,6 @@ const schema_teyvat_account_oculi = type({
 	lunar: 'number.integer',
 });
 
-/**
- * @interface
- * @useDeclaredType
- * @category Account Info
- */
-export type TeyvatAccountOculi = typeof schema_teyvat_account_oculi.infer;
-
 const schema_teyvat_account_chests = type({
 	common: 'number.integer',
 	exquisite: 'number.integer',
@@ -26,13 +19,6 @@ const schema_teyvat_account_chests = type({
 	remarkable: 'number.integer',
 });
 
-/**
- * @interface
- * @useDeclaredType
- * @category Account Info
- */
-export type TeyvatAccountChests = typeof schema_teyvat_account_chests.infer;
-
 const schema_teyvat_account_imaginarium_theater = type({
 	unlocked: 'boolean',
 	max_act: 'number.integer',
@@ -40,26 +26,12 @@ const schema_teyvat_account_imaginarium_theater = type({
 	has_detail_data: 'boolean',
 });
 
-/**
- * @interface
- * @useDeclaredType
- * @category Account Info
- */
-export type TeyvatAccountImaginariumTheater = typeof schema_teyvat_account_imaginarium_theater.infer;
-
 const schema_teyvat_account_stygian_onslaught = type({
 	unlocked: 'boolean',
 	difficulty: 'number.integer',
 	name: 'string',
 	has_data: 'boolean',
 });
-
-/**
- * @interface
- * @useDeclaredType
- * @category Account Info
- */
-export type TeyvatAccountStygianOnslaught = typeof schema_teyvat_account_stygian_onslaught.infer;
 
 const schema_teyvat_account_stats = type({
 	achievements: 'number.integer',
@@ -74,13 +46,6 @@ const schema_teyvat_account_stats = type({
 	imaginarium_theater: schema_teyvat_account_imaginarium_theater,
 	stygian_onslaught: schema_teyvat_account_stygian_onslaught,
 });
-
-/**
- * @interface
- * @useDeclaredType
- * @category Account Info
- */
-export type TeyvatAccountStats = typeof schema_teyvat_account_stats.infer;
 
 export const schema_teyvat_account_info = type({
 	uid: 'number.integer',

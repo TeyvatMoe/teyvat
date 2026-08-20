@@ -24,13 +24,6 @@ const schema_teyvat_spiral_abyss_ranked_character = type({
 	rarity: 'number.integer',
 	value: 'number.integer',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssRankedCharacter = typeof schema_teyvat_spiral_abyss_ranked_character.infer;
-
 const schema_teyvat_spiral_abyss_ranks = type({
 	most_played: schema_teyvat_spiral_abyss_ranked_character.array(),
 	most_kills: schema_teyvat_spiral_abyss_ranked_character.array(),
@@ -39,50 +32,22 @@ const schema_teyvat_spiral_abyss_ranks = type({
 	most_skills_used: schema_teyvat_spiral_abyss_ranked_character.array(),
 	most_bursts_used: schema_teyvat_spiral_abyss_ranked_character.array(),
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssRanks = typeof schema_teyvat_spiral_abyss_ranks.infer;
-
 const schema_teyvat_spiral_abyss_character = type({
 	id: 'number.integer',
 	icon: 'string',
 	rarity: 'number.integer',
 	level: 'number.integer',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssCharacter = typeof schema_teyvat_spiral_abyss_character.infer;
-
 const schema_teyvat_spiral_abyss_enemy = type({
 	name: 'string',
 	icon: 'string',
 	level: 'number.integer',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssEnemy = typeof schema_teyvat_spiral_abyss_enemy.infer;
-
 const schema_teyvat_spiral_abyss_battle = type({
 	half: schema_teyvat_spiral_abyss_half,
 	completed_at: 'Date',
 	characters: schema_teyvat_spiral_abyss_character.array(),
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssBattle = typeof schema_teyvat_spiral_abyss_battle.infer;
-
 const schema_teyvat_spiral_abyss_chamber = type({
 	number: 'number.integer',
 	stars: 'number.integer',
@@ -93,13 +58,6 @@ const schema_teyvat_spiral_abyss_chamber = type({
 		second_half: schema_teyvat_spiral_abyss_enemy.array(),
 	},
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssChamber = typeof schema_teyvat_spiral_abyss_chamber.infer;
-
 const schema_teyvat_spiral_abyss_floor = type({
 	number: 'number.integer',
 	unlocked: 'boolean',
@@ -107,13 +65,6 @@ const schema_teyvat_spiral_abyss_floor = type({
 	maximum_stars: 'number.integer',
 	chambers: schema_teyvat_spiral_abyss_chamber.array(),
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Spiral Abyss
- */
-export type TeyvatSpiralAbyssFloor = typeof schema_teyvat_spiral_abyss_floor.infer;
-
 export const schema_teyvat_account_spiral_abyss = type({
 	unlocked: 'boolean',
 	season: 'number.integer',

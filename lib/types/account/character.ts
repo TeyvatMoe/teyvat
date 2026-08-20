@@ -25,26 +25,12 @@ const schema_teyvat_property_info = type({
 	icon: 'string | null',
 	filter_name: 'string',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatPropertyInfo = typeof schema_teyvat_property_info.infer;
-
 const schema_teyvat_property_value = type({
 	base: 'string',
 	add: 'string',
 	final: 'string',
 	info: schema_teyvat_property_info,
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatPropertyValue = typeof schema_teyvat_property_value.infer;
-
 const schema_teyvat_character_weapon = type({
 	id: 'number.integer',
 	name: 'string',
@@ -58,49 +44,21 @@ const schema_teyvat_character_weapon = type({
 	sub_stat: schema_teyvat_property_value.or('null'),
 	wiki_url: 'string | null',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatCharacterWeapon = typeof schema_teyvat_character_weapon.infer;
-
 const schema_teyvat_artifact_stat = type({
 	value: 'string',
 	times: 'number.integer',
 	info: schema_teyvat_property_info,
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatArtifactStat = typeof schema_teyvat_artifact_stat.infer;
-
 const schema_teyvat_artifact_set_effect = type({
 	required_pieces: 'number.integer',
 	effect: 'string',
 	active: 'boolean',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatArtifactSetEffect = typeof schema_teyvat_artifact_set_effect.infer;
-
 const schema_teyvat_artifact_set = type({
 	id: 'number.integer',
 	name: 'string',
 	effects: schema_teyvat_artifact_set_effect.array(),
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatArtifactSet = typeof schema_teyvat_artifact_set.infer;
-
 const schema_teyvat_character_artifact = type({
 	id: 'number.integer',
 	name: 'string',
@@ -114,13 +72,6 @@ const schema_teyvat_character_artifact = type({
 	sub_stats: schema_teyvat_artifact_stat.array(),
 	wiki_url: 'string | null',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatCharacterArtifact = typeof schema_teyvat_character_artifact.infer;
-
 const schema_teyvat_character_constellation = type({
 	id: 'number.integer',
 	name: 'string',
@@ -132,28 +83,9 @@ const schema_teyvat_character_constellation = type({
 	enhanced_effect: 'string',
 	can_be_enhanced: 'boolean',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatCharacterConstellation = typeof schema_teyvat_character_constellation.infer;
-
 const schema_teyvat_character_costume = type({ id: 'number.integer', name: 'string', icon: 'string' });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatCharacterCostume = typeof schema_teyvat_character_costume.infer;
 
 const schema_teyvat_character_skill_affix = type({ name: 'string', value: 'string' });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatCharacterSkillAffix = typeof schema_teyvat_character_skill_affix.infer;
 
 const schema_teyvat_character_skill = type({
 	id: 'number.integer',
@@ -168,13 +100,6 @@ const schema_teyvat_character_skill = type({
 	enhanced_description: 'string',
 	can_be_enhanced: 'boolean',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Characters
- */
-export type TeyvatCharacterSkill = typeof schema_teyvat_character_skill.infer;
-
 export const schema_teyvat_account_character = type({
 	id: 'number.integer',
 	name: 'string',

@@ -8,13 +8,6 @@ const schema_teyvat_auth_captcha_v3 = type({
 	new_captcha: 'number.integer',
 	success: 'number.integer',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthCaptchaV3 = typeof schema_teyvat_auth_captcha_v3.infer;
-
 const schema_teyvat_auth_captcha_v4 = type({
 	version: "'v4'",
 	captcha_id: 'string',
@@ -23,13 +16,6 @@ const schema_teyvat_auth_captcha_v4 = type({
 	new_captcha: 'number.integer',
 	success: 'number.integer',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthCaptchaV4 = typeof schema_teyvat_auth_captcha_v4.infer;
-
 const schema_teyvat_auth_captcha = schema_teyvat_auth_captcha_v3.or(schema_teyvat_auth_captcha_v4);
 /**
  * @useDeclaredType
@@ -43,13 +29,6 @@ const schema_teyvat_auth_captcha_solution_v3 = type({
 	geetest_validate: 'string',
 	geetest_seccode: 'string',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthCaptchaSolutionV3 = typeof schema_teyvat_auth_captcha_solution_v3.infer;
-
 const schema_teyvat_auth_captcha_solution_v4 = type({
 	version: "'v4'",
 	captcha_id: 'string',
@@ -58,13 +37,6 @@ const schema_teyvat_auth_captcha_solution_v4 = type({
 	gen_time: 'string',
 	captcha_output: 'string',
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthCaptchaSolutionV4 = typeof schema_teyvat_auth_captcha_solution_v4.infer;
-
 export const schema_teyvat_auth_captcha_solution = schema_teyvat_auth_captcha_solution_v3.or(
 	schema_teyvat_auth_captcha_solution_v4,
 );
@@ -80,34 +52,13 @@ export const schema_teyvat_authenticated = type({
 	device_id: 'string',
 	cookies: schema_teyvat_cookies,
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthenticated = typeof schema_teyvat_authenticated.infer;
-
 export const schema_teyvat_auth_captcha_required = type({
 	status: "'captcha_required'",
 	captcha: schema_teyvat_auth_captcha,
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthCaptchaRequired = typeof schema_teyvat_auth_captcha_required.infer;
-
 export const schema_teyvat_auth_email_verification_required = type({
 	status: "'email_verification_required'",
 });
-/**
- * @interface
- * @useDeclaredType
- * @category Authentication
- */
-export type TeyvatAuthEmailVerificationRequired = typeof schema_teyvat_auth_email_verification_required.infer;
-
 const schema_teyvat_auth_result = schema_teyvat_authenticated
 	.or(schema_teyvat_auth_captcha_required)
 	.or(schema_teyvat_auth_email_verification_required);

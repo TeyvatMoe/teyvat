@@ -12,49 +12,21 @@ const schema_teyvat_exploration_visuals = type({
 	map_url: 'string',
 });
 
-/**
- * @interface
- * @useDeclaredType
- * @category Exploration
- */
-export type TeyvatExplorationVisuals = typeof schema_teyvat_exploration_visuals.infer;
-
 const schema_teyvat_exploration_offering = type({
 	name: 'string',
 	level: 'number.integer',
 	icon: 'string',
 });
 
-/**
- * @interface
- * @useDeclaredType
- * @category Exploration
- */
-export type TeyvatExplorationOffering = typeof schema_teyvat_exploration_offering.infer;
-
 const schema_teyvat_exploration_area = type({
 	name: 'string',
 	explored: 'number >= 0',
 });
 
-/**
- * @interface
- * @useDeclaredType
- * @category Exploration
- */
-export type TeyvatExplorationArea = typeof schema_teyvat_exploration_area.infer;
-
 const schema_teyvat_exploration_boss = type({
 	name: 'string',
 	kills: 'number.integer',
 });
-
-/**
- * @interface
- * @useDeclaredType
- * @category Exploration
- */
-export type TeyvatExplorationBoss = typeof schema_teyvat_exploration_boss.infer;
 
 const schema_teyvat_exploration_natlan_tribe = type({
 	id: 'number.integer',
@@ -63,13 +35,6 @@ const schema_teyvat_exploration_natlan_tribe = type({
 	icon: 'string',
 	image: 'string',
 });
-
-/**
- * @interface
- * @useDeclaredType
- * @category Exploration
- */
-export type TeyvatExplorationNatlanTribe = typeof schema_teyvat_exploration_natlan_tribe.infer;
 
 export const schema_teyvat_account_exploration = type({
 	id: 'number.integer',

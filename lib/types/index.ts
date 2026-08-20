@@ -4,14 +4,7 @@ export * from './account/index.ts';
 /** @category Authentication */
 export type {
 	TeyvatAuthCaptcha,
-	TeyvatAuthCaptchaRequired,
 	TeyvatAuthCaptchaSolution,
-	TeyvatAuthCaptchaSolutionV3,
-	TeyvatAuthCaptchaSolutionV4,
-	TeyvatAuthCaptchaV3,
-	TeyvatAuthCaptchaV4,
-	TeyvatAuthEmailVerificationRequired,
-	TeyvatAuthenticated,
 	TeyvatAuthOptions,
 	TeyvatAuthResult,
 	TeyvatAuthSession,

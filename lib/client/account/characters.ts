@@ -8,7 +8,6 @@ import {
 	type TeyvatAccountCharacter,
 	type TeyvatCharacterElement,
 	type TeyvatCharactersOptions,
-	type TeyvatPropertyInfo,
 	type TeyvatWeaponType,
 } from '../../types/account/character.ts';
 import { _sleep } from '../../utils/misc.ts';
@@ -100,7 +99,7 @@ export async function _get_account_characters(
 
 	if (!raw) return [];
 	try {
-		const property_info = (property_type: number): TeyvatPropertyInfo => {
+		const property_info = (property_type: number) => {
 			const info = raw.property_map[String(property_type)];
 			if (!info) throw new TypeError(`Missing property definition for property type ${property_type}`);
 			return {
