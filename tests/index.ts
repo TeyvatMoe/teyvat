@@ -237,6 +237,10 @@ if (!account) throw new Error('No overseas Genshin accounts are bound to these c
 
 const info = await account.info();
 console.log({ info });
+const current_spiral_abyss = await account.spiral_abyss();
+console.log({ current_spiral_abyss });
+const previous_spiral_abyss = await account.spiral_abyss({ period: 'previous' });
+console.log({ previous_spiral_abyss });
 const characters = await account.characters({ auto_enable: true });
 console.log({ characters });
 const daily_notes = await account.daily_notes({ auto_enable: true });
