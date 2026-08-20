@@ -36,6 +36,14 @@ export type {
 } from './spiral_abyss.ts';
 /** @category Stygian Onslaught */
 export type { TeyvatAccountStygianOnslaught, TeyvatStygianOnslaughtOptions } from './stygian_onslaught.ts';
+/** @category Traveler's Diary */
+export type {
+	TeyvatAccountTravelerDiary,
+	TeyvatTravelerDiaryCurrency,
+	TeyvatTravelerDiaryEntry,
+	TeyvatTravelerDiaryLogOptions,
+	TeyvatTravelerDiaryOptions,
+} from './traveler_diary.ts';
 
 /** @category Core */
 export interface TeyvatAccountsOptions {

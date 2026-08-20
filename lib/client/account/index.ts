@@ -12,6 +12,13 @@ import type {
 	TeyvatAccountStygianOnslaught,
 	TeyvatStygianOnslaughtOptions,
 } from '../../types/account/stygian_onslaught.ts';
+import type {
+	TeyvatAccountTravelerDiary,
+	TeyvatTravelerDiaryEntry,
+	TeyvatTravelerDiaryLogOptions,
+	TeyvatTravelerDiaryOptions,
+} from '../../types/account/traveler_diary.ts';
+import type { TeyvatPaginator } from '../../types/paginator.ts';
 import { _recognize_genshin_server } from '../../utils/uid.ts';
 import type { Teyvat } from '../teyvat.ts';
 import { _get_account_characters } from './characters.ts';
@@ -21,6 +28,7 @@ import { _get_account_info } from './info.ts';
 import { _get_account_inventory } from './inventory.ts';
 import { _get_account_spiral_abyss } from './spiral_abyss.ts';
 import { _get_account_stygian_onslaught } from './stygian_onslaught.ts';
+import { _get_account_traveler_diary, _get_account_traveler_diary_log } from './traveler_diary.ts';
 
 interface TeyvatAccountDetails {
 	nickname: string;
@@ -90,6 +98,14 @@ export class TeyvatAccount {
 
 	async stygian_onslaught(options?: TeyvatStygianOnslaughtOptions): Promise<TeyvatAccountStygianOnslaught[]> {
 		return await _get_account_stygian_onslaught(this, options);
+	}
+
+	async traveler_diary(options?: TeyvatTravelerDiaryOptions): Promise<TeyvatAccountTravelerDiary> {
+		return await _get_account_traveler_diary(this, options);
+	}
+
+	traveler_diary_log(options?: TeyvatTravelerDiaryLogOptions): TeyvatPaginator<TeyvatTravelerDiaryEntry> {
+		return _get_account_traveler_diary_log(this, options);
 	}
 }
 

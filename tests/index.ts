@@ -241,9 +241,6 @@ function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
 	return async () => {
 		const res = await cb();
 		await file.write(JSON.stringify(res, null, '\t'));
-		console.log({
-			[name]: res,
-		});
 	};
 }
 
@@ -256,6 +253,9 @@ const tasks = [
 	_make_task('daily_notes', () => account.daily_notes({ auto_enable: true })),
 	_make_task('imaginarium_theater', () => account.imaginarium_theater({ auto_enable: true })),
 	_make_task('stygian_onslaught', () => account.stygian_onslaught({ auto_enable: true })),
+	_make_task('traveler_diary', () => account.traveler_diary()),
+	_make_task('traveler_diary_primogems', () => account.traveler_diary_log().all()),
+	_make_task('traveler_diary_mora', () => account.traveler_diary_log({ currency: 'mora' }).all()),
 ];
 
-await Promise.all(tasks.map((task) => task()));
+for (const task of tasks) await task();

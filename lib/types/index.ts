@@ -11,6 +11,7 @@ export type {
 } from './auth.ts';
 /** @category Authentication */
 export type { TeyvatCookies } from './cookies.ts';
+export type { TeyvatPaginator } from './paginator.ts';
 
 /** @category Authentication */
 export interface TeyvatCookiesUpdate {
