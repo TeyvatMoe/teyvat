@@ -78,9 +78,6 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 			if (validated.version !== this.#state.captcha.version) {
 				throw new TeyvatError(`Expected a ${this.#state.captcha.version} captcha solution`);
 			}
-			if (validated.version === 'v3' && validated.geetest_challenge !== this.#state.captcha.challenge) {
-				throw new TeyvatError('Captcha solution does not match the pending challenge');
-			}
 			if (validated.version === 'v4' && validated.captcha_id !== this.#state.captcha.gt) {
 				throw new TeyvatError('Captcha solution does not match the pending challenge');
 			}
@@ -210,6 +207,7 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 						version: 'v4' as const,
 						captcha_id: captcha.gt,
 						risk_type: captcha.risk_type,
+						session_id: captcha.session_id,
 						new_captcha: captcha.new_captcha,
 						success: captcha.success,
 					};

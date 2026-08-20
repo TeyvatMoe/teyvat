@@ -15,3 +15,7 @@ export function _numeric_value(value: number | string, field: string): number {
 	if (!Number.isFinite(numeric) || numeric < 0) throw new TypeError(`${field} must be a nonnegative number`);
 	return numeric;
 }
+
+export async function _sleep(milliseconds: number): Promise<void> {
+	await new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+}

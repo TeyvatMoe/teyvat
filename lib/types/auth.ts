@@ -14,6 +14,7 @@ export const schema_teyvat_auth_captcha_v4 = type({
 	version: "'v4'",
 	captcha_id: 'string',
 	risk_type: 'string',
+	session_id: 'string',
 	new_captcha: 'number.integer',
 	success: 'number.integer',
 });

@@ -6,4 +6,5 @@ dist/
 .direnv/
 
 test/
+tests/*.sqlite*
 .tmp/

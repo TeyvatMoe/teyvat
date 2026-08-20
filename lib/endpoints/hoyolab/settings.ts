@@ -9,13 +9,18 @@ export const schema_hoyolab_change_setting_response = type({
 	data: 'unknown',
 });
 
-export async function _enable_hoyolab_genshin_daily_notes(client: TeyvatHttpClient): Promise<void> {
+async function _enable_hoyolab_genshin_setting(client: TeyvatHttpClient, switch_id: number): Promise<void> {
 	await client.request({
 		domain: TEYVAT_DOMAINS.hoyolab_card,
 		path: 'changeDataSwitch',
 		method: 'POST',
-		body: { switch_id: 3, is_public: true, game_id: 2 },
+		body: { switch_id, is_public: true, game_id: 2 },
 		schema: schema_hoyolab_change_setting_response,
 		headers: _hoyolab_headers(),
 	});
+}
+
+export async function _enable_hoyolab_genshin_daily_notes(client: TeyvatHttpClient): Promise<void> {
+	await _enable_hoyolab_genshin_setting(client, 1);
+	await _enable_hoyolab_genshin_setting(client, 3);
 }
