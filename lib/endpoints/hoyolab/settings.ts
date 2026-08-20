@@ -24,3 +24,8 @@ export async function _enable_hoyolab_genshin_daily_notes(client: TeyvatHttpClie
 	await _enable_hoyolab_genshin_setting(client, 1);
 	await _enable_hoyolab_genshin_setting(client, 3);
 }
+
+export async function _enable_hoyolab_genshin_character_details(client: TeyvatHttpClient): Promise<void> {
+	await _enable_hoyolab_genshin_setting(client, 1);
+	await _enable_hoyolab_genshin_setting(client, 2);
+}
