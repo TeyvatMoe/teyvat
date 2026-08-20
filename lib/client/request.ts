@@ -19,6 +19,7 @@ export interface TeyvatRequestOptions<schema extends Type> {
 	headers?: HeaderInput;
 	signal?: AbortSignal;
 	skip_auth?: boolean;
+	use_cookies?: boolean;
 }
 
 export interface TeyvatHttpClientOptions {
@@ -92,8 +93,9 @@ export class TeyvatHttpClient {
 		const method = (options.method ?? 'GET').toUpperCase();
 		const url = _build_url(options.domain, options.path, options.params);
 		const endpoint = _safe_endpoint(url);
-		if (!options.skip_auth) await this.#prepare_auth?.();
-		if (this.#cookies_dirty) await this.#persist_cookies();
+		const use_cookies = options.use_cookies !== false;
+		if (use_cookies && !options.skip_auth) await this.#prepare_auth?.();
+		if (use_cookies && this.#cookies_dirty) await this.#persist_cookies();
 
 		const response = await this.raw_request(options);
 		const raw = response.data;
@@ -102,7 +104,13 @@ export class TeyvatHttpClient {
 			if (raw.retcode !== 0) {
 				const upstream_message = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
 				const error = new TeyvatApiError(raw.retcode, upstream_message, method, endpoint);
-				if (!retried && !options.skip_auth && AUTH_RETCODES.has(raw.retcode) && this.#repair_auth) {
+				if (
+					!retried &&
+					use_cookies &&
+					!options.skip_auth &&
+					AUTH_RETCODES.has(raw.retcode) &&
+					this.#repair_auth
+				) {
 					const repaired = await this.#repair_auth();
 					if (repaired && (method === 'GET' || method === 'HEAD')) return await this.#request(options, true);
 				}
@@ -127,8 +135,11 @@ export class TeyvatHttpClient {
 		const headers = new Headers(options.headers);
 		if (!headers.has('Accept')) headers.set('Accept', 'application/json');
 
-		const cookie_header = this.cookies.to_header();
-		if (cookie_header && !headers.has('Cookie')) headers.set('Cookie', cookie_header);
+		const use_cookies = options.use_cookies !== false;
+		if (use_cookies) {
+			const cookie_header = this.cookies.to_header();
+			if (cookie_header && !headers.has('Cookie')) headers.set('Cookie', cookie_header);
+		}
 
 		let body: string | undefined;
 		if (options.body !== undefined) {
@@ -172,9 +183,11 @@ export class TeyvatHttpClient {
 			options.signal?.removeEventListener('abort', on_abort);
 		}
 
-		const revision = this.cookies.revision;
-		this.cookies.update_from_response(response.headers);
-		if (this.cookies.revision !== revision) await this.#persist_cookies();
+		if (use_cookies) {
+			const revision = this.cookies.revision;
+			this.cookies.update_from_response(response.headers);
+			if (this.cookies.revision !== revision) await this.#persist_cookies();
+		}
 
 		let raw: unknown;
 		try {

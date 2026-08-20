@@ -5,6 +5,6 @@ dist/
 !.envrc
 .direnv/
 
-test/
-tests/*.sqlite*
+tests/
+!tests/index.ts
 .tmp/

@@ -5,6 +5,7 @@ import type {
 	TeyvatImaginariumTheaterOptions,
 } from '../../types/account/imaginarium_theater.ts';
 import type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from '../../types/account/info.ts';
+import type { TeyvatAccountInventory } from '../../types/account/inventory.ts';
 import type { TeyvatServer } from '../../types/account/server.ts';
 import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '../../types/account/spiral_abyss.ts';
 import type {
@@ -17,6 +18,7 @@ import { _get_account_characters } from './characters.ts';
 import { _get_account_daily_notes } from './daily_notes.ts';
 import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
 import { _get_account_info } from './info.ts';
+import { _get_account_inventory } from './inventory.ts';
 import { _get_account_spiral_abyss } from './spiral_abyss.ts';
 import { _get_account_stygian_onslaught } from './stygian_onslaught.ts';
 
@@ -64,6 +66,10 @@ export class TeyvatAccount {
 
 	async info(options?: TeyvatAccountInfoOptions): Promise<TeyvatAccountInfo> {
 		return await _get_account_info(this, options);
+	}
+
+	async inventory(): Promise<TeyvatAccountInventory> {
+		return await _get_account_inventory(this);
 	}
 
 	async imaginarium_theater(options?: TeyvatImaginariumTheaterOptions): Promise<TeyvatAccountImaginariumTheater> {

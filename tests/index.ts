@@ -235,17 +235,27 @@ const accounts = await teyvat.accounts();
 const account = accounts[0];
 if (!account) throw new Error('No overseas Genshin accounts are bound to these cookies');
 
-const info = await account.info({ auto_enable: true });
-console.log({ info });
-const current_spiral_abyss = await account.spiral_abyss();
-console.log({ current_spiral_abyss });
-const previous_spiral_abyss = await account.spiral_abyss({ period: 'previous' });
-console.log({ previous_spiral_abyss });
-const characters = await account.characters({ auto_enable: true });
-console.log({ characters });
-const daily_notes = await account.daily_notes({ auto_enable: true });
-console.log({ daily_notes });
-const imaginarium_theater = await account.imaginarium_theater({ auto_enable: true });
-console.log({ imaginarium_theater });
-const stygian_onslaught = await account.stygian_onslaught({ auto_enable: true });
-console.log({ stygian_onslaught });
+function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
+	const file = Bun.file(join(import.meta.dir, 'results', `${name}.json`));
+
+	return async () => {
+		const res = await cb();
+		await file.write(JSON.stringify(res, null, '\t'));
+		console.log({
+			[name]: res,
+		});
+	};
+}
+
+const tasks = [
+	_make_task('info', () => account.info({ auto_enable: true })),
+	_make_task('inventory', () => account.inventory()),
+	_make_task('current_spiral_abyss', () => account.spiral_abyss()),
+	_make_task('previous_spiral_abyss', () => account.spiral_abyss({ period: 'previous' })),
+	_make_task('characters', () => account.characters({ auto_enable: true })),
+	_make_task('daily_notes', () => account.daily_notes({ auto_enable: true })),
+	_make_task('imaginarium_theater', () => account.imaginarium_theater({ auto_enable: true })),
+	_make_task('stygian_onslaught', () => account.stygian_onslaught({ auto_enable: true })),
+];
+
+await Promise.all(tasks.map((task) => task()));

@@ -23,6 +23,8 @@ export type {
 } from './imaginarium_theater.ts';
 /** @category Account Info */
 export type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from './info.ts';
+/** @category Inventory */
+export type { TeyvatAccountInventory } from './inventory.ts';
 /** @category Account Info */
 export type { TeyvatServer } from './server.ts';
 /** @category Spiral Abyss */

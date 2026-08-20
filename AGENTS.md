@@ -36,7 +36,9 @@ Agents may run static TypeScript checks and non-mutating Biome checks. Do not ru
 
 ## Roadmap
 
-- Complete the account surface: characters, daily notes, Spiral Abyss, exploration, and activities.
+- Prioritize inventory support, followed by Traveler's Diary, the event calendar, and wish history.
+- Inventory support will be designed from user-provided upstream response data rather than inferred from another library.
+- Defer Genius Invokation TCG support until the account and inventory surfaces are complete.
 - Add configurable language after the English endpoint surface is stable.
 - Expand the app-authentication flow only when concrete session behavior requires it.
 - Add caching and specialized API errors only when concrete endpoint behavior requires them.
