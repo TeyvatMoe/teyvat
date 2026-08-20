@@ -247,3 +247,5 @@ const daily_notes = await account.daily_notes({ auto_enable: true });
 console.log({ daily_notes });
 const exploration = await account.exploration({ auto_enable: true });
 console.log({ exploration });
+const imaginarium_theater = await account.imaginarium_theater({ auto_enable: true });
+console.log({ imaginarium_theater });

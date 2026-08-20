@@ -19,6 +19,13 @@ export type {
 	TeyvatAccountExploration,
 	TeyvatExplorationOptions,
 } from './exploration.ts';
+/** @category Imaginarium Theater */
+export type {
+	TeyvatAccountImaginariumTheater,
+	TeyvatImaginariumTheaterCharacterRole,
+	TeyvatImaginariumTheaterDifficulty,
+	TeyvatImaginariumTheaterOptions,
+} from './imaginarium_theater.ts';
 /** @category Account Info */
 export type { TeyvatAccountInfo } from './info.ts';
 /** @category Account Info */
