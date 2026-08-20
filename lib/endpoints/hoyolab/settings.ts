@@ -20,12 +20,16 @@ async function _enable_hoyolab_genshin_setting(client: TeyvatHttpClient, switch_
 	});
 }
 
-export async function _enable_hoyolab_genshin_daily_notes(client: TeyvatHttpClient): Promise<void> {
+export async function _enable_hoyolab_genshin_battle_chronicle(client: TeyvatHttpClient): Promise<void> {
 	await _enable_hoyolab_genshin_setting(client, 1);
+}
+
+export async function _enable_hoyolab_genshin_daily_notes(client: TeyvatHttpClient): Promise<void> {
+	await _enable_hoyolab_genshin_battle_chronicle(client);
 	await _enable_hoyolab_genshin_setting(client, 3);
 }
 
 export async function _enable_hoyolab_genshin_character_details(client: TeyvatHttpClient): Promise<void> {
-	await _enable_hoyolab_genshin_setting(client, 1);
+	await _enable_hoyolab_genshin_battle_chronicle(client);
 	await _enable_hoyolab_genshin_setting(client, 2);
 }

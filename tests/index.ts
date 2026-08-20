@@ -245,3 +245,5 @@ const characters = await account.characters({ auto_enable: true });
 console.log({ characters });
 const daily_notes = await account.daily_notes({ auto_enable: true });
 console.log({ daily_notes });
+const exploration = await account.exploration({ auto_enable: true });
+console.log({ exploration });

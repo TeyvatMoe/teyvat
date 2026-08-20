@@ -33,6 +33,16 @@ export type {
 	TeyvatExpeditionStatus,
 	TeyvatTaskRewardStatus,
 } from './daily_notes.ts';
+/** @category Exploration */
+export type {
+	TeyvatAccountExploration,
+	TeyvatExplorationArea,
+	TeyvatExplorationBoss,
+	TeyvatExplorationNatlanTribe,
+	TeyvatExplorationOffering,
+	TeyvatExplorationOptions,
+	TeyvatExplorationVisuals,
+} from './exploration.ts';
 /** @category Account Info */
 export type {
 	TeyvatAccountChests,
