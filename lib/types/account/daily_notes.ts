@@ -57,12 +57,12 @@ export const schema_teyvat_account_daily_tasks = type({
 	completed: 'number.integer',
 	total: 'number.integer',
 	reward_claimed: 'boolean',
-	task_rewards: [schema_teyvat_account_task_reward, '[]'],
+	task_rewards: schema_teyvat_account_task_reward.array(),
 	attendance: {
 		visible: 'boolean',
 		stored: 'number',
 		refreshes_at: 'Date | null',
-		rewards: [schema_teyvat_account_attendance_reward, '[]'],
+		rewards: schema_teyvat_account_attendance_reward.array(),
 	},
 });
 export type TeyvatAccountDailyTasks = typeof schema_teyvat_account_daily_tasks.infer;
@@ -76,7 +76,7 @@ export const schema_teyvat_account_archon_quest = type({
 export type TeyvatAccountArchonQuest = typeof schema_teyvat_account_archon_quest.infer;
 
 export const schema_teyvat_account_archon_quest_progress = type({
-	quests: [schema_teyvat_account_archon_quest, '[]'],
+	quests: schema_teyvat_account_archon_quest.array(),
 	all_mainlines_finished: 'boolean',
 	unlocked: 'boolean',
 	all_interchapters_finished: 'boolean',
@@ -97,7 +97,7 @@ export const schema_teyvat_account_daily_notes = type({
 	},
 	expeditions: {
 		maximum: 'number.integer',
-		items: [schema_teyvat_account_expedition, '[]'],
+		items: schema_teyvat_account_expedition.array(),
 	},
 	transformer: schema_teyvat_account_transformer,
 	daily_tasks: schema_teyvat_account_daily_tasks,

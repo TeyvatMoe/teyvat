@@ -67,7 +67,7 @@ export type TeyvatArtifactSetEffect = typeof schema_teyvat_artifact_set_effect.i
 export const schema_teyvat_artifact_set = type({
 	id: 'number.integer',
 	name: 'string',
-	effects: [schema_teyvat_artifact_set_effect, '[]'],
+	effects: schema_teyvat_artifact_set_effect.array(),
 });
 export type TeyvatArtifactSet = typeof schema_teyvat_artifact_set.infer;
 
@@ -81,7 +81,7 @@ export const schema_teyvat_character_artifact = type({
 	level: 'number.integer',
 	set: schema_teyvat_artifact_set,
 	main_stat: schema_teyvat_artifact_stat,
-	sub_stats: [schema_teyvat_artifact_stat, '[]'],
+	sub_stats: schema_teyvat_artifact_stat.array(),
 	wiki_url: 'string | null',
 });
 export type TeyvatCharacterArtifact = typeof schema_teyvat_character_artifact.infer;
@@ -111,7 +111,7 @@ export const schema_teyvat_character_skill = type({
 	name: 'string',
 	level: 'number.integer',
 	description: 'string',
-	affixes: [schema_teyvat_character_skill_affix, '[]'],
+	affixes: schema_teyvat_character_skill_affix.array(),
 	icon: 'string',
 	unlocked: 'boolean',
 	enhanced: 'boolean',
@@ -135,14 +135,14 @@ export const schema_teyvat_account_character = type({
 	selected: 'boolean',
 	weapon_type: schema_teyvat_weapon_type,
 	weapon: schema_teyvat_character_weapon,
-	costumes: [schema_teyvat_character_costume, '[]'],
-	artifacts: [schema_teyvat_character_artifact, '[]'],
-	constellations: [schema_teyvat_character_constellation, '[]'],
-	skills: [schema_teyvat_character_skill, '[]'],
-	base_properties: [schema_teyvat_property_value, '[]'],
-	selected_properties: [schema_teyvat_property_value, '[]'],
-	extra_properties: [schema_teyvat_property_value, '[]'],
-	element_properties: [schema_teyvat_property_value, '[]'],
+	costumes: schema_teyvat_character_costume.array(),
+	artifacts: schema_teyvat_character_artifact.array(),
+	constellations: schema_teyvat_character_constellation.array(),
+	skills: schema_teyvat_character_skill.array(),
+	base_properties: schema_teyvat_property_value.array(),
+	selected_properties: schema_teyvat_property_value.array(),
+	extra_properties: schema_teyvat_property_value.array(),
+	element_properties: schema_teyvat_property_value.array(),
 	wiki_url: 'string | null',
 });
 export type TeyvatAccountCharacter = typeof schema_teyvat_account_character.infer;

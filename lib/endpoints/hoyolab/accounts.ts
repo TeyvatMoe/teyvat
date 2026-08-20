@@ -7,19 +7,16 @@ export const schema_hoyolab_game_roles_response = type({
 	retcode: '0',
 	message: 'string',
 	data: {
-		list: [
-			{
-				game_biz: 'string',
-				game_uid: 'string',
-				nickname: 'string',
-				region: 'string',
-				region_name: 'string',
-				level: 'number.integer',
-				is_chosen: 'boolean',
-				is_official: 'boolean',
-			},
-			'[]',
-		],
+		list: type({
+			game_biz: 'string',
+			game_uid: 'string',
+			nickname: 'string',
+			region: 'string',
+			region_name: 'string',
+			level: 'number.integer',
+			is_chosen: 'boolean',
+			is_official: 'boolean',
+		}).array(),
 	},
 });
 

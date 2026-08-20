@@ -22,14 +22,11 @@ export const schema_hoyolab_genshin_daily_notes_response = type({
 		remain_resin_discount_num: 'number.integer',
 		resin_discount_num_limit: 'number.integer',
 		max_expedition_num: 'number.integer',
-		expeditions: [
-			{
-				avatar_side_icon: 'string',
-				status: 'string',
-				remained_time: schema_countdown,
-			},
-			'[]',
-		],
+		expeditions: type({
+			avatar_side_icon: 'string',
+			status: 'string',
+			remained_time: schema_countdown,
+		}).array(),
 		transformer: {
 			obtained: 'boolean',
 			'recovery_time?': {
@@ -44,22 +41,19 @@ export const schema_hoyolab_genshin_daily_notes_response = type({
 			total_num: 'number.integer',
 			finished_num: 'number.integer',
 			is_extra_task_reward_received: 'boolean',
-			task_rewards: [{ status: 'string' }, '[]'],
-			attendance_rewards: [{ status: 'string', progress: 'number.integer' }, '[]'],
+			task_rewards: type({ status: 'string' }).array(),
+			attendance_rewards: type({ status: 'string', progress: 'number.integer' }).array(),
 			attendance_visible: 'boolean',
 			stored_attendance: 'string',
 			'attendance_refresh_time?': 'string | null',
 		},
 		archon_quest_progress: {
-			list: [
-				{
-					id: 'number.integer',
-					status: 'string',
-					chapter_num: 'string',
-					chapter_title: 'string',
-				},
-				'[]',
-			],
+			list: type({
+				id: 'number.integer',
+				status: 'string',
+				chapter_num: 'string',
+				chapter_title: 'string',
+			}).array(),
 			is_finish_all_mainline: 'boolean',
 			is_open_archon_quest: 'boolean',
 			is_finish_all_interchapter: 'boolean',

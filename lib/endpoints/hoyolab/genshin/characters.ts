@@ -75,18 +75,15 @@ const schema_artifact = type({
 	set: {
 		id: 'number.integer',
 		name: 'string',
-		affixes: [
-			{
-				activation_number: 'number.integer',
-				effect: 'string',
-				'enabled?': 'boolean',
-			},
-			'[]',
-		],
+		affixes: type({
+			activation_number: 'number.integer',
+			effect: 'string',
+			'enabled?': 'boolean',
+		}).array(),
 	},
 	pos_name: 'string',
 	main_property: schema_artifact_property,
-	sub_property_list: [schema_artifact_property, '[]'],
+	sub_property_list: schema_artifact_property.array(),
 });
 
 const schema_constellation = type({
@@ -108,47 +105,44 @@ const schema_skill = type({
 	skill_type: 'number.integer',
 	level: 'number.integer',
 	desc: 'string',
-	skill_affix_list: [{ name: 'string', value: 'string' }, '[]'],
+	skill_affix_list: type({ name: 'string', value: 'string' }).array(),
 	icon: 'string',
 	is_unlock: 'boolean',
 	name: 'string',
 	is_enhanced: 'boolean',
 	enhanced_desc: 'string',
-	before_enhanced_skill_attr_index: ['number.integer', '[]'],
-	after_enhanced_skill_attr_index: ['number.integer', '[]'],
+	before_enhanced_skill_attr_index: type('number.integer').array(),
+	after_enhanced_skill_attr_index: type('number.integer').array(),
 	can_enhanced: 'boolean',
 });
 
 export const schema_hoyolab_genshin_character_list_response = type({
 	retcode: '0',
 	message: 'string',
-	data: { list: [schema_character_base, '[]'] },
+	data: { list: schema_character_base.array() },
 });
 
 export const schema_hoyolab_genshin_character_details_response = type({
 	retcode: '0',
 	message: 'string',
 	data: {
-		list: [
-			{
-				base: schema_character_base,
-				weapon: schema_detailed_weapon,
-				relics: [schema_artifact, '[]'],
-				constellations: [schema_constellation, '[]'],
-				costumes: [schema_costume, '[]'],
-				selected_properties: [schema_property_value, '[]'],
-				base_properties: [schema_property_value, '[]'],
-				extra_properties: [schema_property_value, '[]'],
-				element_properties: [schema_property_value, '[]'],
-				skills: [schema_skill, '[]'],
-				recommend_relic_property: 'unknown',
-				weapon_skin: 'unknown',
-				unlock_tps: 'boolean',
-			},
-			'[]',
-		],
+		list: type({
+			base: schema_character_base,
+			weapon: schema_detailed_weapon,
+			relics: schema_artifact.array(),
+			constellations: schema_constellation.array(),
+			costumes: schema_costume.array(),
+			selected_properties: schema_property_value.array(),
+			base_properties: schema_property_value.array(),
+			extra_properties: schema_property_value.array(),
+			element_properties: schema_property_value.array(),
+			skills: schema_skill.array(),
+			recommend_relic_property: 'unknown',
+			weapon_skin: 'unknown',
+			unlock_tps: 'boolean',
+		}).array(),
 		property_map: type.Record('string', schema_property_info),
-		relic_property_options: type.Record('string', ['number.integer', '[]']),
+		relic_property_options: type.Record('string', type('number.integer').array()),
 		relic_wiki: type.Record('string', 'string'),
 		weapon_wiki: type.Record('string', 'string'),
 		avatar_wiki: type.Record('string', 'string'),

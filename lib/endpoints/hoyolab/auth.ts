@@ -37,7 +37,7 @@ const schema_verify_strategy = type({ ticket: 'string', verify_type: 'string' })
 const schema_token_response = type({
 	retcode: '0',
 	message: 'string',
-	data: { tokens: [{ token_type: 'number.integer', token: 'string' }, '[]'] },
+	data: { tokens: type({ token_type: 'number.integer', token: 'string' }).array() },
 });
 
 export interface HoyolabCaptcha {
