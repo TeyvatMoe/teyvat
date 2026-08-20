@@ -4,6 +4,59 @@ import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
 import type { TeyvatServer } from '../../../types/account/server.ts';
 import { _hoyolab_headers } from '../headers.ts';
 
+const schema_offering = type({
+	name: 'string',
+	level: 'number.integer',
+	'icon?': 'string',
+});
+
+const schema_exploration = type({
+	id: 'number.integer',
+	parent_id: 'number.integer',
+	name: 'string',
+	exploration_percentage: 'number.integer',
+	type: 'string',
+	level: 'number.integer',
+	icon: 'string',
+	inner_icon: 'string',
+	background_image: 'string',
+	cover: 'string',
+	map_url: 'string',
+	'offerings?': schema_offering.array(),
+	'boss_list?': type({ name: 'string', kill_num: 'number.integer' }).array(),
+	'area_exploration_list?': type({ name: 'string', exploration_percentage: 'number.integer' }).array(),
+	'natan_reputation?': type({
+		tribal_list: type({
+			id: 'number.integer',
+			name: 'string',
+			level: 'number.integer',
+			icon: 'string',
+			image: 'string',
+		}).array(),
+	}).or('null'),
+});
+
+const schema_home = type({
+	name: 'string',
+	icon: 'string',
+	level: 'number.integer',
+	visit_num: 'number.integer',
+	comfort_num: 'number.integer',
+	item_num: 'number.integer',
+	comfort_level_name: 'string',
+	comfort_level_icon: 'string',
+});
+
+const schema_homes_object = type({
+	level: 'number.integer',
+	visit_num: 'number.integer',
+	comfort_num: 'number.integer',
+	item_num: 'number.integer',
+	comfort_level_name: 'string',
+	comfort_level_icon: 'string',
+	realms: type({ name: 'string', icon: 'string' }).array(),
+});
+
 export const schema_hoyolab_genshin_info_response = type({
 	retcode: '0',
 	message: 'string',
@@ -48,6 +101,8 @@ export const schema_hoyolab_genshin_info_response = type({
 				has_data: 'boolean',
 			},
 		},
+		world_explorations: schema_exploration.array(),
+		homes: schema_home.array().or(schema_homes_object).or('null'),
 	},
 });
 
@@ -55,7 +110,7 @@ export async function _get_hoyolab_genshin_info(client: TeyvatHttpClient, uid: n
 	return await client.request({
 		domain: TEYVAT_DOMAINS.genshin_record,
 		path: 'index',
-		params: { role_id: uid, server },
+		params: { role_id: uid, server, avatar_list_type: 0 },
 		schema: schema_hoyolab_genshin_info_response,
 		headers: _hoyolab_headers(),
 	});

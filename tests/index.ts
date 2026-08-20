@@ -235,7 +235,7 @@ const accounts = await teyvat.accounts();
 const account = accounts[0];
 if (!account) throw new Error('No overseas Genshin accounts are bound to these cookies');
 
-const info = await account.info();
+const info = await account.info({ auto_enable: true });
 console.log({ info });
 const current_spiral_abyss = await account.spiral_abyss();
 console.log({ current_spiral_abyss });
@@ -245,8 +245,6 @@ const characters = await account.characters({ auto_enable: true });
 console.log({ characters });
 const daily_notes = await account.daily_notes({ auto_enable: true });
 console.log({ daily_notes });
-const exploration = await account.exploration({ auto_enable: true });
-console.log({ exploration });
 const imaginarium_theater = await account.imaginarium_theater({ auto_enable: true });
 console.log({ imaginarium_theater });
 const stygian_onslaught = await account.stygian_onslaught({ auto_enable: true });

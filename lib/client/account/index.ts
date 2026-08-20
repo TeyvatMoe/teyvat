@@ -1,11 +1,10 @@
 import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '../../types/account/character.ts';
 import type { TeyvatAccountDailyNotes, TeyvatDailyNotesOptions } from '../../types/account/daily_notes.ts';
-import type { TeyvatAccountExploration, TeyvatExplorationOptions } from '../../types/account/exploration.ts';
 import type {
 	TeyvatAccountImaginariumTheater,
 	TeyvatImaginariumTheaterOptions,
 } from '../../types/account/imaginarium_theater.ts';
-import type { TeyvatAccountInfo } from '../../types/account/info.ts';
+import type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from '../../types/account/info.ts';
 import type { TeyvatServer } from '../../types/account/server.ts';
 import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '../../types/account/spiral_abyss.ts';
 import type {
@@ -16,7 +15,6 @@ import { _recognize_genshin_server } from '../../utils/uid.ts';
 import type { Teyvat } from '../teyvat.ts';
 import { _get_account_characters } from './characters.ts';
 import { _get_account_daily_notes } from './daily_notes.ts';
-import { _get_account_exploration } from './exploration.ts';
 import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
 import { _get_account_info } from './info.ts';
 import { _get_account_spiral_abyss } from './spiral_abyss.ts';
@@ -64,8 +62,8 @@ export class TeyvatAccount {
 		return account_details.get(this)?.is_official;
 	}
 
-	async info(): Promise<TeyvatAccountInfo> {
-		return await _get_account_info(this);
+	async info(options?: TeyvatAccountInfoOptions): Promise<TeyvatAccountInfo> {
+		return await _get_account_info(this, options);
 	}
 
 	async imaginarium_theater(options?: TeyvatImaginariumTheaterOptions): Promise<TeyvatAccountImaginariumTheater> {
@@ -74,10 +72,6 @@ export class TeyvatAccount {
 
 	async daily_notes(options?: TeyvatDailyNotesOptions): Promise<TeyvatAccountDailyNotes> {
 		return await _get_account_daily_notes(this, options);
-	}
-
-	async exploration(options?: TeyvatExplorationOptions): Promise<TeyvatAccountExploration[]> {
-		return await _get_account_exploration(this, options);
 	}
 
 	async characters(options?: TeyvatCharactersOptions): Promise<TeyvatAccountCharacter[]> {

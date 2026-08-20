@@ -14,11 +14,6 @@ export type {
 	TeyvatExpeditionStatus,
 	TeyvatTaskRewardStatus,
 } from './daily_notes.ts';
-/** @category Exploration */
-export type {
-	TeyvatAccountExploration,
-	TeyvatExplorationOptions,
-} from './exploration.ts';
 /** @category Imaginarium Theater */
 export type {
 	TeyvatAccountImaginariumTheater,
@@ -27,7 +22,7 @@ export type {
 	TeyvatImaginariumTheaterOptions,
 } from './imaginarium_theater.ts';
 /** @category Account Info */
-export type { TeyvatAccountInfo } from './info.ts';
+export type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from './info.ts';
 /** @category Account Info */
 export type { TeyvatServer } from './server.ts';
 /** @category Spiral Abyss */
