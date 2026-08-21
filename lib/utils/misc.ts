@@ -26,6 +26,11 @@ export function _unix_date(value: number | string, field: string): Date {
 	return new Date(seconds * 1_000);
 }
 
+export function _nullable_unix_date(value: number | string, field: string): Date | null {
+	if (value === 0 || value === '0' || value === '') return null;
+	return _unix_date(value, field);
+}
+
 export function _current_utc_offset_month(now = Date.now(), offset_hours = 8): number {
 	return new Date(now + offset_hours * 3_600_000).getUTCMonth() + 1;
 }

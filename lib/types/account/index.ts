@@ -1,3 +1,10 @@
+/** @category Event Calendar */
+export type {
+	TeyvatAccountCalendar,
+	TeyvatCalendarElement,
+	TeyvatCalendarOptions,
+	TeyvatCalendarStatus,
+} from './calendar.ts';
 /** @category Characters */
 export type {
 	TeyvatAccountCharacter,

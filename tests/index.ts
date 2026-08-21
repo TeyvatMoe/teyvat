@@ -256,6 +256,7 @@ const tasks = [
 	_make_task('traveler_diary', () => account.traveler_diary()),
 	_make_task('traveler_diary_primogems', () => account.traveler_diary_log().all()),
 	_make_task('traveler_diary_mora', () => account.traveler_diary_log({ currency: 'mora' }).all()),
+	_make_task('calendar', () => account.calendar({ auto_enable: true })),
 ];
 
 for (const task of tasks) await task();

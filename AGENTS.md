@@ -36,8 +36,7 @@ Agents may run static TypeScript checks and non-mutating Biome checks. Do not ru
 
 ## Roadmap
 
-- Prioritize inventory support, followed by Traveler's Diary, the event calendar, and wish history.
-- Inventory support will be designed from user-provided upstream response data rather than inferred from another library.
+- Implement wish history next, reusing the public paginator with private `end_id` cursors.
 - Defer Genius Invokation TCG support until the account and inventory surfaces are complete.
 - Add configurable language after the English endpoint surface is stable.
 - Expand the app-authentication flow only when concrete session behavior requires it.
