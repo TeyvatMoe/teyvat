@@ -1,4 +1,5 @@
 import { type } from 'arktype';
+import type { TeyvatLanguage } from './language.ts';
 import type { TeyvatPaginator } from './paginator.ts';
 import type { TeyvatTransaction, TeyvatTransactionOptions, TeyvatTransactionType } from './transactions.ts';
 
@@ -19,6 +20,7 @@ export type TeyvatWishItemType = typeof schema_item_type.infer;
 /** @category Wish History */
 export interface TeyvatWishesOptions {
 	authkey: string;
+	language?: TeyvatLanguage;
 }
 
 /** @category Wish History */
@@ -47,6 +49,7 @@ export type TeyvatWish = typeof schema_teyvat_wish.infer;
 
 /** @category Wish History */
 export interface TeyvatWishClient {
+	readonly language: TeyvatLanguage;
 	history(options: TeyvatWishHistoryOptions): TeyvatPaginator<TeyvatWish>;
 	transactions<T extends TeyvatTransactionType>(
 		options: TeyvatTransactionOptions<T>,

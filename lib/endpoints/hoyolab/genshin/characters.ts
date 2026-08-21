@@ -156,7 +156,7 @@ export async function _get_hoyolab_genshin_character_ids(client: TeyvatHttpClien
 		method: 'POST',
 		body: { role_id: uid, server },
 		schema: schema_hoyolab_genshin_character_list_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 	return data.list.map(({ id }) => id);
 }
@@ -173,6 +173,6 @@ export async function _get_hoyolab_genshin_character_details(
 		method: 'POST',
 		body: { role_id: uid, server, character_ids },
 		schema: schema_hoyolab_genshin_character_details_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

@@ -2,6 +2,7 @@ import type { Type } from 'arktype';
 import { type CookieInput, CookieJar } from '../auth/cookies.ts';
 import type { TeyvatDomain } from '../consts/domains.ts';
 import type { TeyvatCookies } from '../types/cookies.ts';
+import { schema_teyvat_language, type TeyvatLanguage } from '../types/language.ts';
 import { TeyvatApiError, TeyvatError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
 
 type Fetch = (input: Request | string | URL, init?: RequestInit) => Promise<Response>;
@@ -25,6 +26,7 @@ export interface TeyvatRequestOptions<schema extends Type> {
 export interface TeyvatHttpClientOptions {
 	fetch?: Fetch;
 	timeout_ms?: number;
+	language?: TeyvatLanguage;
 	prepare_auth?: () => Promise<void>;
 	repair_auth?: () => Promise<boolean>;
 	on_cookies_update?: (cookies: TeyvatCookies) => Promise<void> | void;
@@ -61,6 +63,7 @@ function _validation_issues(cause: unknown): string[] {
 
 export class TeyvatHttpClient {
 	readonly cookies: CookieJar;
+	readonly language: TeyvatLanguage;
 	readonly #fetch: Fetch;
 	readonly #timeout_ms: number;
 	readonly #prepare_auth?: () => Promise<void>;
@@ -71,6 +74,11 @@ export class TeyvatHttpClient {
 
 	constructor(cookies: CookieInput, options: TeyvatHttpClientOptions = {}) {
 		this.cookies = new CookieJar(cookies);
+		try {
+			this.language = schema_teyvat_language.assert(options.language ?? 'en-us');
+		} catch {
+			throw new TeyvatError('language must be a supported Genshin language');
+		}
 		this.#fetch = options.fetch ?? globalThis.fetch;
 		this.#timeout_ms = options.timeout_ms ?? 30_000;
 		this.#prepare_auth = options.prepare_auth;

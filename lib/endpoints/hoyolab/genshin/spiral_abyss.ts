@@ -84,6 +84,6 @@ export async function _get_hoyolab_genshin_spiral_abyss(
 		path: 'spiralAbyss',
 		params: { role_id: uid, server, schedule_type: period === 'current' ? 1 : 2 },
 		schema: schema_hoyolab_genshin_spiral_abyss_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

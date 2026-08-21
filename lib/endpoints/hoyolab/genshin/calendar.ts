@@ -103,6 +103,6 @@ export async function _get_hoyolab_genshin_calendar(client: TeyvatHttpClient, ui
 		method: 'POST',
 		body: { role_id: uid, server },
 		schema: schema_hoyolab_genshin_calendar_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

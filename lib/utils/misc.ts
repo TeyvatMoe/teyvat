@@ -1,4 +1,9 @@
 import type { TeyvatServer } from '../types/account/server.ts';
+import type { TeyvatLanguage } from '../types/language.ts';
+
+export function _short_language(language: TeyvatLanguage): string {
+	return language.startsWith('zh-') ? language : language.split('-', 1)[0];
+}
 
 export function _countdown_seconds(value: number | string, field: string): number {
 	if (typeof value === 'string' && !/^\d+$/.test(value)) throw new TypeError(`${field} must be a countdown`);

@@ -1,6 +1,7 @@
 import { type } from 'arktype';
 import type { TeyvatHttpClient } from '../../../client/request.ts';
 import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
+import { _short_language } from '../../../utils/misc.ts';
 
 const schema_wish = type({
 	uid: 'string',
@@ -34,7 +35,7 @@ export async function _get_hoyolab_genshin_wishes(
 		params: {
 			authkey_ver: 1,
 			authkey,
-			lang: 'en-us',
+			lang: _short_language(client.language),
 			game_biz: 'hk4e_global',
 			gacha_type: banner_type,
 			real_gacha_type: banner_type,

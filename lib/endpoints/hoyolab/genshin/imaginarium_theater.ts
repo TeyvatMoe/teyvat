@@ -95,6 +95,6 @@ export async function _get_hoyolab_genshin_imaginarium_theater(
 		path: 'role_combat',
 		params: { role_id: uid, server, need_detail: 'true' },
 		schema: schema_hoyolab_genshin_imaginarium_theater_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

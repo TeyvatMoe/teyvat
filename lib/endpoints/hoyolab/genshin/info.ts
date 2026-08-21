@@ -112,6 +112,6 @@ export async function _get_hoyolab_genshin_info(client: TeyvatHttpClient, uid: n
 		path: 'index',
 		params: { role_id: uid, server, avatar_list_type: 0 },
 		schema: schema_hoyolab_genshin_info_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

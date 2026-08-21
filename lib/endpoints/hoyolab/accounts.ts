@@ -26,6 +26,6 @@ export async function _get_hoyolab_game_roles(client: TeyvatHttpClient) {
 		path: 'binding/api/getUserGameRolesByCookie',
 		params: { game_biz: 'hk4e_global' },
 		schema: schema_hoyolab_game_roles_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

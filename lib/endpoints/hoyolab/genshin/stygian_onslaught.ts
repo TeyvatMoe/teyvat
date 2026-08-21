@@ -94,6 +94,6 @@ export async function _get_hoyolab_genshin_stygian_onslaught(
 		path: 'hard_challenge',
 		params: { role_id: uid, server, need_detail: 'true' },
 		schema: schema_hoyolab_genshin_stygian_onslaught_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

@@ -1,6 +1,7 @@
 import { type } from 'arktype';
 import type { TeyvatHttpClient } from '../../../client/request.ts';
 import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
+import { _short_language } from '../../../utils/misc.ts';
 
 const schema_currency_transaction = type({
 	id: 'string',
@@ -44,7 +45,7 @@ interface TransactionRequest {
 	end_id: string;
 }
 
-function _transaction_request(options: TransactionRequest) {
+function _transaction_request(client: TeyvatHttpClient, options: TransactionRequest) {
 	return {
 		domain: TEYVAT_DOMAINS.genshin_transactions,
 		path: TRANSACTION_PATHS[options.type],
@@ -52,7 +53,7 @@ function _transaction_request(options: TransactionRequest) {
 			authkey_ver: 1,
 			sign_type: 2,
 			authkey: options.authkey,
-			lang: 'en-us',
+			lang: _short_language(client.language),
 			size: 20,
 			end_id: options.end_id,
 		},
@@ -66,14 +67,14 @@ export async function _get_hoyolab_genshin_currency_transactions(
 	options: TransactionRequest,
 ) {
 	return await client.request({
-		..._transaction_request(options),
+		..._transaction_request(client, options),
 		schema: schema_hoyolab_genshin_currency_transactions_response,
 	});
 }
 
 export async function _get_hoyolab_genshin_item_transactions(client: TeyvatHttpClient, options: TransactionRequest) {
 	return await client.request({
-		..._transaction_request(options),
+		..._transaction_request(client, options),
 		schema: schema_hoyolab_genshin_item_transactions_response,
 	});
 }

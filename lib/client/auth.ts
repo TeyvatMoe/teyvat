@@ -17,6 +17,7 @@ import {
 	type TeyvatAuthResult,
 	type TeyvatAuthSession,
 } from '../types/auth.ts';
+import type { TeyvatLanguage } from '../types/language.ts';
 import { _hoyolab_id_from_cookies } from '../utils/cookies.ts';
 import { TeyvatError } from './errors.ts';
 import { TeyvatHttpClient } from './request.ts';
@@ -35,7 +36,8 @@ type AuthState =
 	| { status: 'finished' };
 
 export class _TeyvatAuthSession implements TeyvatAuthSession {
-	readonly #client = new TeyvatHttpClient({});
+	readonly #client: TeyvatHttpClient;
+	readonly language: TeyvatLanguage;
 	readonly #device_id: string;
 	readonly #device_name?: string;
 	readonly #device_model?: string;
@@ -49,6 +51,8 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 		if (!options.password) throw new TeyvatError('password must not be empty');
 		this.#account = options.account;
 		this.#password = options.password;
+		this.#client = new TeyvatHttpClient({}, { language: options.language });
+		this.language = this.#client.language;
 		if (options.device_id !== undefined && !options.device_id) throw new TeyvatError('device_id must not be empty');
 		this.#device_id = options.device_id ?? _device_id();
 		this.#device_name = options.device_name;

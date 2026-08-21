@@ -4,6 +4,7 @@ import type {
 	TeyvatAuthOptions,
 	TeyvatAuthSession,
 	TeyvatCookies,
+	TeyvatLanguage,
 	TeyvatOptions,
 	TeyvatWishClient,
 	TeyvatWishesOptions,
@@ -26,6 +27,7 @@ export class Teyvat {
 	readonly #accounts_cache_ttl: number;
 	#cookies_completion?: Promise<boolean>;
 	readonly hoyolab_id: string;
+	readonly language: TeyvatLanguage;
 
 	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
 		return new _TeyvatAuthSession(options);
@@ -47,6 +49,7 @@ export class Teyvat {
 		}
 		this.#accounts_cache_ttl = opts.accounts_cache_ttl ?? 3_600_000;
 		_initialize_http_client(this, cookies, {
+			language: opts.language,
 			prepare_auth: async () => {
 				await this.#complete_cookies(false);
 			},
@@ -56,6 +59,7 @@ export class Teyvat {
 				await opts.on_cookies_update?.({ hoyolab_id: this.hoyolab_id, cookies: updated_cookies });
 			},
 		});
+		this.language = _get_http_client(this).language;
 	}
 
 	get cookies(): TeyvatCookies {

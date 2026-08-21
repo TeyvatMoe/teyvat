@@ -71,14 +71,19 @@ function _validate<schema extends Type>(schema: schema, value: unknown, endpoint
 	}
 }
 
-function _app_headers(device_id: string, device_name?: string, device_model?: string): Headers {
+function _app_headers(
+	client: TeyvatHttpClient,
+	device_id: string,
+	device_name?: string,
+	device_model?: string,
+): Headers {
 	const headers = new Headers({
 		'x-rpc-app_id': APP_ID,
 		'x-rpc-client_type': '2',
 		'x-rpc-aigis_v4': 'true',
 		'x-rpc-app_version': APP_VERSION,
 		'x-rpc-sdk_version': SDK_VERSION,
-		'x-rpc-language': 'en-us',
+		'x-rpc-language': client.language,
 		'x-rpc-device_id': device_id,
 	});
 	if (device_name) headers.set('x-rpc-device_name', device_name);
@@ -151,7 +156,7 @@ export async function _hoyolab_app_login(
 	},
 ): Promise<HoyolabAppLoginResult> {
 	const body = { account: options.account, password: options.password };
-	const headers = _app_headers(options.device_id, options.device_name, options.device_model);
+	const headers = _app_headers(client, options.device_id, options.device_name, options.device_model);
 	headers.set('DS', _generate_app_login_ds(body));
 	if (options.captcha)
 		headers.set('x-rpc-aigis', _aigis_header(options.captcha.session_id, options.captcha.solution));
@@ -192,7 +197,11 @@ export async function _hoyolab_send_email_code(
 	ticket: HoyolabActionTicket,
 	captcha?: { session_id: string; solution: TeyvatAuthCaptchaSolution },
 ): Promise<HoyolabCaptcha | undefined> {
-	const headers = new Headers({ 'x-rpc-app_id': APP_ID, 'x-rpc-client_type': '2', 'x-rpc-language': 'en-us' });
+	const headers = new Headers({
+		'x-rpc-app_id': APP_ID,
+		'x-rpc-client_type': '2',
+		'x-rpc-language': client.language,
+	});
 	if (captcha) headers.set('x-rpc-aigis', _aigis_header(captcha.session_id, captcha.solution));
 	const response = await client.raw_request({
 		domain: TEYVAT_DOMAINS.hoyoverse_passport,
@@ -229,7 +238,7 @@ export async function _hoyolab_verify_email_code(
 			email_captcha: code,
 			verify_method: 2,
 		},
-		headers: { 'x-rpc-app_id': APP_ID, 'x-rpc-client_type': '2', 'x-rpc-language': 'en-us' },
+		headers: { 'x-rpc-app_id': APP_ID, 'x-rpc-client_type': '2', 'x-rpc-language': client.language },
 		skip_auth: true,
 	});
 	const envelope = _validate(schema_envelope, response.data, '/ma-verifier/api/verifyActionTicketPartly');

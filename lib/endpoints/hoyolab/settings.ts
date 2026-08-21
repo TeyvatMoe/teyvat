@@ -16,7 +16,7 @@ async function _enable_hoyolab_genshin_setting(client: TeyvatHttpClient, switch_
 		method: 'POST',
 		body: { switch_id, is_public: true, game_id: 2 },
 		schema: schema_hoyolab_change_setting_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }
 

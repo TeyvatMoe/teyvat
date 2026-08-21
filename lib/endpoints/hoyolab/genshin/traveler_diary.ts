@@ -67,9 +67,9 @@ export async function _get_hoyolab_genshin_traveler_diary(
 	return await client.request({
 		domain: TEYVAT_DOMAINS.genshin_diary,
 		path: 'month_info',
-		params: { uid, region: server, month, lang: 'en-us' },
+		params: { uid, region: server, month, lang: client.language },
 		schema: schema_hoyolab_genshin_traveler_diary_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }
 
@@ -84,8 +84,16 @@ export async function _get_hoyolab_genshin_traveler_diary_log_page(
 	return await client.request({
 		domain: TEYVAT_DOMAINS.genshin_diary,
 		path: 'month_detail',
-		params: { uid, region: server, month, lang: 'en-us', type: currency_type, current_page: page, page_size: 100 },
+		params: {
+			uid,
+			region: server,
+			month,
+			lang: client.language,
+			type: currency_type,
+			current_page: page,
+			page_size: 100,
+		},
 		schema: schema_hoyolab_genshin_traveler_diary_log_response,
-		headers: _hoyolab_headers(),
+		headers: _hoyolab_headers(client.language),
 	});
 }

@@ -4,6 +4,7 @@ import {
 } from '../endpoints/hoyolab/genshin/transactions.ts';
 import { _get_hoyolab_genshin_wishes } from '../endpoints/hoyolab/genshin/wishes.ts';
 import type { TeyvatServer } from '../types/account/server.ts';
+import type { TeyvatLanguage } from '../types/language.ts';
 import {
 	schema_teyvat_currency_transaction,
 	schema_teyvat_item_transaction,
@@ -84,11 +85,14 @@ function _item_type(value: string): TeyvatWishItemType {
 
 export class _TeyvatWishClient implements TeyvatWishClient {
 	readonly #authkey: string;
-	readonly #client = new TeyvatHttpClient({});
+	readonly #client: TeyvatHttpClient;
+	readonly language: TeyvatLanguage;
 
 	constructor(options: TeyvatWishesOptions) {
 		if (!options || typeof options.authkey !== 'string') throw new TeyvatError('authkey must be a string');
 		this.#authkey = _normalize_authkey(options.authkey);
+		this.#client = new TeyvatHttpClient({}, { language: options.language });
+		this.language = this.#client.language;
 	}
 
 	history(options: TeyvatWishHistoryOptions): _TeyvatPaginator<TeyvatWish, string> {

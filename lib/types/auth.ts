@@ -1,5 +1,6 @@
 import { type } from 'arktype';
 import { schema_teyvat_cookies } from './cookies.ts';
+import type { TeyvatLanguage } from './language.ts';
 
 const schema_teyvat_auth_captcha_v3 = type({
 	version: "'v3'",
@@ -71,12 +72,14 @@ export type TeyvatAuthResult = typeof schema_teyvat_auth_result.infer;
 export interface TeyvatAuthOptions {
 	account: string;
 	password: string;
+	language?: TeyvatLanguage;
 	device_id?: string;
 	device_name?: string;
 	device_model?: string;
 }
 
 export interface TeyvatAuthSession {
+	readonly language: TeyvatLanguage;
 	login(): Promise<TeyvatAuthResult>;
 	complete_captcha(solution: TeyvatAuthCaptchaSolution): Promise<TeyvatAuthResult>;
 	complete_email(code: string): Promise<TeyvatAuthResult>;

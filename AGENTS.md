@@ -17,6 +17,8 @@ Every upstream response must be parsed as JSON, checked for API errors, and vali
 
 One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account objects reuse that client and are cached by UID.
 
+Each cookie-backed, authkey-backed, or authentication client owns one immutable validated language, defaulting to `en-us`. Endpoint adapters read it from their HTTP client; public account methods do not accept language overrides. Shared localized caches must be keyed by language.
+
 Wish and transaction history use one isolated authkey-scoped client with no cookies, cookie preparation, session repair, or authkey renewal. Authkeys must never appear in public properties, logs, endpoint identifiers, errors, or nested error causes.
 
 Public paginators are lazy, single-use async iterators. They serialize concurrent `next()` calls, keep upstream cursors private, and advance cursor state only after a page has been fetched, validated, and mapped successfully.
@@ -45,7 +47,6 @@ At handoff, suggest one commit message describing the complete current uncommitt
 
 ## Roadmap
 
-- Add configurable language after the English endpoint surface is stable.
 - Add remaining focused Genshin account and utility surfaces only when their public domain models are clear.
 - Defer Genius Invokation TCG support until the core account, inventory, diary, calendar, wish, and transaction surfaces are stable.
 - Expand the app-authentication flow only when concrete session behavior requires it.
