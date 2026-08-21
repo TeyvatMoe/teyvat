@@ -7,6 +7,7 @@ const schemaTeyvatSpiralAbyssPeriod = type.enumerated('current', 'previous');
  */
 export type TeyvatSpiralAbyssPeriod = typeof schemaTeyvatSpiralAbyssPeriod.infer;
 
+/** @category Spiral Abyss */
 export interface TeyvatSpiralAbyssOptions {
 	period?: TeyvatSpiralAbyssPeriod;
 }

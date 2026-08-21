@@ -80,6 +80,7 @@ export const schemaTeyvatCalculatorResult = type({
 	lineupRecommendation: 'string | null',
 });
 
+/** @category Enhancement Calculator */
 export interface TeyvatCalculatorOptions {
 	character: {
 		id: number;

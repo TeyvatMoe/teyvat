@@ -7,7 +7,7 @@ import {
 	type TeyvatAccountEnvisagedEcho,
 	type TeyvatEnvisagedEchoStatus,
 } from '#/types/account/envisaged_echoes.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/char_master';
 
@@ -23,7 +23,11 @@ function _status(status: number): TeyvatEnvisagedEchoStatus {
 }
 
 async function _requestEnvisagedEchoes(account: TeyvatAccount) {
-	return await _getHoyolabGenshinEnvisagedEchoes(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinEnvisagedEchoes(
+		_getHttpClient(_getAccountOwner(account)),
+		account.uid,
+		account.server,
+	);
 }
 
 export async function _getAccountEnvisagedEchoes(account: TeyvatAccount): Promise<TeyvatAccountEnvisagedEcho[]> {

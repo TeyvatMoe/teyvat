@@ -19,11 +19,18 @@ describe('public package boundary', () => {
 		const first = teyvat.account(612_345_678);
 		const second = teyvat.account(612_345_678);
 		expect(first).toBe(second);
+		expect(first).toBeInstanceOf(publicApi.TeyvatAccount);
+		expect(first).not.toHaveProperty('inst');
 		expect(first.server).toBe('os_usa');
 		expect(teyvat.hoyolabId).toBe('123');
 		expect(teyvat.language).toBe('en-us');
 		expect(teyvat.autoEnable).toBe(false);
 		expect(teyvat.checkIn).toBeDefined();
+	});
+
+	test('keeps account construction factory-only at runtime', () => {
+		const Account = publicApi.TeyvatAccount as unknown as new () => publicApi.TeyvatAccount;
+		expect(() => new Account()).toThrow('must be created by Teyvat');
 	});
 
 	test('rejects invalid public construction options locally', () => {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { TeyvatRequestError } from '#/client/errors.ts';
+import { TeyvatApiError, TeyvatRequestError } from '#/client/errors.ts';
 import { Teyvat } from '#/client/teyvat.ts';
 
 const originalFetch = globalThis.fetch;
@@ -121,6 +121,25 @@ describe('authkey client', () => {
 			expect(cause).toBeInstanceOf(TeyvatRequestError);
 			expect(String(cause)).not.toContain(AUTHKEY);
 			expect((cause as TeyvatRequestError).endpoint).not.toContain(AUTHKEY);
+		}
+	});
+
+	test('sanitizes authkeys echoed by wish and transaction API errors', async () => {
+		_setFetch(async () => Response.json({ retcode: -1, message: `invalid ${AUTHKEY}`, data: null }));
+		const wishes = Teyvat.wishes({ authkey: AUTHKEY });
+		for (const request of [
+			wishes.history({ type: 'standard' }).next(),
+			wishes.transactions({ type: 'primogem' }).next(),
+		]) {
+			try {
+				await request;
+				throw new Error('request unexpectedly succeeded');
+			} catch (cause) {
+				expect(cause).toBeInstanceOf(TeyvatApiError);
+				expect(String(cause)).not.toContain(AUTHKEY);
+				expect((cause as TeyvatApiError).upstreamMessage).not.toContain(AUTHKEY);
+				expect((cause as Error).cause).toBeUndefined();
+			}
 		}
 	});
 });

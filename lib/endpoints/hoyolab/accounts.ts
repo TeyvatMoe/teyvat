@@ -3,7 +3,7 @@ import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
 import { _hoyolabHeaders } from './headers.ts';
 
-export const schemaHoyolabGameRolesResponse = type({
+const schemaHoyolabGameRolesResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

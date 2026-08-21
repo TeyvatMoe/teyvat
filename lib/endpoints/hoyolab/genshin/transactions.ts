@@ -19,13 +19,13 @@ const schemaItemTransaction = type({
 	quality: 'string',
 });
 
-export const schemaHoyolabGenshinCurrencyTransactionsResponse = type({
+const schemaHoyolabGenshinCurrencyTransactionsResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: { list: schemaCurrencyTransaction.array() },
 });
 
-export const schemaHoyolabGenshinItemTransactionsResponse = type({
+const schemaHoyolabGenshinItemTransactionsResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: { list: schemaItemTransaction.array() },

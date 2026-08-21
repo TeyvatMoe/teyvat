@@ -2,6 +2,7 @@
 	"entryPoints": ["lib/index.ts"],
 	"out": "docs",
 	"plugin": ["typedoc-github-theme", "./typedoc-plugin.mjs"],
+	"excludeInternal": true,
 	"excludeExternals": true,
 	"externalSymbolLinkMappings": {
 		"bun-types": {
@@ -39,6 +40,8 @@
 		"Transaction History",
 		"Daily Notes",
 		"Characters",
+		"Character Showcase",
+		"Envisaged Echoes",
 		"Enhancement Calculator",
 		"Imaginarium Theater",
 		"Stygian Onslaught",

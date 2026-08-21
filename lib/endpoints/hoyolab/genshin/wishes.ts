@@ -12,7 +12,7 @@ const schemaWish = type({
 	time: 'string',
 });
 
-export const schemaHoyolabGenshinWishesResponse = type({
+const schemaHoyolabGenshinWishesResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

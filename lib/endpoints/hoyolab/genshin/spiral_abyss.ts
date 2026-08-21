@@ -49,7 +49,7 @@ const schemaFloor = type({
 	levels: schemaChamber.array(),
 });
 
-export const schemaHoyolabGenshinSpiralAbyssResponse = type({
+const schemaHoyolabGenshinSpiralAbyssResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

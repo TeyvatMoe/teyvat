@@ -9,7 +9,7 @@ import {
 	type TeyvatCalendarStatus,
 } from '#/types/account/calendar.ts';
 import { _nullableUnixDate, _numericValue } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/act_calendar';
 
@@ -32,7 +32,7 @@ function _calendarElement(value: string): TeyvatCalendarElement {
 }
 
 async function _requestCalendar(account: TeyvatAccount) {
-	return await _getHoyolabGenshinCalendar(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinCalendar(_getHttpClient(_getAccountOwner(account)), account.uid, account.server);
 }
 
 export async function _getAccountCalendar(account: TeyvatAccount): Promise<TeyvatAccountCalendar> {

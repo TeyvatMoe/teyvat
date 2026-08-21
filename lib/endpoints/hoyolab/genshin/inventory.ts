@@ -6,7 +6,7 @@ import type { TeyvatLanguage } from '#/types/language.ts';
 
 const schemaMaterialInfo = type.Record('string', 'number | string');
 
-export const schemaHoyolabGenshinInventoryResponse = type({
+const schemaHoyolabGenshinInventoryResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
@@ -27,7 +27,7 @@ const schemaTreeCategory = type({
 	children: schemaTreeItem.array(),
 });
 
-export const schemaHoyolabTeyvatTreeResponse = type({
+const schemaHoyolabTeyvatTreeResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

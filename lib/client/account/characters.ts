@@ -11,7 +11,7 @@ import {
 	type TeyvatCharactersOptions,
 } from '#/types/account/character.ts';
 import { _characterElement, _characterIds, _weaponType } from '#/utils/character.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/character/detail';
 
@@ -20,7 +20,7 @@ function _isCharacterDetailsPrivate(cause: unknown): cause is TeyvatApiError {
 }
 
 async function _requestCharacters(account: TeyvatAccount, ids?: number[]) {
-	const client = _getHttpClient(account.inst);
+	const client = _getHttpClient(_getAccountOwner(account));
 	const characterIds =
 		ids ?? (await _getHoyolabGenshinCharacterList(client, account.uid, account.server)).list.map(({ id }) => id);
 	if (characterIds.length === 0) return undefined;

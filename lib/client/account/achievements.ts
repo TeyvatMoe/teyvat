@@ -3,7 +3,7 @@ import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.t
 import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinAchievements } from '#/endpoints/hoyolab/genshin/achievements.ts';
 import { schemaTeyvatAccountAchievements, type TeyvatAccountAchievements } from '#/types/account/achievements.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/achievement';
 
@@ -12,7 +12,7 @@ function _isAchievementsPrivate(cause: unknown): cause is TeyvatApiError {
 }
 
 async function _requestAchievements(account: TeyvatAccount) {
-	return await _getHoyolabGenshinAchievements(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinAchievements(_getHttpClient(_getAccountOwner(account)), account.uid, account.server);
 }
 
 export async function _getAccountAchievements(account: TeyvatAccount): Promise<TeyvatAccountAchievements> {

@@ -25,13 +25,74 @@ function _client(autoEnable = true) {
 
 describe('automatic feature enabling', () => {
 	test('refuses to change settings for an unbound UID', async () => {
+		let accountsOptions: unknown;
 		_setFetch(async () => {
 			throw new Error('fetch must not be called');
 		});
 		const teyvat = new Teyvat({ cookies: { ['account_id_v2']: '123' }, autoEnable: true });
 		const account = teyvat.account(612_345_678);
-		Object.defineProperty(teyvat, 'accounts', { value: async () => [] });
+		Object.defineProperty(teyvat, 'accounts', {
+			value: async (options: unknown) => {
+				accountsOptions = options;
+				return [];
+			},
+		});
 		await expect(_enableAccountFeature(account, 'battle_chronicle')).rejects.toBeInstanceOf(TeyvatError);
+		expect(accountsOptions).toEqual({ update: true });
+	});
+
+	test('applies automatic enabling to Spiral Abyss', async () => {
+		let spiralAttempts = 0;
+		_setFetch(async (input) => {
+			const path = new URL(String(input)).pathname;
+			if (path.endsWith('/spiralAbyss')) {
+				spiralAttempts++;
+				if (spiralAttempts === 1) return Response.json({ retcode: 10102, message: 'private', data: null });
+				return Response.json({
+					retcode: 0,
+					message: 'OK',
+					data: {
+						['schedule_id']: 1,
+						['start_time']: '0',
+						['end_time']: '0',
+						['total_battle_times']: 0,
+						['total_win_times']: 0,
+						['max_floor']: '-',
+						['reveal_rank']: [],
+						['defeat_rank']: [],
+						['damage_rank']: [],
+						['take_damage_rank']: [],
+						['normal_skill_rank']: [],
+						['energy_skill_rank']: [],
+						floors: [],
+						['total_star']: 0,
+						['is_unlock']: true,
+						['is_just_skipped_floor']: false,
+						['skipped_floor']: '',
+					},
+				});
+			}
+			return Response.json({ retcode: 0, message: 'OK', data: null });
+		});
+		const { account } = _client();
+		expect((await account.spiralAbyss()).unlocked).toBe(true);
+		expect(spiralAttempts).toBe(2);
+	});
+
+	test('retries calculator synchronization through propagation delays', async () => {
+		let listAttempts = 0;
+		_setFetch(async (input) => {
+			const path = new URL(String(input)).pathname;
+			if (path.endsWith('/sync/avatar/list')) {
+				listAttempts++;
+				if (listAttempts < 3) return Response.json({ retcode: -502002, message: 'sync disabled', data: null });
+				return Response.json({ retcode: 0, message: 'OK', data: { list: [] } });
+			}
+			return Response.json({ retcode: 0, message: 'OK', data: null });
+		});
+		const { account } = _client();
+		expect(await account.calculator.characters()).toEqual([]);
+		expect(listAttempts).toBe(3);
 	});
 
 	test('enables prerequisite settings once and deduplicates concurrent work', async () => {

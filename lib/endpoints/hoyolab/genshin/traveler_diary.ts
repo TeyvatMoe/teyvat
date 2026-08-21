@@ -19,7 +19,7 @@ const schemaSource = type({
 	percent: 'number.integer',
 });
 
-export const schemaHoyolabGenshinTravelerDiaryResponse = type({
+const schemaHoyolabGenshinTravelerDiaryResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
@@ -48,7 +48,7 @@ const schemaEntry = type({
 	num: 'number.integer',
 });
 
-export const schemaHoyolabGenshinTravelerDiaryLogResponse = type({
+const schemaHoyolabGenshinTravelerDiaryLogResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

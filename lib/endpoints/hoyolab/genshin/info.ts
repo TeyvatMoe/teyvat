@@ -57,7 +57,7 @@ const schemaHomesObject = type({
 	realms: type({ name: 'string', icon: 'string' }).array(),
 });
 
-export const schemaHoyolabGenshinInfoResponse = type({
+const schemaHoyolabGenshinInfoResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

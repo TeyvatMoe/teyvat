@@ -7,7 +7,7 @@ import {
 	type TeyvatAccountStygianOnslaught,
 } from '#/types/account/stygian_onslaught.ts';
 import { _hoyolabDate } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/hard_challenge';
 
@@ -38,7 +38,11 @@ function _tagElements(description: string): Array<'cryo' | 'hydro' | 'pyro' | 'd
 }
 
 async function _requestStygianOnslaught(account: TeyvatAccount) {
-	return await _getHoyolabGenshinStygianOnslaught(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinStygianOnslaught(
+		_getHttpClient(_getAccountOwner(account)),
+		account.uid,
+		account.server,
+	);
 }
 
 export async function _getAccountStygianOnslaught(account: TeyvatAccount): Promise<TeyvatAccountStygianOnslaught[]> {

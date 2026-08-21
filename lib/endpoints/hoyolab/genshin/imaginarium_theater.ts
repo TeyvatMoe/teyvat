@@ -76,7 +76,7 @@ const schemaSeason = type({
 	'detail?': schemaDetail.or('null'),
 });
 
-export const schemaHoyolabGenshinImaginariumTheaterResponse = type({
+const schemaHoyolabGenshinImaginariumTheaterResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

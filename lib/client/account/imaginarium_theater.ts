@@ -9,7 +9,7 @@ import {
 	type TeyvatImaginariumTheaterDifficulty,
 } from '#/types/account/imaginarium_theater.ts';
 import { _unixDate } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/role_combat';
 
@@ -43,7 +43,11 @@ function _rankingValue(value: number | string): number {
 }
 
 async function _requestImaginariumTheater(account: TeyvatAccount) {
-	return await _getHoyolabGenshinImaginariumTheater(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinImaginariumTheater(
+		_getHttpClient(_getAccountOwner(account)),
+		account.uid,
+		account.server,
+	);
 }
 
 export async function _getAccountImaginariumTheater(account: TeyvatAccount): Promise<TeyvatAccountImaginariumTheater> {

@@ -84,7 +84,7 @@ const schemaActivity = type({
 	}).or('null'),
 });
 
-export const schemaHoyolabGenshinCalendarResponse = type({
+const schemaHoyolabGenshinCalendarResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

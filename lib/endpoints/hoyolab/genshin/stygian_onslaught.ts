@@ -76,7 +76,7 @@ const schemaSeason = type({
 	mp: schemaMode,
 });
 
-export const schemaHoyolabGenshinStygianOnslaughtResponse = type({
+const schemaHoyolabGenshinStygianOnslaughtResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

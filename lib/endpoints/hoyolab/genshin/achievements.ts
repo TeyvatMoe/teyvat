@@ -13,7 +13,7 @@ const schemaCategory = type({
 	['show_percent']: 'boolean',
 });
 
-export const schemaHoyolabGenshinAchievementsResponse = type({
+const schemaHoyolabGenshinAchievementsResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

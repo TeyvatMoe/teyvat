@@ -47,9 +47,10 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 	#busy = false;
 
 	constructor(options: TeyvatAuthOptions) {
-		if (!options.account.trim()) throw new TeyvatError('account must not be empty');
+		const account = options.account.trim();
+		if (!account) throw new TeyvatError('account must not be empty');
 		if (!options.password) throw new TeyvatError('password must not be empty');
-		this.#account = options.account;
+		this.#account = account;
 		this.#password = options.password;
 		this.#client = new TeyvatHttpClient({}, { language: options.language });
 		this.language = this.#client.language;
@@ -117,8 +118,9 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 				throw new TeyvatError('This authentication session is not awaiting an email verification code');
 			}
 			if (!this.#state.verified) {
-				if (!code.trim()) throw new TeyvatError('email verification code must not be empty');
-				await _hoyolabVerifyEmailCode(this.#client, this.#state.ticket, code);
+				const normalizedCode = code.trim();
+				if (!normalizedCode) throw new TeyvatError('email verification code must not be empty');
+				await _hoyolabVerifyEmailCode(this.#client, this.#state.ticket, normalizedCode);
 				this.#state = { ...this.#state, verified: true };
 			}
 

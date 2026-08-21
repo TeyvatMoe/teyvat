@@ -4,7 +4,7 @@ import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
 import { _hoyolabHeaders } from '#/endpoints/hoyolab/headers.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
 
-export const schemaHoyolabGenshinEnvisagedEchoesResponse = type({
+const schemaHoyolabGenshinEnvisagedEchoesResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

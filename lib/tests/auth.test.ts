@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { TeyvatHttpClient } from '#/client/request.ts';
 import { Teyvat } from '#/client/teyvat.ts';
+import { _hoyolabCompleteCookies } from '#/endpoints/hoyolab/auth.ts';
 
 const originalFetch = globalThis.fetch;
 
@@ -34,6 +36,96 @@ function _aigisData(headers: Headers | undefined): unknown {
 }
 
 describe('authentication session', () => {
+	test('completes stoken cookies with each supported mid alias', async () => {
+		for (const [alias, value] of [
+			['ltmid_v2', 'lt-mid'],
+			['account_mid_v2', 'account-mid'],
+			['mid', 'direct-mid'],
+		] as const) {
+			let cookieHeader = '';
+			const client = new TeyvatHttpClient(
+				{ stoken: 'stoken', [alias]: value },
+				{
+					fetch: async (_input, init) => {
+						cookieHeader = new Headers(init?.headers).get('Cookie') ?? '';
+						return _response({
+							retcode: 0,
+							message: 'OK',
+							data: {
+								tokens: [
+									{ ['token_type']: 2, token: 'ltoken' },
+									{ ['token_type']: 4, token: 'cookie-token' },
+								],
+							},
+						});
+					},
+				},
+			);
+
+			expect(await _hoyolabCompleteCookies(client)).toEqual({
+				['ltoken_v2']: 'ltoken',
+				['cookie_token_v2']: 'cookie-token',
+			});
+			expect(cookieHeader.split('; ').filter((cookie) => cookie.startsWith('mid='))).toEqual([`mid=${value}`]);
+		}
+	});
+
+	test('fails safely when stoken completion has no usable mid', async () => {
+		const client = new TeyvatHttpClient({ stoken: 'stoken' }, { fetch: async () => _success() });
+		await expect(_hoyolabCompleteCookies(client)).rejects.toBeInstanceOf(TeyvatError);
+	});
+
+	test('skips empty higher-priority mid aliases', async () => {
+		let cookieHeader = '';
+		const client = new TeyvatHttpClient(
+			{ stoken: 'stoken', ['ltmid_v2']: '', ['account_mid_v2']: 'fallback-mid', mid: 'older-mid' },
+			{
+				fetch: async (_input, init) => {
+					cookieHeader = new Headers(init?.headers).get('Cookie') ?? '';
+					return _response({
+						retcode: 0,
+						message: 'OK',
+						data: {
+							tokens: [
+								{ ['token_type']: 2, token: 'ltoken' },
+								{ ['token_type']: 4, token: 'cookie-token' },
+							],
+						},
+					});
+				},
+			},
+		);
+		await _hoyolabCompleteCookies(client);
+		expect(cookieHeader.split('; ').filter((cookie) => cookie.startsWith('mid='))).toEqual(['mid=fallback-mid']);
+	});
+
+	test('merges completed tokens and persists the updated cookie snapshot', async () => {
+		const updates: Record<string, string>[] = [];
+		const responses = [
+			_response({
+				retcode: 0,
+				message: 'OK',
+				data: {
+					tokens: [
+						{ ['token_type']: 2, token: 'ltoken' },
+						{ ['token_type']: 4, token: 'cookie-token' },
+					],
+				},
+			}),
+			_response({ retcode: 0, message: 'OK', data: { list: [] } }),
+		];
+		_setFetch(async () => responses.shift() ?? _response({ retcode: 0, message: 'OK', data: { list: [] } }));
+		const teyvat = new Teyvat({
+			cookies: { stoken: 'stoken', ['ltmid_v2']: 'mid', ['account_id_v2']: '123' },
+			onCookiesUpdate: ({ cookies }) => {
+				updates.push(cookies);
+			},
+		});
+		await teyvat.accounts();
+		expect(teyvat.cookies).toMatchObject({ ['ltoken_v2']: 'ltoken', ['cookie_token_v2']: 'cookie-token' });
+		expect(updates.at(-1)).toMatchObject({ ['ltoken_v2']: 'ltoken', ['cookie_token_v2']: 'cookie-token' });
+	});
+
 	test('continues a captcha-interrupted login and retains state after invalid input', async () => {
 		const responses = [
 			_response(
@@ -144,13 +236,15 @@ describe('authentication session', () => {
 			_success(),
 		];
 		const paths: string[] = [];
-		_setFetch(async (input) => {
+		const bodies: unknown[] = [];
+		_setFetch(async (input, init) => {
 			paths.push(new URL(String(input)).pathname);
+			bodies.push(init?.body ? JSON.parse(String(init.body)) : undefined);
 			return responses.shift() ?? _success();
 		});
-		const auth = Teyvat.auth({ account: 'user', password: 'password' });
+		const auth = Teyvat.auth({ account: '  user@example.com  ', password: 'password' });
 		expect(await auth.login()).toEqual({ status: 'email_verification_required' });
-		const result = await auth.completeEmail('123456');
+		const result = await auth.completeEmail('  123456  ');
 		expect(result.status).toBe('authenticated');
 		expect(paths).toEqual([
 			'/account/ma-passport/api/appLoginByPassword',
@@ -158,6 +252,7 @@ describe('authentication session', () => {
 			'/account/ma-verifier/api/verifyActionTicketPartly',
 			'/account/ma-passport/api/appLoginByPassword',
 		]);
+		expect(bodies[2]).toMatchObject({ ['email_captcha']: '123456' });
 	});
 
 	test('continues email verification when login already sent the code', async () => {

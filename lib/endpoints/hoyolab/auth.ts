@@ -1,6 +1,6 @@
 import { type Type, type } from 'arktype';
 import { _generateAppLoginDs, _generateAppTokenDs } from '#/auth/ds.ts';
-import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
 import type { TeyvatAuthCaptchaSolution } from '#/types/auth.ts';
@@ -261,8 +261,10 @@ export async function _hoyolabVerifyEmailCode(
 }
 
 export async function _hoyolabCompleteCookies(client: TeyvatHttpClient): Promise<Record<string, string>> {
-	const mid = client.cookies.get('ltmid_v2') ?? client.cookies.get('account_mid_v2');
-	if (!mid) throw new TypeError('Cannot complete cookies without a HoYoLAB account mid');
+	const mid = [client.cookies.get('ltmid_v2'), client.cookies.get('account_mid_v2'), client.cookies.get('mid')].find(
+		(value) => value,
+	);
+	if (!mid) throw new TeyvatError('Cannot complete cookies without a HoYoLAB account mid');
 
 	const response = await client.rawRequest({
 		domain: TEYVAT_DOMAINS.hoyoversePassport,

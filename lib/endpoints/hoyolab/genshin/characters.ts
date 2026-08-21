@@ -116,13 +116,13 @@ const schemaSkill = type({
 	['can_enhanced']: 'boolean',
 });
 
-export const schemaHoyolabGenshinCharacterListResponse = type({
+const schemaHoyolabGenshinCharacterListResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: { list: schemaCharacterBase.array() },
 });
 
-export const schemaHoyolabGenshinCharacterDetailsResponse = type({
+const schemaHoyolabGenshinCharacterDetailsResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

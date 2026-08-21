@@ -76,13 +76,13 @@ const schemaSingleResult = type({
 	'lineup_recommend?': 'string',
 });
 
-export const schemaHoyolabCalculatorCharactersResponse = type({
+const schemaHoyolabCalculatorCharactersResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: { list: schemaCalculatorCharacter.array() },
 });
 
-export const schemaHoyolabCalculatorCharacterResponse = type({
+const schemaHoyolabCalculatorCharacterResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
@@ -92,7 +92,7 @@ export const schemaHoyolabCalculatorCharacterResponse = type({
 	},
 });
 
-export const schemaHoyolabCalculatorBatchResponse = type({
+const schemaHoyolabCalculatorBatchResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
@@ -103,7 +103,7 @@ export const schemaHoyolabCalculatorBatchResponse = type({
 	},
 });
 
-export const schemaHoyolabCalculatorAuthResponse = type({ retcode: '0', message: 'string', data: 'unknown' });
+const schemaHoyolabCalculatorAuthResponse = type({ retcode: '0', message: 'string', data: 'unknown' });
 
 function _calculatorHeaders(client: TeyvatHttpClient): Record<string, string> {
 	return {

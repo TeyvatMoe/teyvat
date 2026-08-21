@@ -4,7 +4,7 @@ import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinInfo } from '#/endpoints/hoyolab/genshin/info.ts';
 import { schemaTeyvatAccountInfo, type TeyvatAccountInfo } from '#/types/account/info.ts';
 import { _recognizeGenshinServer } from '#/utils/uid.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/index';
 
@@ -19,7 +19,7 @@ function _explored(rawPercentage: number): number {
 }
 
 async function _requestInfo(account: TeyvatAccount) {
-	return await _getHoyolabGenshinInfo(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinInfo(_getHttpClient(_getAccountOwner(account)), account.uid, account.server);
 }
 
 export async function _getAccountInfo(account: TeyvatAccount): Promise<TeyvatAccountInfo> {

@@ -12,7 +12,7 @@ import type {
 } from '#/types/index.ts';
 import { _hoyolabIdFromCookies, _parseCookies } from '#/utils/cookies.ts';
 import { _recognizeGenshinServer } from '#/utils/uid.ts';
-import { TeyvatAccount } from './account/index.ts';
+import { _createTeyvatAccount, type TeyvatAccount } from './account/index.ts';
 import { _getAccounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';
 import { _TeyvatCheckInClient } from './check_in.ts';
@@ -84,7 +84,7 @@ export class Teyvat {
 
 	account(uid: number): TeyvatAccount {
 		_recognizeGenshinServer(uid);
-		const account = this.#accounts.get(uid) ?? new TeyvatAccount(this, uid);
+		const account = this.#accounts.get(uid) ?? _createTeyvatAccount(this, uid);
 		if (!this.#accounts.has(uid)) this.#accounts.set(uid, account);
 		return account;
 	}

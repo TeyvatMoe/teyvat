@@ -89,7 +89,7 @@ export interface TeyvatCookiesUpdate {
 
 /** @category Core */
 export interface TeyvatOptions {
-	cookies?: TeyvatCookies | string;
+	cookies: TeyvatCookies | string;
 	language?: TeyvatLanguage;
 	autoEnable?: boolean;
 	hoyolabId?: string;

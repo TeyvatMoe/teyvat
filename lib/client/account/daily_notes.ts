@@ -11,7 +11,7 @@ import {
 	type TeyvatTaskRewardStatus,
 } from '#/types/account/daily_notes.ts';
 import { _completionDate, _numericValue } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/dailyNote';
 
@@ -47,7 +47,7 @@ function _archonQuestStatus(status: string): TeyvatArchonQuestStatus {
 }
 
 async function _requestDailyNotes(account: TeyvatAccount) {
-	return await _getHoyolabGenshinDailyNotes(_getHttpClient(account.inst), account.uid, account.server);
+	return await _getHoyolabGenshinDailyNotes(_getHttpClient(_getAccountOwner(account)), account.uid, account.server);
 }
 
 export async function _getAccountDailyNotes(account: TeyvatAccount): Promise<TeyvatAccountDailyNotes> {

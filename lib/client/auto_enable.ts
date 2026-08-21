@@ -2,7 +2,7 @@ import { _getHttpClient } from '#/client/request.ts';
 import { _enableHoyolabCalculatorSync } from '#/endpoints/hoyolab/genshin/calculator.ts';
 import { _enableHoyolabGenshinSetting } from '#/endpoints/hoyolab/settings.ts';
 import { _sleep } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './account/index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './account/index.ts';
 import { type TeyvatApiError, TeyvatError } from './errors.ts';
 import type { Teyvat } from './teyvat.ts';
 
@@ -18,7 +18,7 @@ interface TeyvatAutoEnableState {
 const featureStates = new WeakMap<Teyvat, TeyvatAutoEnableState>();
 
 async function _enableFeature(account: TeyvatAccount, feature: TeyvatAutoEnableFeature): Promise<void> {
-	const client = _getHttpClient(account.inst);
+	const client = _getHttpClient(_getAccountOwner(account));
 	if (feature === 'battle_chronicle') {
 		await _enableHoyolabGenshinSetting(client, 1);
 		return;
@@ -41,17 +41,18 @@ export async function _enableAccountFeature(
 	feature: TeyvatAutoEnableFeature,
 	cause?: unknown,
 ): Promise<void> {
-	const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
+	const owner = _getAccountOwner(account);
+	const owned = (await owner.accounts({ update: true })).some((candidate) => candidate.uid === account.uid);
 	if (!owned) {
 		throw new TeyvatError('Cannot enable a HoYoLAB feature for an account not bound to these cookies', {
 			cause,
 		});
 	}
 
-	let state = featureStates.get(account.inst);
+	let state = featureStates.get(owner);
 	if (!state) {
 		state = { enabled: new Set(), pending: new Map() };
-		featureStates.set(account.inst, state);
+		featureStates.set(owner, state);
 	}
 	if (state.enabled.has(feature)) return;
 	const pending = state.pending.get(feature);
@@ -77,7 +78,7 @@ export async function _requestWithAutoEnable<T>(
 	try {
 		return await request();
 	} catch (cause) {
-		if (!(account.inst.autoEnable && isFeatureDisabled(cause))) throw cause;
+		if (!(_getAccountOwner(account).autoEnable && isFeatureDisabled(cause))) throw cause;
 		await _enableAccountFeature(account, feature, cause);
 
 		let retryError = cause;

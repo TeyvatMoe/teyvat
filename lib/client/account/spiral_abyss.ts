@@ -1,4 +1,5 @@
-import { TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinSpiralAbyss } from '#/endpoints/hoyolab/genshin/spiral_abyss.ts';
 import {
@@ -9,7 +10,7 @@ import {
 	type TeyvatSpiralAbyssPeriod,
 } from '#/types/account/spiral_abyss.ts';
 import { _unixDate } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/spiralAbyss';
 
@@ -25,12 +26,27 @@ function _spiralAbyssHalf(index: number): TeyvatSpiralAbyssHalf {
 	throw new TypeError(`Unknown Spiral Abyss battle half: ${index}`);
 }
 
+function _isSpiralAbyssPrivate(cause: unknown): cause is TeyvatApiError {
+	return cause instanceof TeyvatApiError && cause.retcode === 10102;
+}
+
 export async function _getAccountSpiralAbyss(
 	account: TeyvatAccount,
 	options: TeyvatSpiralAbyssOptions = {},
 ): Promise<TeyvatAccountSpiralAbyss> {
 	const period = _spiralAbyssPeriod(options.period);
-	const raw = await _getHoyolabGenshinSpiralAbyss(_getHttpClient(account.inst), account.uid, account.server, period);
+	const raw = await _requestWithAutoEnable(
+		account,
+		'battle_chronicle',
+		async () =>
+			await _getHoyolabGenshinSpiralAbyss(
+				_getHttpClient(_getAccountOwner(account)),
+				account.uid,
+				account.server,
+				period,
+			),
+		_isSpiralAbyssPrivate,
+	);
 
 	try {
 		const rankedCharacters = (characters: typeof raw.reveal_rank) =>

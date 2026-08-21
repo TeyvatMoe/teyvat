@@ -16,7 +16,7 @@ import {
 } from '#/types/account/traveler_diary.ts';
 import type { TeyvatPaginator } from '#/types/paginator.ts';
 import { _currentUtcOffsetMonth, _hoyolabDatetime } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const SUMMARY_ENDPOINT = '/event/ysledgeros/month_info';
 const LOG_ENDPOINT = '/event/ysledgeros/month_detail';
@@ -59,7 +59,12 @@ export async function _getAccountTravelerDiary(
 	options: TeyvatTravelerDiaryOptions = {},
 ): Promise<TeyvatAccountTravelerDiary> {
 	const month = _diaryMonth(options.month);
-	const raw = await _getHoyolabGenshinTravelerDiary(_getHttpClient(account.inst), account.uid, account.server, month);
+	const raw = await _getHoyolabGenshinTravelerDiary(
+		_getHttpClient(_getAccountOwner(account)),
+		account.uid,
+		account.server,
+		month,
+	);
 
 	try {
 		_validateDiaryMetadata(account, raw, month);
@@ -97,7 +102,7 @@ export function _getAccountTravelerDiaryLog(
 	const month = _diaryMonth(options.month);
 	const currency = _diaryCurrency(options.currency);
 	const limit = _diaryLimit(options.limit);
-	const client = _getHttpClient(account.inst);
+	const client = _getHttpClient(_getAccountOwner(account));
 
 	return new _TeyvatPaginator({
 		initialCursor: 1,

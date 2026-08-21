@@ -1,4 +1,4 @@
-import { _enableAccountFeature } from '#/client/auto_enable.ts';
+import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient, type TeyvatHttpClient } from '#/client/request.ts';
 import {
@@ -17,7 +17,7 @@ import {
 	type TeyvatCalculatorResult,
 } from '#/types/account/calculator.ts';
 import type { TeyvatCharacterElement, TeyvatWeaponType } from '#/types/account/character.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const LIST_ENDPOINT = '/event/e20200928calculate/v1/sync/avatar/list';
 const DETAIL_ENDPOINT = '/event/e20200928calculate/v1/sync/avatar/detail';
@@ -96,7 +96,7 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 
 	constructor(account: TeyvatAccount) {
 		this.#account = account;
-		this.#client = _getHttpClient(account.inst);
+		this.#client = _getHttpClient(_getAccountOwner(account));
 	}
 
 	async characters(): Promise<TeyvatCalculatorCharacter[]> {
@@ -236,13 +236,11 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 	}
 
 	async #withSync<T>(request: () => Promise<T>): Promise<T> {
-		try {
-			return await request();
-		} catch (cause) {
-			if (!(this.#account.inst.autoEnable && cause instanceof TeyvatApiError && cause.retcode === -502002))
-				throw cause;
-			await _enableAccountFeature(this.#account, 'calculator', cause);
-			return await request();
-		}
+		return await _requestWithAutoEnable(
+			this.#account,
+			'calculator',
+			request,
+			(cause): cause is TeyvatApiError => cause instanceof TeyvatApiError && cause.retcode === -502002,
+		);
 	}
 }

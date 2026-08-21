@@ -2,7 +2,7 @@ import { TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinInventory, _getHoyolabTeyvatTree } from '#/endpoints/hoyolab/genshin/inventory.ts';
 import { schemaTeyvatAccountInventory, type TeyvatAccountInventory } from '#/types/account/inventory.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/common/map_user/ys_obc/v1/user/sync_game_material_info';
 
@@ -45,7 +45,7 @@ function _missingInventoryIds(
 }
 
 export async function _getAccountInventory(account: TeyvatAccount): Promise<TeyvatAccountInventory> {
-	const client = _getHttpClient(account.inst);
+	const client = _getHttpClient(_getAccountOwner(account));
 	const [raw, initialTree] = await Promise.all([
 		_getHoyolabGenshinInventory(client, account.uid, account.server),
 		_getHoyolabTeyvatTree(client),

@@ -67,6 +67,7 @@ const schemaTeyvatAuthResult = schemaTeyvatAuthenticated
  */
 export type TeyvatAuthResult = typeof schemaTeyvatAuthResult.infer;
 
+/** @category Authentication */
 export interface TeyvatAuthOptions {
 	account: string;
 	password: string;
@@ -76,6 +77,7 @@ export interface TeyvatAuthOptions {
 	deviceModel?: string;
 }
 
+/** @category Authentication */
 export interface TeyvatAuthSession {
 	readonly language: TeyvatLanguage;
 	login(): Promise<TeyvatAuthResult>;

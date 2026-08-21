@@ -6,7 +6,7 @@ import type { TeyvatServer } from '#/types/account/server.ts';
 
 const schemaCountdown = type('string');
 
-export const schemaHoyolabGenshinDailyNotesResponse = type({
+const schemaHoyolabGenshinDailyNotesResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {

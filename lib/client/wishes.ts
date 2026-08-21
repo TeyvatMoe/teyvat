@@ -23,7 +23,7 @@ import {
 } from '#/types/wishes.ts';
 import { _hoyolabDatetime } from '#/utils/misc.ts';
 import { _recognizeGenshinServer } from '#/utils/uid.ts';
-import { TeyvatError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
+import { TeyvatApiError, TeyvatError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
 import { _TeyvatPaginator } from './paginator.ts';
 import { TeyvatHttpClient } from './request.ts';
 
@@ -92,9 +92,13 @@ function _itemType(value: string): TeyvatWishItemType {
 	return 'unknown';
 }
 
-function _safeRequestError(cause: unknown): never {
+function _safeAuthkeyError(cause: unknown, context: string): never {
 	if (cause instanceof TeyvatRequestError)
-		throw new TeyvatRequestError(cause.kind, cause.method, cause.endpoint, cause.message, { status: cause.status });
+		throw new TeyvatRequestError(cause.kind, cause.method, cause.endpoint, `${context} failed`, {
+			status: cause.status,
+		});
+	if (cause instanceof TeyvatApiError)
+		throw new TeyvatApiError(cause.retcode, `${context} failed`, cause.method, cause.endpoint);
 	throw cause;
 }
 
@@ -187,7 +191,7 @@ export class _TeyvatWishClient implements TeyvatWishClient {
 		try {
 			raw = await _getHoyolabGenshinWishes(this.#client, this.#authkey, bannerType, endId);
 		} catch (cause) {
-			_safeRequestError(cause);
+			_safeAuthkeyError(cause, 'Wish history request');
 		}
 		try {
 			const server = _server(raw.region);
@@ -220,7 +224,8 @@ export class _TeyvatWishClient implements TeyvatWishClient {
 					: await this.#currencyTransactions(type, endId);
 			return this.#transactionPage(items, endId);
 		} catch (cause) {
-			if (cause instanceof TeyvatRequestError) _safeRequestError(cause);
+			if (cause instanceof TeyvatRequestError || cause instanceof TeyvatApiError)
+				_safeAuthkeyError(cause, 'Transaction history request');
 			if (cause instanceof TeyvatResponseValidationError) throw cause;
 			throw new TeyvatResponseValidationError('GET', TRANSACTION_ENDPOINT, [String(cause)], { cause });
 		}

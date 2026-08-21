@@ -5,7 +5,7 @@ import { _getHoyolabGenshinCharacterList, _setHoyolabGenshinShowcase } from '#/e
 import { schemaTeyvatAccountShowcaseCharacter, type TeyvatAccountShowcaseCharacter } from '#/types/account/showcase.ts';
 import { _characterElement, _characterIds, _weaponType } from '#/utils/character.ts';
 import { _sleep } from '#/utils/misc.ts';
-import type { TeyvatAccount } from './index.ts';
+import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 
 const LIST_ENDPOINT = '/event/game_record/genshin/api/character/list';
 const TOP_ENDPOINT = '/event/game_record/genshin/api/character/top';
@@ -17,11 +17,12 @@ function _isPrivate(cause: unknown): cause is TeyvatApiError {
 }
 
 async function _characterList(account: TeyvatAccount) {
-	const client = _getHttpClient(account.inst);
+	const owner = _getAccountOwner(account);
+	const client = _getHttpClient(owner);
 	try {
 		return await _getHoyolabGenshinCharacterList(client, account.uid, account.server);
 	} catch (cause) {
-		if (!(account.inst.autoEnable && _isPrivate(cause))) throw cause;
+		if (!(owner.autoEnable && _isPrivate(cause))) throw cause;
 		await _enableAccountFeature(account, 'character_details', cause);
 		let retryError: TeyvatApiError = cause;
 		for (const delay of ENABLE_RETRY_DELAYS) {
@@ -79,7 +80,8 @@ export async function _setAccountShowcase(
 	if (ids.length > 12)
 		throw new TeyvatError('A Battle Chronicle character showcase cannot contain more than 12 characters');
 
-	const bound = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
+	const owner = _getAccountOwner(account);
+	const bound = (await owner.accounts({ update: true })).some((candidate) => candidate.uid === account.uid);
 	if (!bound) throw new TeyvatError('Cannot change the showcase of an account not bound to these cookies');
 
 	const list = await _characterList(account);
@@ -87,7 +89,7 @@ export async function _setAccountShowcase(
 	if (ids.some((id) => !ownedIds.has(id)))
 		throw new TeyvatError('A Battle Chronicle character showcase can contain only characters owned by the account');
 
-	await _setHoyolabGenshinShowcase(_getHttpClient(account.inst), account.uid, account.server, ids);
+	await _setHoyolabGenshinShowcase(_getHttpClient(owner), account.uid, account.server, ids);
 	for (const delay of PROPAGATION_RETRY_DELAYS) {
 		await _sleep(delay);
 		const showcase = _mapShowcase((await _characterList(account)).list);

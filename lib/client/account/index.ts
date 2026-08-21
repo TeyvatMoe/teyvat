@@ -1,3 +1,4 @@
+import { TeyvatError } from '#/client/errors.ts';
 import type { Teyvat } from '#/client/teyvat.ts';
 import type { TeyvatAccountAchievements } from '#/types/account/achievements.ts';
 import type { TeyvatCalculatorClient } from '#/types/account/calculator.ts';
@@ -45,19 +46,30 @@ interface TeyvatAccountDetails {
 }
 
 const accountDetails = new WeakMap<TeyvatAccount, TeyvatAccountDetails>();
+const accountOwners = new WeakMap<TeyvatAccount, Teyvat>();
+const accountCalculators = new WeakMap<TeyvatAccount, TeyvatCalculatorClient>();
+const accountConstruction = Symbol('TeyvatAccount construction');
 
 /** @category Core */
 export class TeyvatAccount {
-	readonly inst: Teyvat;
 	readonly uid: number;
 	readonly server: TeyvatServer;
-	readonly calculator: TeyvatCalculatorClient;
 
-	constructor(inst: Teyvat, uid: number) {
-		this.inst = inst;
+	/** @internal */
+	protected constructor(construction: typeof accountConstruction, uid: number) {
+		if (construction !== accountConstruction)
+			throw new TeyvatError('TeyvatAccount instances must be created by Teyvat');
 		this.uid = uid;
 		this.server = _recognizeGenshinServer(uid);
-		this.calculator = new _TeyvatCalculatorClient(this);
+	}
+
+	get calculator(): TeyvatCalculatorClient {
+		let calculator = accountCalculators.get(this);
+		if (!calculator) {
+			calculator = new _TeyvatCalculatorClient(this);
+			accountCalculators.set(this, calculator);
+		}
+		return calculator;
 	}
 
 	get nickname(): string | undefined {
@@ -141,6 +153,23 @@ export class TeyvatAccount {
 	travelerDiaryLog(options?: TeyvatTravelerDiaryLogOptions): TeyvatPaginator<TeyvatTravelerDiaryEntry> {
 		return _getAccountTravelerDiaryLog(this, options);
 	}
+}
+
+class TeyvatAccountInstance extends TeyvatAccount {
+	constructor(owner: Teyvat, uid: number) {
+		super(accountConstruction, uid);
+		accountOwners.set(this, owner);
+	}
+}
+
+export function _createTeyvatAccount(owner: Teyvat, uid: number): TeyvatAccount {
+	return new TeyvatAccountInstance(owner, uid);
+}
+
+export function _getAccountOwner(account: TeyvatAccount): Teyvat {
+	const owner = accountOwners.get(account);
+	if (!owner) throw new TeyvatError('TeyvatAccount is not associated with a Teyvat client');
+	return owner;
 }
 
 export function _setAccountDetails(account: TeyvatAccount, details: TeyvatAccountDetails): void {
