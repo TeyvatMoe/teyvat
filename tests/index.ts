@@ -268,6 +268,7 @@ const tasks = [
 	_make_task('current_spiral_abyss', () => account.spiral_abyss()),
 	_make_task('previous_spiral_abyss', () => account.spiral_abyss({ period: 'previous' })),
 	_make_task('characters', () => account.characters()),
+	_make_task('showcase', () => account.showcase()),
 	_make_task('daily_notes', () => account.daily_notes()),
 	_make_task('imaginarium_theater', () => account.imaginarium_theater()),
 	_make_task('stygian_onslaught', () => account.stygian_onslaught()),

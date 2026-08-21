@@ -43,6 +43,8 @@ export type { TeyvatAccountInfo } from './info.ts';
 export type { TeyvatAccountInventory } from './inventory.ts';
 /** @category Account Info */
 export type { TeyvatServer } from './server.ts';
+/** @category Character Showcase */
+export type { TeyvatAccountShowcaseCharacter } from './showcase.ts';
 /** @category Spiral Abyss */
 export type {
 	TeyvatAccountSpiralAbyss,

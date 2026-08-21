@@ -149,8 +149,14 @@ export const schema_hoyolab_genshin_character_details_response = type({
 	},
 });
 
-export async function _get_hoyolab_genshin_character_ids(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
-	const data = await client.request({
+const schema_hoyolab_genshin_character_top_response = type({
+	retcode: '0',
+	message: 'string',
+	data: 'unknown',
+});
+
+export async function _get_hoyolab_genshin_character_list(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
+	return await client.request({
 		domain: TEYVAT_DOMAINS.genshin_record,
 		path: 'character/list',
 		method: 'POST',
@@ -158,7 +164,29 @@ export async function _get_hoyolab_genshin_character_ids(client: TeyvatHttpClien
 		schema: schema_hoyolab_genshin_character_list_response,
 		headers: _hoyolab_headers(client.language),
 	});
-	return data.list.map(({ id }) => id);
+}
+
+export async function _set_hoyolab_genshin_showcase(
+	client: TeyvatHttpClient,
+	uid: number,
+	server: TeyvatServer,
+	character_ids: number[],
+): Promise<void> {
+	await client.request({
+		domain: TEYVAT_DOMAINS.genshin_record,
+		path: 'character/top',
+		method: 'POST',
+		body: {
+			avatar_ids: character_ids,
+			role_id: uid,
+			server,
+			uid_key: uid,
+			server_key: server,
+		},
+		schema: schema_hoyolab_genshin_character_top_response,
+		headers: _hoyolab_headers(client.language),
+		replay_auth: false,
+	});
 }
 
 export async function _get_hoyolab_genshin_character_details(

@@ -1,17 +1,16 @@
 import { _enable_account_feature } from '#/client/auto_enable.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import {
 	_get_hoyolab_genshin_character_details,
-	_get_hoyolab_genshin_character_ids,
+	_get_hoyolab_genshin_character_list,
 } from '#/endpoints/hoyolab/genshin/characters.ts';
 import {
 	schema_teyvat_account_character,
 	type TeyvatAccountCharacter,
-	type TeyvatCharacterElement,
 	type TeyvatCharactersOptions,
-	type TeyvatWeaponType,
 } from '#/types/account/character.ts';
+import { _character_element, _character_ids, _weapon_type } from '#/utils/character.ts';
 import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
@@ -22,43 +21,11 @@ function _is_character_details_private(cause: unknown): cause is TeyvatApiError 
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
-function _character_ids(ids: number[] | undefined): number[] | undefined {
-	if (ids === undefined) return undefined;
-	const unique = new Set<number>();
-	for (const id of ids) {
-		if (!Number.isSafeInteger(id) || id <= 0) throw new TeyvatError('Character IDs must be positive safe integers');
-		unique.add(id);
-	}
-	return [...unique];
-}
-
-function _character_element(element: string): TeyvatCharacterElement {
-	const normalized = element.toLowerCase();
-	if (
-		normalized === 'anemo' ||
-		normalized === 'geo' ||
-		normalized === 'electro' ||
-		normalized === 'dendro' ||
-		normalized === 'hydro' ||
-		normalized === 'pyro' ||
-		normalized === 'cryo'
-	)
-		return normalized;
-	throw new TypeError(`Unknown character element: ${element}`);
-}
-
-function _weapon_type(type: number): TeyvatWeaponType {
-	if (type === 1) return 'sword';
-	if (type === 10) return 'catalyst';
-	if (type === 11) return 'claymore';
-	if (type === 12) return 'bow';
-	if (type === 13) return 'polearm';
-	throw new TypeError(`Unknown weapon type: ${type}`);
-}
-
 async function _request_characters(account: TeyvatAccount, ids?: number[]) {
 	const client = _get_http_client(account.inst);
-	const character_ids = ids ?? (await _get_hoyolab_genshin_character_ids(client, account.uid, account.server));
+	const character_ids =
+		ids ??
+		(await _get_hoyolab_genshin_character_list(client, account.uid, account.server)).list.map(({ id }) => id);
 	if (character_ids.length === 0) return undefined;
 	return await _get_hoyolab_genshin_character_details(client, account.uid, account.server, character_ids);
 }
@@ -67,7 +34,7 @@ export async function _get_account_characters(
 	account: TeyvatAccount,
 	options: TeyvatCharactersOptions = {},
 ): Promise<TeyvatAccountCharacter[]> {
-	const ids = _character_ids(options.ids);
+	const ids = options.ids === undefined ? undefined : _character_ids(options.ids);
 	if (ids?.length === 0) return [];
 
 	let raw: Awaited<ReturnType<typeof _request_characters>>;

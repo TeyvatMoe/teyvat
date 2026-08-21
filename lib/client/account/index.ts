@@ -9,6 +9,7 @@ import type { TeyvatAccountImaginariumTheater } from '#/types/account/imaginariu
 import type { TeyvatAccountInfo } from '#/types/account/info.ts';
 import type { TeyvatAccountInventory } from '#/types/account/inventory.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
+import type { TeyvatAccountShowcaseCharacter } from '#/types/account/showcase.ts';
 import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '#/types/account/spiral_abyss.ts';
 import type { TeyvatAccountStygianOnslaught } from '#/types/account/stygian_onslaught.ts';
 import type {
@@ -28,6 +29,7 @@ import { _get_account_daily_notes } from './daily_notes.ts';
 import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
 import { _get_account_info } from './info.ts';
 import { _get_account_inventory } from './inventory.ts';
+import { _get_account_showcase, _set_account_showcase } from './showcase.ts';
 import { _get_account_spiral_abyss } from './spiral_abyss.ts';
 import { _get_account_stygian_onslaught } from './stygian_onslaught.ts';
 import { _get_account_traveler_diary, _get_account_traveler_diary_log } from './traveler_diary.ts';
@@ -98,6 +100,14 @@ export class TeyvatAccount {
 
 	async characters(options?: TeyvatCharactersOptions): Promise<TeyvatAccountCharacter[]> {
 		return await _get_account_characters(this, options);
+	}
+
+	async showcase(): Promise<TeyvatAccountShowcaseCharacter[]> {
+		return await _get_account_showcase(this);
+	}
+
+	async set_showcase(character_ids: number[]): Promise<TeyvatAccountShowcaseCharacter[]> {
+		return await _set_account_showcase(this, character_ids);
 	}
 
 	async redeem_code(code: string): Promise<TeyvatCodeRedemptionResult> {
