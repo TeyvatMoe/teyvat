@@ -10,7 +10,10 @@
 		"strict": true,
 		"allowImportingTsExtensions": true,
 		"erasableSyntaxOnly": true,
-		"types": ["*"]
+		"types": ["*"],
+		"paths": {
+			"#/*": ["./lib/*"]
+		}
 	},
 	"exclude": ["dist/", "node_modules", "**/node_modules/*"]
 }

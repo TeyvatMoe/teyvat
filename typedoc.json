@@ -1,8 +1,10 @@
 {
 	"entryPoints": ["lib/index.ts"],
 	"out": "docs",
-	"plugin": ["typedoc-github-theme"],
+	"plugin": ["typedoc-github-theme", "./typedoc-plugin.mjs"],
+	"excludeInternal": true,
 	"excludeExternals": true,
+	"cname": "lib.teyvat.moe",
 	"externalSymbolLinkMappings": {
 		"bun-types": {
 			"*": "https://bun.sh/docs"
@@ -11,12 +13,42 @@
 			"*": "https://bun.sh/docs/runtime/nodejs-apis"
 		},
 		"typescript": {
-			"Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+			"Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+			"AsyncIterableIterator": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator"
 		}
 	},
 	"navigationLinks": {
-		"GitHub": "https://github.com/itss0n1c/teyvat",
-		"My Site": "https://s0n1c.ca"
+		"GitHub": "https://github.com/TeyvatMoe/teyvat",
+		"teyvat.moe": "https://teyvat.moe"
 	},
+	"navigation": {
+		"includeCategories": true,
+		"includeGroups": false,
+		"includeFolders": false,
+		"excludeReferences": true
+	},
+	"categoryOrder": [
+		"Core",
+		"Authentication",
+		"Account Info",
+		"Achievements",
+		"Inventory",
+		"Traveler's Diary",
+		"Event Calendar",
+		"Daily Check-In",
+		"Code Redemption",
+		"Wish History",
+		"Transaction History",
+		"Daily Notes",
+		"Characters",
+		"Character Showcase",
+		"Envisaged Echoes",
+		"Enhancement Calculator",
+		"Imaginarium Theater",
+		"Stygian Onslaught",
+		"Spiral Abyss",
+		"Errors",
+		"*"
+	],
 	"sort": ["documents-first", "kind"]
 }
