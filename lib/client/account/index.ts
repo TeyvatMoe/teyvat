@@ -5,6 +5,7 @@ import type { TeyvatAccountCalendar } from '#/types/account/calendar.ts';
 import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '#/types/account/character.ts';
 import type { TeyvatCodeRedemptionResult } from '#/types/account/code_redemption.ts';
 import type { TeyvatAccountDailyNotes } from '#/types/account/daily_notes.ts';
+import type { TeyvatAccountEnvisagedEcho } from '#/types/account/envisaged_echoes.ts';
 import type { TeyvatAccountImaginariumTheater } from '#/types/account/imaginarium_theater.ts';
 import type { TeyvatAccountInfo } from '#/types/account/info.ts';
 import type { TeyvatAccountInventory } from '#/types/account/inventory.ts';
@@ -26,6 +27,7 @@ import { _get_account_calendar } from './calendar.ts';
 import { _get_account_characters } from './characters.ts';
 import { _redeem_account_code } from './code_redemption.ts';
 import { _get_account_daily_notes } from './daily_notes.ts';
+import { _get_account_envisaged_echoes } from './envisaged_echoes.ts';
 import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
 import { _get_account_info } from './info.ts';
 import { _get_account_inventory } from './inventory.ts';
@@ -96,6 +98,10 @@ export class TeyvatAccount {
 
 	async daily_notes(): Promise<TeyvatAccountDailyNotes> {
 		return await _get_account_daily_notes(this);
+	}
+
+	async envisaged_echoes(): Promise<TeyvatAccountEnvisagedEcho[]> {
+		return await _get_account_envisaged_echoes(this);
 	}
 
 	async characters(options?: TeyvatCharactersOptions): Promise<TeyvatAccountCharacter[]> {

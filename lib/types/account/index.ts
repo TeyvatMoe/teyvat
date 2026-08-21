@@ -31,6 +31,8 @@ export type {
 	TeyvatExpeditionStatus,
 	TeyvatTaskRewardStatus,
 } from './daily_notes.ts';
+/** @category Envisaged Echoes */
+export type { TeyvatAccountEnvisagedEcho, TeyvatEnvisagedEchoStatus } from './envisaged_echoes.ts';
 /** @category Imaginarium Theater */
 export type {
 	TeyvatAccountImaginariumTheater,
