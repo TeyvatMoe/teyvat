@@ -1,5 +1,6 @@
 import { type } from 'arktype';
 import type { TeyvatPaginator } from './paginator.ts';
+import type { TeyvatTransaction, TeyvatTransactionOptions, TeyvatTransactionType } from './transactions.ts';
 
 const schema_banner_type = type.enumerated('novice', 'standard', 'character', 'weapon', 'chronicled');
 /**
@@ -47,4 +48,7 @@ export type TeyvatWish = typeof schema_teyvat_wish.infer;
 /** @category Wish History */
 export interface TeyvatWishClient {
 	history(options: TeyvatWishHistoryOptions): TeyvatPaginator<TeyvatWish>;
+	transactions<T extends TeyvatTransactionType>(
+		options: TeyvatTransactionOptions<T>,
+	): TeyvatPaginator<TeyvatTransaction & { type: T }>;
 }

@@ -17,12 +17,17 @@ Every upstream response must be parsed as JSON, checked for API errors, and vali
 
 One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account objects reuse that client and are cached by UID.
 
+Wish and transaction history use one isolated authkey-scoped client with no cookies, cookie preparation, session repair, or authkey renewal. Authkeys must never appear in public properties, logs, endpoint identifiers, errors, or nested error causes.
+
+Public paginators are lazy, single-use async iterators. They serialize concurrent `next()` calls, keep upstream cursors private, and advance cursor state only after a page has been fetched, validated, and mapped successfully.
+
 ## Naming and organization
 
 - Public classes and inferred types use `Teyvat` prefixes.
 - ArkType schema constants use `schema_teyvat_*` for public models and `schema_hoyolab_*` for private raw responses.
 - Keep composition-only ArkType schemas file-local; export a schema from its module only when another module uses it, and expose only intentional boundary schemas from root barrels.
-- Add `/** @interface */` to exported ArkType-inferred object type aliases so TypeDoc renders them as interfaces; do not add it to unions or enumerations.
+- Root-export only complete consumer-facing models, meaningful unions, and reusable public options. Do not root-export composition subtypes merely because an implementation uses them.
+- Add `@useDeclaredType` to exported ArkType-inferred aliases so TypeDoc renders their public structure instead of ArkType internals. Also add `@interface` to object-shaped aliases; never add `@interface` to unions or enumerations.
 - Private functions use a leading underscore and remain outside root exports.
 - Teyvat-owned functions, variables, options, properties, and public model fields use `snake_case`, never `camelCase`. Class and type names remain PascalCase, and upstream wire keys retain their exact spelling.
 - Reusable private helpers belong in `lib/utils/` and use a leading underscore.
@@ -30,14 +35,18 @@ One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account 
 
 ## Testing
 
-The live integration suite is `lib/index.test.ts` and uses credentials supplied through `.env`. Agents may run the `bun dev` integration command, but must never edit `lib/index.test.ts`.
+The manual live integration entrypoint is `tests/index.ts` and uses locally persisted authentication plus credentials supplied through `.env`. Run `bun dev` only when the feature can be exercised by the available saved session and the user has permitted a live request. Do not add authkey-dependent wish or transaction calls because no test authkey is available. Edit the manual integration file only when the task explicitly requests coverage there.
 
-Agents may run static TypeScript checks and non-mutating Biome checks. Do not run library or documentation builds while the package is under active implementation. Never print, inspect, or expose `.env` values or cookies.
+After every implementation, run `bun check`, `bun check --fix`, a final `bun check`, and `bun run build`. The build includes the library declarations and tracked TypeDoc output. Treat warnings as issues to investigate rather than declaring success from the exit code alone.
+
+Never print, inspect, or expose `.env` values, cookies, authkeys, passwords, captcha data, or other authentication material.
+
+At handoff, suggest one commit message describing the complete current uncommitted feature diff, not the final small adjustment. Never create commits for the user because their commits are GPG-signed.
 
 ## Roadmap
 
-- Wish history uses an isolated authkey-scoped client and private `end_id` cursors; it never uses account cookies.
-- Defer Genius Invokation TCG support until the account and inventory surfaces are complete.
 - Add configurable language after the English endpoint surface is stable.
+- Add remaining focused Genshin account and utility surfaces only when their public domain models are clear.
+- Defer Genius Invokation TCG support until the core account, inventory, diary, calendar, wish, and transaction surfaces are stable.
 - Expand the app-authentication flow only when concrete session behavior requires it.
 - Add caching and specialized API errors only when concrete endpoint behavior requires them.

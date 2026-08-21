@@ -1,13 +1,24 @@
+import {
+	_get_hoyolab_genshin_currency_transactions,
+	_get_hoyolab_genshin_item_transactions,
+} from '../endpoints/hoyolab/genshin/transactions.ts';
 import { _get_hoyolab_genshin_wishes } from '../endpoints/hoyolab/genshin/wishes.ts';
 import type { TeyvatServer } from '../types/account/server.ts';
+import {
+	schema_teyvat_currency_transaction,
+	schema_teyvat_item_transaction,
+	type TeyvatTransaction,
+	type TeyvatTransactionOptions,
+	type TeyvatTransactionType,
+} from '../types/transactions.ts';
 import {
 	schema_teyvat_wish,
 	type TeyvatWish,
 	type TeyvatWishBannerType,
 	type TeyvatWishClient,
+	type TeyvatWishesOptions,
 	type TeyvatWishHistoryOptions,
 	type TeyvatWishItemType,
-	type TeyvatWishesOptions,
 } from '../types/wishes.ts';
 import { _hoyolab_datetime } from '../utils/misc.ts';
 import { _recognize_genshin_server } from '../utils/uid.ts';
@@ -16,6 +27,7 @@ import { _TeyvatPaginator } from './paginator.ts';
 import { TeyvatHttpClient } from './request.ts';
 
 const ENDPOINT = '/gacha_info/api/getGachaLog';
+const TRANSACTION_ENDPOINT = '/common/hk4e_self_help_query/User';
 const PAGE_SIZE = 20;
 
 const BANNER_TYPES: Record<TeyvatWishBannerType, number> = {
@@ -43,6 +55,13 @@ function _positive_integer(value: string, field: string): number {
 	if (!/^\d+$/.test(value)) throw new TypeError(`${field} must be a positive integer`);
 	const number = Number(value);
 	if (!Number.isSafeInteger(number) || number <= 0) throw new TypeError(`${field} must be a positive safe integer`);
+	return number;
+}
+
+function _signed_integer(value: string, field: string): number {
+	if (!/^-?\d+$/.test(value)) throw new TypeError(`${field} must be an integer`);
+	const number = Number(value);
+	if (!Number.isSafeInteger(number)) throw new TypeError(`${field} must be a safe integer`);
 	return number;
 }
 
@@ -77,10 +96,7 @@ export class _TeyvatWishClient implements TeyvatWishClient {
 			throw new TeyvatError('type must be a supported Genshin wish banner');
 		const banner_type = BANNER_TYPES[options.type];
 		if (banner_type === undefined) throw new TeyvatError('type must be a supported Genshin wish banner');
-		if (
-			options.limit !== undefined &&
-			(!Number.isSafeInteger(options.limit) || options.limit < 0)
-		)
+		if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 0))
 			throw new TeyvatError('limit must be a nonnegative safe integer');
 
 		let expected_uid: number | undefined;
@@ -148,5 +164,81 @@ export class _TeyvatWishClient implements TeyvatWishClient {
 				}
 			},
 		});
+	}
+
+	transactions<T extends TeyvatTransactionType>(
+		options: TeyvatTransactionOptions<T>,
+	): _TeyvatPaginator<TeyvatTransaction & { type: T }, string> {
+		if (!options || typeof options.type !== 'string')
+			throw new TeyvatError('type must be a supported Genshin transaction type');
+		const item_type = options.type === 'artifact' || options.type === 'weapon';
+		if (!item_type && options.type !== 'primogem' && options.type !== 'crystal' && options.type !== 'resin')
+			throw new TeyvatError('type must be a supported Genshin transaction type');
+		if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 0))
+			throw new TeyvatError('limit must be a nonnegative safe integer');
+
+		const paginator = new _TeyvatPaginator<TeyvatTransaction, string>({
+			initial_cursor: '0',
+			limit: options.limit,
+			get_page: async (end_id) => {
+				try {
+					if (item_type) {
+						const raw = await _get_hoyolab_genshin_item_transactions(this.#client, {
+							authkey: this.#authkey,
+							type: options.type,
+							end_id,
+						});
+						const items = raw.list.map((transaction) =>
+							schema_teyvat_item_transaction.assert({
+								id: _integer_string(transaction.id, 'transaction.id'),
+								type: options.type,
+								amount: _signed_integer(transaction.add_num, 'transaction.add_num'),
+								reason: transaction.reason,
+								transacted_at: _hoyolab_datetime(transaction.datetime, 8, 'transaction.datetime'),
+								item: {
+									name: transaction.name,
+									rarity: _positive_integer(transaction.quality, 'transaction.quality'),
+								},
+							}),
+						);
+						return this.#transaction_page(items, end_id);
+					}
+
+					const raw = await _get_hoyolab_genshin_currency_transactions(this.#client, {
+						authkey: this.#authkey,
+						type: options.type,
+						end_id,
+					});
+					const items = raw.list.map((transaction) =>
+						schema_teyvat_currency_transaction.assert({
+							id: _integer_string(transaction.id, 'transaction.id'),
+							type: options.type,
+							amount: _signed_integer(transaction.add_num, 'transaction.add_num'),
+							reason: transaction.reason,
+							transacted_at: _hoyolab_datetime(transaction.datetime, 8, 'transaction.datetime'),
+						}),
+					);
+					return this.#transaction_page(items, end_id);
+				} catch (cause) {
+					if (cause instanceof TeyvatRequestError)
+						throw new TeyvatRequestError(cause.kind, cause.method, cause.endpoint, cause.message, {
+							status: cause.status,
+						});
+					if (cause instanceof TeyvatResponseValidationError) throw cause;
+					throw new TeyvatResponseValidationError('GET', TRANSACTION_ENDPOINT, [String(cause)], { cause });
+				}
+			},
+		});
+		return paginator as _TeyvatPaginator<TeyvatTransaction & { type: T }, string>;
+	}
+
+	#transaction_page<T extends TeyvatTransaction>(items: T[], end_id: string) {
+		const last_id = items.at(-1)?.id;
+		if (items.length === PAGE_SIZE && last_id === end_id)
+			throw new TypeError('transaction-history cursor did not advance');
+		return {
+			items,
+			next_cursor: items.length < PAGE_SIZE ? null : (last_id ?? null),
+		};
 	}
 }
