@@ -1,4 +1,5 @@
 import type { Teyvat } from '#/client/teyvat.ts';
+import type { TeyvatAccountAchievements, TeyvatAchievementsOptions } from '#/types/account/achievements.ts';
 import type { TeyvatCalculatorClient } from '#/types/account/calculator.ts';
 import type { TeyvatAccountCalendar, TeyvatCalendarOptions } from '#/types/account/calendar.ts';
 import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '#/types/account/character.ts';
@@ -24,6 +25,7 @@ import type {
 } from '#/types/account/traveler_diary.ts';
 import type { TeyvatPaginator } from '#/types/paginator.ts';
 import { _recognize_genshin_server } from '#/utils/uid.ts';
+import { _get_account_achievements } from './achievements.ts';
 import { _TeyvatCalculatorClient } from './calculator.ts';
 import { _get_account_calendar } from './calendar.ts';
 import { _get_account_characters } from './characters.ts';
@@ -82,6 +84,10 @@ export class TeyvatAccount {
 
 	async info(options?: TeyvatAccountInfoOptions): Promise<TeyvatAccountInfo> {
 		return await _get_account_info(this, options);
+	}
+
+	async achievements(options?: TeyvatAchievementsOptions): Promise<TeyvatAccountAchievements> {
+		return await _get_account_achievements(this, options);
 	}
 
 	async inventory(): Promise<TeyvatAccountInventory> {

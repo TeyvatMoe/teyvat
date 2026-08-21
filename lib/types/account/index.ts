@@ -1,3 +1,5 @@
+/** @category Achievements */
+export type { TeyvatAccountAchievements, TeyvatAchievementsOptions } from './achievements.ts';
 /** @category Enhancement Calculator */
 export type {
 	TeyvatCalculatorAccessOptions,

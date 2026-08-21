@@ -263,6 +263,7 @@ function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
 
 const tasks = [
 	_make_task('info', () => account.info({ auto_enable: true })),
+	_make_task('achievements', () => account.achievements({ auto_enable: true })),
 	_make_task('inventory', () => account.inventory()),
 	_make_task('current_spiral_abyss', () => account.spiral_abyss()),
 	_make_task('previous_spiral_abyss', () => account.spiral_abyss({ period: 'previous' })),
