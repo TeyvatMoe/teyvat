@@ -127,7 +127,20 @@ function _ticketFromHeader(header: string | null): HoyolabActionTicket {
 }
 
 function _aigisHeader(sessionId: string, solution: TeyvatAuthCaptchaSolution): string {
-	const { version: _, ...data } = solution;
+	const data =
+		solution.version === 'v3'
+			? {
+					['geetest_challenge']: solution.geetestChallenge,
+					['geetest_validate']: solution.geetestValidate,
+					['geetest_seccode']: solution.geetestSeccode,
+				}
+			: {
+					['captcha_id']: solution.captchaId,
+					['lot_number']: solution.lotNumber,
+					['pass_token']: solution.passToken,
+					['gen_time']: solution.genTime,
+					['captcha_output']: solution.captchaOutput,
+				};
 	return `${sessionId};${Buffer.from(JSON.stringify(data)).toString('base64')}`;
 }
 
@@ -207,6 +220,7 @@ export async function _hoyolabSendEmailCode(
 	});
 	const envelope = _validate(schemaEnvelope, response.data, '/ma-verifier/api/createEmailCaptchaByActionTicket');
 	if (envelope.retcode === -3101) return _captchaFromHeader(response.headers.get('x-rpc-aigis'));
+	if (envelope.retcode === -3206) return;
 	if (envelope.retcode !== 0) {
 		throw new TeyvatApiError(
 			envelope.retcode,
