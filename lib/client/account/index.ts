@@ -1,22 +1,16 @@
 import type { Teyvat } from '#/client/teyvat.ts';
-import type { TeyvatAccountAchievements, TeyvatAchievementsOptions } from '#/types/account/achievements.ts';
+import type { TeyvatAccountAchievements } from '#/types/account/achievements.ts';
 import type { TeyvatCalculatorClient } from '#/types/account/calculator.ts';
-import type { TeyvatAccountCalendar, TeyvatCalendarOptions } from '#/types/account/calendar.ts';
+import type { TeyvatAccountCalendar } from '#/types/account/calendar.ts';
 import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '#/types/account/character.ts';
 import type { TeyvatCodeRedemptionResult } from '#/types/account/code_redemption.ts';
-import type { TeyvatAccountDailyNotes, TeyvatDailyNotesOptions } from '#/types/account/daily_notes.ts';
-import type {
-	TeyvatAccountImaginariumTheater,
-	TeyvatImaginariumTheaterOptions,
-} from '#/types/account/imaginarium_theater.ts';
-import type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from '#/types/account/info.ts';
+import type { TeyvatAccountDailyNotes } from '#/types/account/daily_notes.ts';
+import type { TeyvatAccountImaginariumTheater } from '#/types/account/imaginarium_theater.ts';
+import type { TeyvatAccountInfo } from '#/types/account/info.ts';
 import type { TeyvatAccountInventory } from '#/types/account/inventory.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
 import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '#/types/account/spiral_abyss.ts';
-import type {
-	TeyvatAccountStygianOnslaught,
-	TeyvatStygianOnslaughtOptions,
-} from '#/types/account/stygian_onslaught.ts';
+import type { TeyvatAccountStygianOnslaught } from '#/types/account/stygian_onslaught.ts';
 import type {
 	TeyvatAccountTravelerDiary,
 	TeyvatTravelerDiaryEntry,
@@ -82,24 +76,24 @@ export class TeyvatAccount {
 		return account_details.get(this)?.is_official;
 	}
 
-	async info(options?: TeyvatAccountInfoOptions): Promise<TeyvatAccountInfo> {
-		return await _get_account_info(this, options);
+	async info(): Promise<TeyvatAccountInfo> {
+		return await _get_account_info(this);
 	}
 
-	async achievements(options?: TeyvatAchievementsOptions): Promise<TeyvatAccountAchievements> {
-		return await _get_account_achievements(this, options);
+	async achievements(): Promise<TeyvatAccountAchievements> {
+		return await _get_account_achievements(this);
 	}
 
 	async inventory(): Promise<TeyvatAccountInventory> {
 		return await _get_account_inventory(this);
 	}
 
-	async imaginarium_theater(options?: TeyvatImaginariumTheaterOptions): Promise<TeyvatAccountImaginariumTheater> {
-		return await _get_account_imaginarium_theater(this, options);
+	async imaginarium_theater(): Promise<TeyvatAccountImaginariumTheater> {
+		return await _get_account_imaginarium_theater(this);
 	}
 
-	async daily_notes(options?: TeyvatDailyNotesOptions): Promise<TeyvatAccountDailyNotes> {
-		return await _get_account_daily_notes(this, options);
+	async daily_notes(): Promise<TeyvatAccountDailyNotes> {
+		return await _get_account_daily_notes(this);
 	}
 
 	async characters(options?: TeyvatCharactersOptions): Promise<TeyvatAccountCharacter[]> {
@@ -110,16 +104,16 @@ export class TeyvatAccount {
 		return await _redeem_account_code(this, code);
 	}
 
-	async calendar(options?: TeyvatCalendarOptions): Promise<TeyvatAccountCalendar> {
-		return await _get_account_calendar(this, options);
+	async calendar(): Promise<TeyvatAccountCalendar> {
+		return await _get_account_calendar(this);
 	}
 
 	async spiral_abyss(options?: TeyvatSpiralAbyssOptions): Promise<TeyvatAccountSpiralAbyss> {
 		return await _get_account_spiral_abyss(this, options);
 	}
 
-	async stygian_onslaught(options?: TeyvatStygianOnslaughtOptions): Promise<TeyvatAccountStygianOnslaught[]> {
-		return await _get_account_stygian_onslaught(this, options);
+	async stygian_onslaught(): Promise<TeyvatAccountStygianOnslaught[]> {
+		return await _get_account_stygian_onslaught(this);
 	}
 
 	async traveler_diary(options?: TeyvatTravelerDiaryOptions): Promise<TeyvatAccountTravelerDiary> {

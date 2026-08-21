@@ -1,9 +1,5 @@
 import { type } from 'arktype';
 
-export interface TeyvatCalendarOptions {
-	auto_enable?: boolean;
-}
-
 const schema_status = type.enumerated('unknown', 'upcoming', 'active', 'finished');
 /**
  * @useDeclaredType

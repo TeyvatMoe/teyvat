@@ -226,6 +226,7 @@ async function login(): Promise<TeyvatCookies> {
 const cookies = (await db.cookies.get()) ?? (await login());
 const teyvat = new Teyvat({
 	cookies,
+	auto_enable: true,
 	on_cookies_update: async ({ cookies: updated_cookies }) => {
 		await db.cookies.set(updated_cookies);
 	},
@@ -236,12 +237,11 @@ const account = accounts[0];
 if (!account) throw new Error('No overseas Genshin accounts are bound to these cookies');
 
 async function _calculator_result() {
-	const characters = await account.calculator.characters({ auto_enable: true });
+	const characters = await account.calculator.characters();
 	const character = characters[0];
 	if (!character) return { characters, character: null, calculation: null };
-	const details = await account.calculator.character(character.id, { auto_enable: true });
+	const details = await account.calculator.character(character.id);
 	const calculation = await account.calculator.calculate({
-		auto_enable: true,
 		character: {
 			id: character.id,
 			current_level: character.current_level,
@@ -262,19 +262,19 @@ function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
 }
 
 const tasks = [
-	_make_task('info', () => account.info({ auto_enable: true })),
-	_make_task('achievements', () => account.achievements({ auto_enable: true })),
+	_make_task('info', () => account.info()),
+	_make_task('achievements', () => account.achievements()),
 	_make_task('inventory', () => account.inventory()),
 	_make_task('current_spiral_abyss', () => account.spiral_abyss()),
 	_make_task('previous_spiral_abyss', () => account.spiral_abyss({ period: 'previous' })),
-	_make_task('characters', () => account.characters({ auto_enable: true })),
-	_make_task('daily_notes', () => account.daily_notes({ auto_enable: true })),
-	_make_task('imaginarium_theater', () => account.imaginarium_theater({ auto_enable: true })),
-	_make_task('stygian_onslaught', () => account.stygian_onslaught({ auto_enable: true })),
+	_make_task('characters', () => account.characters()),
+	_make_task('daily_notes', () => account.daily_notes()),
+	_make_task('imaginarium_theater', () => account.imaginarium_theater()),
+	_make_task('stygian_onslaught', () => account.stygian_onslaught()),
 	_make_task('traveler_diary', () => account.traveler_diary()),
 	_make_task('traveler_diary_primogems', () => account.traveler_diary_log().all()),
 	_make_task('traveler_diary_mora', () => account.traveler_diary_log({ currency: 'mora' }).all()),
-	_make_task('calendar', () => account.calendar({ auto_enable: true })),
+	_make_task('calendar', () => account.calendar()),
 	_make_task('calculator', _calculator_result),
 	_make_task('check_in', async () => ({
 		info: await teyvat.check_in.info(),

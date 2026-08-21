@@ -1,12 +1,8 @@
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import { _get_hoyolab_genshin_achievements } from '#/endpoints/hoyolab/genshin/achievements.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
-import {
-	schema_teyvat_account_achievements,
-	type TeyvatAccountAchievements,
-	type TeyvatAchievementsOptions,
-} from '#/types/account/achievements.ts';
+import { schema_teyvat_account_achievements, type TeyvatAccountAchievements } from '#/types/account/achievements.ts';
 import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
@@ -21,21 +17,13 @@ async function _request_achievements(account: TeyvatAccount) {
 	return await _get_hoyolab_genshin_achievements(_get_http_client(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_achievements(
-	account: TeyvatAccount,
-	options: TeyvatAchievementsOptions = {},
-): Promise<TeyvatAccountAchievements> {
+export async function _get_account_achievements(account: TeyvatAccount): Promise<TeyvatAccountAchievements> {
 	let raw: Awaited<ReturnType<typeof _request_achievements>>;
 	try {
 		raw = await _request_achievements(account);
 	} catch (cause) {
-		if (!(options.auto_enable && _is_achievements_private(cause))) throw cause;
-
-		const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
-		if (!owned)
-			throw new TeyvatError('Cannot enable achievements for an account not bound to these cookies', { cause });
-
-		await _enable_hoyolab_genshin_battle_chronicle(_get_http_client(account.inst));
+		if (!(account.inst.auto_enable && _is_achievements_private(cause))) throw cause;
+		await _enable_account_feature(account, 'battle_chronicle', cause);
 		let retry_error: TeyvatApiError = cause;
 		let enabled: Awaited<ReturnType<typeof _request_achievements>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {

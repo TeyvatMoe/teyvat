@@ -51,6 +51,7 @@ export interface TeyvatCookiesUpdate {
 export interface TeyvatOptions {
 	cookies?: TeyvatCookies | string;
 	language?: TeyvatLanguage;
+	auto_enable?: boolean;
 	hoyolab_id?: string;
 	on_cookies_update?: (update: TeyvatCookiesUpdate) => Promise<void> | void;
 	accounts_cache_ttl?: number;

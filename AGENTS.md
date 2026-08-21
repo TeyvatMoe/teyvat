@@ -21,6 +21,8 @@ Every upstream response must be parsed as JSON, checked for API errors, and vali
 
 One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account objects reuse that client and are cached by UID.
 
+Automatic HoYoLAB feature enabling is one client-wide, opt-in policy configured through `TeyvatOptions.auto_enable`; account methods must not add their own `auto_enable` options. Enable only the capability required by a recognized privacy or synchronization error, verify the UID is bound first, and deduplicate concurrent setting changes.
+
 Each cookie-backed, authkey-backed, or authentication client owns one immutable validated language, defaulting to `en-us`. Endpoint adapters read it from their HTTP client; public account methods do not accept language overrides. Shared localized caches must be keyed by language.
 
 Wish and transaction history use one isolated authkey-scoped client with no cookies, cookie preparation, session repair, or authkey renewal. Authkeys must never appear in public properties, logs, endpoint identifiers, errors, or nested error causes.

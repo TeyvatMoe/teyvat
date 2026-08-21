@@ -1,9 +1,5 @@
 import { type } from 'arktype';
 
-export interface TeyvatImaginariumTheaterOptions {
-	auto_enable?: boolean;
-}
-
 const schema_teyvat_imaginarium_theater_difficulty = type.enumerated(
 	'unknown',
 	'easy',

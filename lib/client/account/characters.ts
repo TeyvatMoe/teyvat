@@ -1,10 +1,10 @@
+import { _enable_account_feature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import {
 	_get_hoyolab_genshin_character_details,
 	_get_hoyolab_genshin_character_ids,
 } from '#/endpoints/hoyolab/genshin/characters.ts';
-import { _enable_hoyolab_genshin_character_details } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_character,
 	type TeyvatAccountCharacter,
@@ -74,15 +74,8 @@ export async function _get_account_characters(
 	try {
 		raw = await _request_characters(account, ids);
 	} catch (cause) {
-		if (!(options.auto_enable && _is_character_details_private(cause))) throw cause;
-
-		const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
-		if (!owned)
-			throw new TeyvatError('Cannot enable character details for an account not bound to these cookies', {
-				cause,
-			});
-
-		await _enable_hoyolab_genshin_character_details(_get_http_client(account.inst));
+		if (!(account.inst.auto_enable && _is_character_details_private(cause))) throw cause;
+		await _enable_account_feature(account, 'character_details', cause);
 		let retry_error: TeyvatApiError = cause;
 		for (const delay of ENABLE_RETRY_DELAYS) {
 			await _sleep(delay);

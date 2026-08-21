@@ -30,6 +30,7 @@ export class Teyvat {
 	#cookies_completion?: Promise<boolean>;
 	readonly hoyolab_id: string;
 	readonly language: TeyvatLanguage;
+	readonly auto_enable: boolean;
 	readonly check_in: TeyvatCheckInClient;
 
 	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
@@ -51,6 +52,7 @@ export class Teyvat {
 			throw new TeyvatError('accounts_cache_ttl must be a finite, nonnegative number');
 		}
 		this.#accounts_cache_ttl = opts.accounts_cache_ttl ?? 3_600_000;
+		this.auto_enable = opts.auto_enable ?? false;
 		_initialize_http_client(this, cookies, {
 			language: opts.language,
 			prepare_auth: async () => {

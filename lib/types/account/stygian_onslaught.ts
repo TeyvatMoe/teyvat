@@ -1,9 +1,5 @@
 import { type } from 'arktype';
 
-export interface TeyvatStygianOnslaughtOptions {
-	auto_enable?: boolean;
-}
-
 const schema_metric_type = type.enumerated('unknown', 'strongest_strike', 'highest_damage');
 const schema_tag_type = type.enumerated('unknown', 'advantage', 'disadvantage');
 const schema_tag_element = type.enumerated('cryo', 'hydro', 'pyro', 'dendro');

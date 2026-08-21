@@ -2,7 +2,6 @@ import { type } from 'arktype';
 
 export interface TeyvatCharactersOptions {
 	ids?: number[];
-	auto_enable?: boolean;
 }
 
 const schema_teyvat_character_element = type.enumerated('anemo', 'geo', 'electro', 'dendro', 'hydro', 'pyro', 'cryo');

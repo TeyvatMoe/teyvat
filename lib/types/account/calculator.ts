@@ -1,10 +1,6 @@
 import { type } from 'arktype';
 import type { TeyvatCharacterElement } from './character.ts';
 
-export interface TeyvatCalculatorAccessOptions {
-	auto_enable?: boolean;
-}
-
 const schema_calculator_character = type({
 	id: 'number.integer > 0',
 	name: 'string',
@@ -85,7 +81,6 @@ export const schema_teyvat_calculator_result = type({
 });
 
 export interface TeyvatCalculatorOptions {
-	auto_enable?: boolean;
 	character: {
 		id: number;
 		current_level: number;
@@ -120,7 +115,7 @@ export type TeyvatCalculatorResult = typeof schema_teyvat_calculator_result.infe
 
 /** @category Enhancement Calculator */
 export interface TeyvatCalculatorClient {
-	characters(options?: TeyvatCalculatorAccessOptions): Promise<TeyvatCalculatorCharacter[]>;
-	character(id: number, options?: TeyvatCalculatorAccessOptions): Promise<TeyvatCalculatorCharacterDetails>;
+	characters(): Promise<TeyvatCalculatorCharacter[]>;
+	character(id: number): Promise<TeyvatCalculatorCharacterDetails>;
 	calculate(options: TeyvatCalculatorOptions): Promise<TeyvatCalculatorResult>;
 }

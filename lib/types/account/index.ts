@@ -1,8 +1,7 @@
 /** @category Achievements */
-export type { TeyvatAccountAchievements, TeyvatAchievementsOptions } from './achievements.ts';
+export type { TeyvatAccountAchievements } from './achievements.ts';
 /** @category Enhancement Calculator */
 export type {
-	TeyvatCalculatorAccessOptions,
 	TeyvatCalculatorCharacter,
 	TeyvatCalculatorCharacterDetails,
 	TeyvatCalculatorClient,
@@ -13,7 +12,6 @@ export type {
 export type {
 	TeyvatAccountCalendar,
 	TeyvatCalendarElement,
-	TeyvatCalendarOptions,
 	TeyvatCalendarStatus,
 } from './calendar.ts';
 /** @category Characters */
@@ -30,7 +28,6 @@ export type {
 	TeyvatAccountDailyNotes,
 	TeyvatArchonQuestStatus,
 	TeyvatAttendanceRewardStatus,
-	TeyvatDailyNotesOptions,
 	TeyvatExpeditionStatus,
 	TeyvatTaskRewardStatus,
 } from './daily_notes.ts';
@@ -39,10 +36,9 @@ export type {
 	TeyvatAccountImaginariumTheater,
 	TeyvatImaginariumTheaterCharacterRole,
 	TeyvatImaginariumTheaterDifficulty,
-	TeyvatImaginariumTheaterOptions,
 } from './imaginarium_theater.ts';
 /** @category Account Info */
-export type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from './info.ts';
+export type { TeyvatAccountInfo } from './info.ts';
 /** @category Inventory */
 export type { TeyvatAccountInventory } from './inventory.ts';
 /** @category Account Info */
@@ -55,7 +51,7 @@ export type {
 	TeyvatSpiralAbyssPeriod,
 } from './spiral_abyss.ts';
 /** @category Stygian Onslaught */
-export type { TeyvatAccountStygianOnslaught, TeyvatStygianOnslaughtOptions } from './stygian_onslaught.ts';
+export type { TeyvatAccountStygianOnslaught } from './stygian_onslaught.ts';
 /** @category Traveler's Diary */
 export type {
 	TeyvatAccountTravelerDiary,

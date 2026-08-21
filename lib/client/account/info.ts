@@ -1,12 +1,8 @@
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import { _get_hoyolab_genshin_info } from '#/endpoints/hoyolab/genshin/info.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
-import {
-	schema_teyvat_account_info,
-	type TeyvatAccountInfo,
-	type TeyvatAccountInfoOptions,
-} from '#/types/account/info.ts';
+import { schema_teyvat_account_info, type TeyvatAccountInfo } from '#/types/account/info.ts';
 import { _sleep } from '#/utils/misc.ts';
 import { _recognize_genshin_server } from '#/utils/uid.ts';
 import type { TeyvatAccount } from './index.ts';
@@ -28,24 +24,14 @@ async function _request_info(account: TeyvatAccount) {
 	return await _get_hoyolab_genshin_info(_get_http_client(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_info(
-	account: TeyvatAccount,
-	options: TeyvatAccountInfoOptions = {},
-): Promise<TeyvatAccountInfo> {
+export async function _get_account_info(account: TeyvatAccount): Promise<TeyvatAccountInfo> {
 	const server = _recognize_genshin_server(account.uid);
 	let raw: Awaited<ReturnType<typeof _request_info>>;
 	try {
 		raw = await _request_info(account);
 	} catch (cause) {
-		if (!(options.auto_enable && _is_info_private(cause))) throw cause;
-
-		const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
-		if (!owned)
-			throw new TeyvatError('Cannot enable account information for an account not bound to these cookies', {
-				cause,
-			});
-
-		await _enable_hoyolab_genshin_battle_chronicle(_get_http_client(account.inst));
+		if (!(account.inst.auto_enable && _is_info_private(cause))) throw cause;
+		await _enable_account_feature(account, 'battle_chronicle', cause);
 		let retry_error: TeyvatApiError = cause;
 		let enabled_info: Awaited<ReturnType<typeof _request_info>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {

@@ -1,11 +1,10 @@
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import { _get_hoyolab_genshin_stygian_onslaught } from '#/endpoints/hoyolab/genshin/stygian_onslaught.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_stygian_onslaught,
 	type TeyvatAccountStygianOnslaught,
-	type TeyvatStygianOnslaughtOptions,
 } from '#/types/account/stygian_onslaught.ts';
 import { _hoyolab_date, _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
@@ -43,23 +42,13 @@ async function _request_stygian_onslaught(account: TeyvatAccount) {
 	return await _get_hoyolab_genshin_stygian_onslaught(_get_http_client(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_stygian_onslaught(
-	account: TeyvatAccount,
-	options: TeyvatStygianOnslaughtOptions = {},
-): Promise<TeyvatAccountStygianOnslaught[]> {
+export async function _get_account_stygian_onslaught(account: TeyvatAccount): Promise<TeyvatAccountStygianOnslaught[]> {
 	let raw: Awaited<ReturnType<typeof _request_stygian_onslaught>>;
 	try {
 		raw = await _request_stygian_onslaught(account);
 	} catch (cause) {
-		if (!(options.auto_enable && _is_stygian_onslaught_private(cause))) throw cause;
-
-		const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
-		if (!owned)
-			throw new TeyvatError('Cannot enable Stygian Onslaught for an account not bound to these cookies', {
-				cause,
-			});
-
-		await _enable_hoyolab_genshin_battle_chronicle(_get_http_client(account.inst));
+		if (!(account.inst.auto_enable && _is_stygian_onslaught_private(cause))) throw cause;
+		await _enable_account_feature(account, 'battle_chronicle', cause);
 		let retry_error: TeyvatApiError = cause;
 		let enabled: Awaited<ReturnType<typeof _request_stygian_onslaught>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {

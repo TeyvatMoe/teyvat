@@ -1,13 +1,12 @@
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import { _get_hoyolab_genshin_daily_notes } from '#/endpoints/hoyolab/genshin/daily_notes.ts';
-import { _enable_hoyolab_genshin_daily_notes } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_daily_notes,
 	type TeyvatAccountDailyNotes,
 	type TeyvatArchonQuestStatus,
 	type TeyvatAttendanceRewardStatus,
-	type TeyvatDailyNotesOptions,
 	type TeyvatExpeditionStatus,
 	type TeyvatTaskRewardStatus,
 } from '#/types/account/daily_notes.ts';
@@ -52,21 +51,13 @@ async function _request_daily_notes(account: TeyvatAccount) {
 	return await _get_hoyolab_genshin_daily_notes(_get_http_client(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_daily_notes(
-	account: TeyvatAccount,
-	options: TeyvatDailyNotesOptions = {},
-): Promise<TeyvatAccountDailyNotes> {
+export async function _get_account_daily_notes(account: TeyvatAccount): Promise<TeyvatAccountDailyNotes> {
 	let raw: Awaited<ReturnType<typeof _request_daily_notes>>;
 	try {
 		raw = await _request_daily_notes(account);
 	} catch (cause) {
-		if (!(options.auto_enable && _is_daily_notes_private(cause))) throw cause;
-
-		const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
-		if (!owned)
-			throw new TeyvatError('Cannot enable real-time notes for an account not bound to these cookies', { cause });
-
-		await _enable_hoyolab_genshin_daily_notes(_get_http_client(account.inst));
+		if (!(account.inst.auto_enable && _is_daily_notes_private(cause))) throw cause;
+		await _enable_account_feature(account, 'daily_notes', cause);
 		let retry_error: TeyvatApiError = cause;
 		let enabled_notes: Awaited<ReturnType<typeof _request_daily_notes>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {

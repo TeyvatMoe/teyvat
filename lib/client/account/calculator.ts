@@ -1,8 +1,8 @@
+import { _enable_account_feature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client, type TeyvatHttpClient } from '#/client/request.ts';
 import {
 	_calculate_hoyolab_progression,
-	_enable_hoyolab_calculator_sync,
 	_get_hoyolab_calculator_character,
 	_get_hoyolab_calculator_characters,
 } from '#/endpoints/hoyolab/genshin/calculator.ts';
@@ -10,7 +10,6 @@ import {
 	schema_teyvat_calculator_character_details,
 	schema_teyvat_calculator_characters,
 	schema_teyvat_calculator_result,
-	type TeyvatCalculatorAccessOptions,
 	type TeyvatCalculatorCharacter,
 	type TeyvatCalculatorCharacterDetails,
 	type TeyvatCalculatorClient,
@@ -100,10 +99,9 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 		this.#client = _get_http_client(account.inst);
 	}
 
-	async characters(options: TeyvatCalculatorAccessOptions = {}): Promise<TeyvatCalculatorCharacter[]> {
+	async characters(): Promise<TeyvatCalculatorCharacter[]> {
 		const raw = await this.#with_sync(
 			async () => await _get_hoyolab_calculator_characters(this.#client, this.#account.uid, this.#account.server),
-			options.auto_enable,
 		);
 		try {
 			return schema_teyvat_calculator_characters.assert(
@@ -123,10 +121,7 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 		}
 	}
 
-	async character(
-		id: number,
-		options: TeyvatCalculatorAccessOptions = {},
-	): Promise<TeyvatCalculatorCharacterDetails> {
+	async character(id: number): Promise<TeyvatCalculatorCharacterDetails> {
 		const character_id = _id(id, 'Calculator character ID');
 		const raw = await this.#with_sync(
 			async () =>
@@ -136,7 +131,6 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 					this.#account.server,
 					character_id,
 				),
-			options.auto_enable,
 		);
 		try {
 			return schema_teyvat_calculator_character_details.assert({
@@ -207,7 +201,6 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 					this.#account.server,
 					calculation,
 				),
-			options.auto_enable,
 		);
 		try {
 			if (!raw.has_user_info)
@@ -247,17 +240,13 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 		}
 	}
 
-	async #with_sync<T>(request: () => Promise<T>, auto_enable = false): Promise<T> {
+	async #with_sync<T>(request: () => Promise<T>): Promise<T> {
 		try {
 			return await request();
 		} catch (cause) {
-			if (!(auto_enable && cause instanceof TeyvatApiError && cause.retcode === -502002)) throw cause;
-			const owned = (await this.#account.inst.accounts()).some((account) => account.uid === this.#account.uid);
-			if (!owned)
-				throw new TeyvatError('Cannot enable calculator sync for an account not bound to these cookies', {
-					cause,
-				});
-			await _enable_hoyolab_calculator_sync(this.#client);
+			if (!(this.#account.inst.auto_enable && cause instanceof TeyvatApiError && cause.retcode === -502002))
+				throw cause;
+			await _enable_account_feature(this.#account, 'calculator', cause);
 			return await request();
 		}
 	}

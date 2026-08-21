@@ -1,9 +1,5 @@
 import { type } from 'arktype';
 
-export interface TeyvatDailyNotesOptions {
-	auto_enable?: boolean;
-}
-
 const schema_teyvat_expedition_status = type.enumerated('ongoing', 'finished', 'unknown');
 /**
  * @useDeclaredType

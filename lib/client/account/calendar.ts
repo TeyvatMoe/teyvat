@@ -1,12 +1,11 @@
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _get_http_client } from '#/client/request.ts';
 import { _get_hoyolab_genshin_calendar } from '#/endpoints/hoyolab/genshin/calendar.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_calendar,
 	type TeyvatAccountCalendar,
 	type TeyvatCalendarElement,
-	type TeyvatCalendarOptions,
 	type TeyvatCalendarStatus,
 } from '#/types/account/calendar.ts';
 import { _nullable_unix_date, _numeric_value, _sleep } from '#/utils/misc.ts';
@@ -37,23 +36,13 @@ async function _request_calendar(account: TeyvatAccount) {
 	return await _get_hoyolab_genshin_calendar(_get_http_client(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_calendar(
-	account: TeyvatAccount,
-	options: TeyvatCalendarOptions = {},
-): Promise<TeyvatAccountCalendar> {
+export async function _get_account_calendar(account: TeyvatAccount): Promise<TeyvatAccountCalendar> {
 	let raw: Awaited<ReturnType<typeof _request_calendar>>;
 	try {
 		raw = await _request_calendar(account);
 	} catch (cause) {
-		if (!(options.auto_enable && _is_calendar_private(cause))) throw cause;
-
-		const owned = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
-		if (!owned)
-			throw new TeyvatError('Cannot enable the event calendar for an account not bound to these cookies', {
-				cause,
-			});
-
-		await _enable_hoyolab_genshin_battle_chronicle(_get_http_client(account.inst));
+		if (!(account.inst.auto_enable && _is_calendar_private(cause))) throw cause;
+		await _enable_account_feature(account, 'battle_chronicle', cause);
 		let retry_error: TeyvatApiError = cause;
 		let enabled: Awaited<ReturnType<typeof _request_calendar>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {

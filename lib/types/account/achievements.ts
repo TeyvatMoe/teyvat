@@ -1,9 +1,5 @@
 import { type } from 'arktype';
 
-export interface TeyvatAchievementsOptions {
-	auto_enable?: boolean;
-}
-
 const schema_category = type({
 	id: 'string',
 	name: 'string',

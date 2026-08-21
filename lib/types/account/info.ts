@@ -120,9 +120,6 @@ export const schema_teyvat_account_info = type({
 });
 
 /** @category Account Info */
-export interface TeyvatAccountInfoOptions {
-	auto_enable?: boolean;
-}
 
 /**
  * @interface
