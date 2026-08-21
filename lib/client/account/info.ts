@@ -1,14 +1,14 @@
-import { _get_hoyolab_genshin_info } from '../../endpoints/hoyolab/genshin/info.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '../../endpoints/hoyolab/settings.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_info } from '#/endpoints/hoyolab/genshin/info.ts';
+import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_info,
 	type TeyvatAccountInfo,
 	type TeyvatAccountInfoOptions,
-} from '../../types/account/info.ts';
-import { _sleep } from '../../utils/misc.ts';
-import { _recognize_genshin_server } from '../../utils/uid.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/info.ts';
+import { _sleep } from '#/utils/misc.ts';
+import { _recognize_genshin_server } from '#/utils/uid.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/index';

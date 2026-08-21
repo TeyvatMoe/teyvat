@@ -1,5 +1,7 @@
-import { _get_hoyolab_genshin_daily_notes } from '../../endpoints/hoyolab/genshin/daily_notes.ts';
-import { _enable_hoyolab_genshin_daily_notes } from '../../endpoints/hoyolab/settings.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_daily_notes } from '#/endpoints/hoyolab/genshin/daily_notes.ts';
+import { _enable_hoyolab_genshin_daily_notes } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_daily_notes,
 	type TeyvatAccountDailyNotes,
@@ -8,10 +10,8 @@ import {
 	type TeyvatDailyNotesOptions,
 	type TeyvatExpeditionStatus,
 	type TeyvatTaskRewardStatus,
-} from '../../types/account/daily_notes.ts';
-import { _completion_date, _numeric_value, _sleep } from '../../utils/misc.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/daily_notes.ts';
+import { _completion_date, _numeric_value, _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/dailyNote';

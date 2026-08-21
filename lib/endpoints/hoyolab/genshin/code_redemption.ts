@@ -1,9 +1,9 @@
 import { type } from 'arktype';
-import { TeyvatApiError, TeyvatCodeRedemptionError, TeyvatRequestError } from '../../../client/errors.ts';
-import type { TeyvatHttpClient } from '../../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
-import type { TeyvatServer } from '../../../types/account/server.ts';
-import { _short_language } from '../../../utils/misc.ts';
+import { TeyvatApiError, TeyvatCodeRedemptionError, TeyvatRequestError } from '#/client/errors.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
+import { _short_language } from '#/utils/misc.ts';
 
 const ENDPOINT = 'https://public-operation-hk4e.hoyoverse.com/common/apicdkey/api/webExchangeCdkey';
 

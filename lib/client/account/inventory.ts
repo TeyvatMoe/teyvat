@@ -1,7 +1,7 @@
-import { _get_hoyolab_genshin_inventory, _get_hoyolab_teyvat_tree } from '../../endpoints/hoyolab/genshin/inventory.ts';
-import { schema_teyvat_account_inventory, type TeyvatAccountInventory } from '../../types/account/inventory.ts';
-import { TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+import { TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_inventory, _get_hoyolab_teyvat_tree } from '#/endpoints/hoyolab/genshin/inventory.ts';
+import { schema_teyvat_account_inventory, type TeyvatAccountInventory } from '#/types/account/inventory.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/common/map_user/ys_obc/v1/user/sync_game_material_info';

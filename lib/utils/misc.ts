@@ -1,5 +1,5 @@
-import type { TeyvatServer } from '../types/account/server.ts';
-import type { TeyvatLanguage } from '../types/language.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
+import type { TeyvatLanguage } from '#/types/language.ts';
 
 export function _short_language(language: TeyvatLanguage): string {
 	return language.startsWith('zh-') ? language : language.split('-', 1)[0];

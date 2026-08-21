@@ -1,5 +1,5 @@
-import { _generate_overseas_ds } from '../../auth/ds.ts';
-import type { TeyvatLanguage } from '../../types/language.ts';
+import { _generate_overseas_ds } from '#/auth/ds.ts';
+import type { TeyvatLanguage } from '#/types/language.ts';
 
 const USER_AGENT =
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';

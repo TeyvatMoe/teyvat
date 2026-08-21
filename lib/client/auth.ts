@@ -1,12 +1,12 @@
 import { randomBytes as random_bytes } from 'node:crypto';
-import { _encrypt_app_login_credential } from '../auth/credentials.ts';
+import { _encrypt_app_login_credential } from '#/auth/credentials.ts';
 import {
 	_hoyolab_app_login,
 	_hoyolab_send_email_code,
 	_hoyolab_verify_email_code,
 	type HoyolabActionTicket,
 	type HoyolabCaptcha,
-} from '../endpoints/hoyolab/auth.ts';
+} from '#/endpoints/hoyolab/auth.ts';
 import {
 	schema_teyvat_auth_captcha_required,
 	schema_teyvat_auth_captcha_solution,
@@ -16,9 +16,9 @@ import {
 	type TeyvatAuthOptions,
 	type TeyvatAuthResult,
 	type TeyvatAuthSession,
-} from '../types/auth.ts';
-import type { TeyvatLanguage } from '../types/language.ts';
-import { _hoyolab_id_from_cookies } from '../utils/cookies.ts';
+} from '#/types/auth.ts';
+import type { TeyvatLanguage } from '#/types/language.ts';
+import { _hoyolab_id_from_cookies } from '#/utils/cookies.ts';
 import { TeyvatError } from './errors.ts';
 import { TeyvatHttpClient } from './request.ts';
 

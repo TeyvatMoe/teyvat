@@ -1,9 +1,9 @@
 import { type Type, type } from 'arktype';
-import { _generate_app_login_ds, _generate_app_token_ds } from '../../auth/ds.ts';
-import { TeyvatApiError, TeyvatResponseValidationError } from '../../client/errors.ts';
-import type { TeyvatHttpClient } from '../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../consts/domains.ts';
-import type { TeyvatAuthCaptchaSolution } from '../../types/auth.ts';
+import { _generate_app_login_ds, _generate_app_token_ds } from '#/auth/ds.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import type { TeyvatAuthCaptchaSolution } from '#/types/auth.ts';
 
 const APP_ID = 'c9oqaq3s3gu8';
 const APP_VERSION = '4.8.0';

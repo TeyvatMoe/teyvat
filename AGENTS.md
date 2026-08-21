@@ -40,6 +40,7 @@ Genshin daily check-in is scoped to the HoYoLAB account, not an individual game 
 - Teyvat-owned functions, variables, options, properties, and public model fields use `snake_case`, never `camelCase`. Class and type names remain PascalCase, and upstream wire keys retain their exact spelling.
 - Reusable private helpers belong in `lib/utils/` and use a leading underscore.
 - Public models may group related upstream fields into clearer nested objects.
+- Use the `#/*` path alias for imports that cross out of the current directory. Keep same-directory imports and exports relative with `./`.
 
 ## Testing
 

@@ -4,7 +4,7 @@ import {
 	_get_hoyolab_check_in_info,
 	_get_hoyolab_check_in_rewards,
 	type HoyolabCheckInCaptcha,
-} from '../endpoints/hoyolab/genshin/check_in.ts';
+} from '#/endpoints/hoyolab/genshin/check_in.ts';
 import {
 	schema_teyvat_check_in_captcha_solution,
 	schema_teyvat_check_in_history_entry,
@@ -17,9 +17,9 @@ import {
 	type TeyvatCheckInHistoryOptions,
 	type TeyvatCheckInInfo,
 	type TeyvatCheckInResult,
-} from '../types/check_in.ts';
-import type { TeyvatPaginator } from '../types/paginator.ts';
-import { _current_utc_offset_day, _hoyolab_datetime } from '../utils/misc.ts';
+} from '#/types/check_in.ts';
+import type { TeyvatPaginator } from '#/types/paginator.ts';
+import { _current_utc_offset_day, _hoyolab_datetime } from '#/utils/misc.ts';
 import { TeyvatError, TeyvatResponseValidationError } from './errors.ts';
 import { _TeyvatPaginator } from './paginator.ts';
 import { _get_http_client, type TeyvatHttpClient } from './request.ts';

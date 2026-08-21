@@ -1,8 +1,8 @@
 import type { Type } from 'arktype';
-import { type CookieInput, CookieJar } from '../auth/cookies.ts';
-import type { TeyvatDomain } from '../consts/domains.ts';
-import type { TeyvatCookies } from '../types/cookies.ts';
-import { schema_teyvat_language, type TeyvatLanguage } from '../types/language.ts';
+import { type CookieInput, CookieJar } from '#/auth/cookies.ts';
+import type { TeyvatDomain } from '#/consts/domains.ts';
+import type { TeyvatCookies } from '#/types/cookies.ts';
+import { schema_teyvat_language, type TeyvatLanguage } from '#/types/language.ts';
 import { TeyvatApiError, TeyvatError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
 
 type Fetch = (input: Request | string | URL, init?: RequestInit) => Promise<Response>;

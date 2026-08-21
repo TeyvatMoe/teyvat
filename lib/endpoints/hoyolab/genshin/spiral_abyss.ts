@@ -1,9 +1,9 @@
 import { type } from 'arktype';
-import type { TeyvatHttpClient } from '../../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
-import type { TeyvatServer } from '../../../types/account/server.ts';
-import type { TeyvatSpiralAbyssPeriod } from '../../../types/account/spiral_abyss.ts';
-import { _hoyolab_headers } from '../headers.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import { _hoyolab_headers } from '#/endpoints/hoyolab/headers.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
+import type { TeyvatSpiralAbyssPeriod } from '#/types/account/spiral_abyss.ts';
 
 const schema_ranked_character = type({
 	avatar_id: 'number.integer',

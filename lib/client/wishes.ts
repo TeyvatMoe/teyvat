@@ -1,17 +1,17 @@
 import {
 	_get_hoyolab_genshin_currency_transactions,
 	_get_hoyolab_genshin_item_transactions,
-} from '../endpoints/hoyolab/genshin/transactions.ts';
-import { _get_hoyolab_genshin_wishes } from '../endpoints/hoyolab/genshin/wishes.ts';
-import type { TeyvatServer } from '../types/account/server.ts';
-import type { TeyvatLanguage } from '../types/language.ts';
+} from '#/endpoints/hoyolab/genshin/transactions.ts';
+import { _get_hoyolab_genshin_wishes } from '#/endpoints/hoyolab/genshin/wishes.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
+import type { TeyvatLanguage } from '#/types/language.ts';
 import {
 	schema_teyvat_currency_transaction,
 	schema_teyvat_item_transaction,
 	type TeyvatTransaction,
 	type TeyvatTransactionOptions,
 	type TeyvatTransactionType,
-} from '../types/transactions.ts';
+} from '#/types/transactions.ts';
 import {
 	schema_teyvat_wish,
 	type TeyvatWish,
@@ -20,9 +20,9 @@ import {
 	type TeyvatWishesOptions,
 	type TeyvatWishHistoryOptions,
 	type TeyvatWishItemType,
-} from '../types/wishes.ts';
-import { _hoyolab_datetime } from '../utils/misc.ts';
-import { _recognize_genshin_server } from '../utils/uid.ts';
+} from '#/types/wishes.ts';
+import { _hoyolab_datetime } from '#/utils/misc.ts';
+import { _recognize_genshin_server } from '#/utils/uid.ts';
 import { TeyvatError, TeyvatRequestError, TeyvatResponseValidationError } from './errors.ts';
 import { _TeyvatPaginator } from './paginator.ts';
 import { TeyvatHttpClient } from './request.ts';

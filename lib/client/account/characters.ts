@@ -1,18 +1,18 @@
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
 import {
 	_get_hoyolab_genshin_character_details,
 	_get_hoyolab_genshin_character_ids,
-} from '../../endpoints/hoyolab/genshin/characters.ts';
-import { _enable_hoyolab_genshin_character_details } from '../../endpoints/hoyolab/settings.ts';
+} from '#/endpoints/hoyolab/genshin/characters.ts';
+import { _enable_hoyolab_genshin_character_details } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_character,
 	type TeyvatAccountCharacter,
 	type TeyvatCharacterElement,
 	type TeyvatCharactersOptions,
 	type TeyvatWeaponType,
-} from '../../types/account/character.ts';
-import { _sleep } from '../../utils/misc.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/character.ts';
+import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/character/detail';

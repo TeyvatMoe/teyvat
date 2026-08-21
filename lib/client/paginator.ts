@@ -1,4 +1,4 @@
-import type { TeyvatPaginator } from '../types/paginator.ts';
+import type { TeyvatPaginator } from '#/types/paginator.ts';
 
 export interface TeyvatPaginatorPage<T, Cursor> {
 	items: readonly T[];

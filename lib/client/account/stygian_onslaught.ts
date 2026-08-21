@@ -1,13 +1,13 @@
-import { _get_hoyolab_genshin_stygian_onslaught } from '../../endpoints/hoyolab/genshin/stygian_onslaught.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '../../endpoints/hoyolab/settings.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_stygian_onslaught } from '#/endpoints/hoyolab/genshin/stygian_onslaught.ts';
+import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_stygian_onslaught,
 	type TeyvatAccountStygianOnslaught,
 	type TeyvatStygianOnslaughtOptions,
-} from '../../types/account/stygian_onslaught.ts';
-import { _hoyolab_date, _sleep } from '../../utils/misc.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/stygian_onslaught.ts';
+import { _hoyolab_date, _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/hard_challenge';

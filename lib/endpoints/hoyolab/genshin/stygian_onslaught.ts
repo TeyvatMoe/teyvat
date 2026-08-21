@@ -1,8 +1,8 @@
 import { type } from 'arktype';
-import type { TeyvatHttpClient } from '../../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
-import type { TeyvatServer } from '../../../types/account/server.ts';
-import { _hoyolab_headers } from '../headers.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import { _hoyolab_headers } from '#/endpoints/hoyolab/headers.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
 
 const schema_date = type({
 	year: 'number.integer',

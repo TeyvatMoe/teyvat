@@ -1,7 +1,10 @@
+import { TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _TeyvatPaginator } from '#/client/paginator.ts';
+import { _get_http_client } from '#/client/request.ts';
 import {
 	_get_hoyolab_genshin_traveler_diary,
 	_get_hoyolab_genshin_traveler_diary_log_page,
-} from '../../endpoints/hoyolab/genshin/traveler_diary.ts';
+} from '#/endpoints/hoyolab/genshin/traveler_diary.ts';
 import {
 	schema_teyvat_account_traveler_diary,
 	schema_teyvat_traveler_diary_entry,
@@ -10,12 +13,9 @@ import {
 	type TeyvatTravelerDiaryEntry,
 	type TeyvatTravelerDiaryLogOptions,
 	type TeyvatTravelerDiaryOptions,
-} from '../../types/account/traveler_diary.ts';
-import type { TeyvatPaginator } from '../../types/paginator.ts';
-import { _current_utc_offset_month, _hoyolab_datetime } from '../../utils/misc.ts';
-import { TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _TeyvatPaginator } from '../paginator.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/traveler_diary.ts';
+import type { TeyvatPaginator } from '#/types/paginator.ts';
+import { _current_utc_offset_month, _hoyolab_datetime } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const SUMMARY_ENDPOINT = '/event/ysledgeros/month_info';

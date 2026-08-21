@@ -1,15 +1,15 @@
-import { _get_hoyolab_genshin_calendar } from '../../endpoints/hoyolab/genshin/calendar.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '../../endpoints/hoyolab/settings.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_calendar } from '#/endpoints/hoyolab/genshin/calendar.ts';
+import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_calendar,
 	type TeyvatAccountCalendar,
 	type TeyvatCalendarElement,
 	type TeyvatCalendarOptions,
 	type TeyvatCalendarStatus,
-} from '../../types/account/calendar.ts';
-import { _nullable_unix_date, _numeric_value, _sleep } from '../../utils/misc.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/calendar.ts';
+import { _nullable_unix_date, _numeric_value, _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/act_calendar';

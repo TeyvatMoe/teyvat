@@ -1,5 +1,5 @@
-import { _get_hoyolab_game_roles } from '../endpoints/hoyolab/accounts.ts';
-import { _recognize_genshin_server } from '../utils/uid.ts';
+import { _get_hoyolab_game_roles } from '#/endpoints/hoyolab/accounts.ts';
+import { _recognize_genshin_server } from '#/utils/uid.ts';
 import { _set_account_details } from './account/index.ts';
 import { TeyvatResponseValidationError } from './errors.ts';
 import { _get_http_client } from './request.ts';

@@ -1,5 +1,5 @@
-import { TeyvatError } from '../client/errors.ts';
-import type { TeyvatServer } from '../types/account/server.ts';
+import { TeyvatError } from '#/client/errors.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
 
 const SERVER_PREFIXES: Readonly<Record<string, TeyvatServer>> = {
 	'6': 'os_usa',

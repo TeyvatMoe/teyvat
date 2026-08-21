@@ -1,8 +1,8 @@
 import { type } from 'arktype';
-import type { TeyvatHttpClient } from '../../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
-import type { TeyvatServer } from '../../../types/account/server.ts';
-import type { TeyvatLanguage } from '../../../types/language.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
+import type { TeyvatLanguage } from '#/types/language.ts';
 
 const schema_material_info = type.Record('string', 'number | string');
 

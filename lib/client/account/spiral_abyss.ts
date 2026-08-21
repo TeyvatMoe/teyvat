@@ -1,14 +1,14 @@
-import { _get_hoyolab_genshin_spiral_abyss } from '../../endpoints/hoyolab/genshin/spiral_abyss.ts';
+import { TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_spiral_abyss } from '#/endpoints/hoyolab/genshin/spiral_abyss.ts';
 import {
 	schema_teyvat_account_spiral_abyss,
 	type TeyvatAccountSpiralAbyss,
 	type TeyvatSpiralAbyssHalf,
 	type TeyvatSpiralAbyssOptions,
 	type TeyvatSpiralAbyssPeriod,
-} from '../../types/account/spiral_abyss.ts';
-import { _unix_date } from '../../utils/misc.ts';
-import { TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/spiral_abyss.ts';
+import { _unix_date } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/spiralAbyss';

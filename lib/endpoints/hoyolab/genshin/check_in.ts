@@ -1,9 +1,9 @@
 import { type } from 'arktype';
-import { TeyvatApiError, TeyvatResponseValidationError } from '../../../client/errors.ts';
-import type { TeyvatHttpClient } from '../../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
-import type { TeyvatCheckInCaptchaSolution } from '../../../types/check_in.ts';
-import { _hoyolab_headers } from '../headers.ts';
+import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import { _hoyolab_headers } from '#/endpoints/hoyolab/headers.ts';
+import type { TeyvatCheckInCaptchaSolution } from '#/types/check_in.ts';
 
 const ACTIVITY_ID = 'e202102251931481';
 const CLAIM_ENDPOINT = '/event/sol/sign';

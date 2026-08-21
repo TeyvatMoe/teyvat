@@ -1,4 +1,4 @@
-import { _hoyolab_complete_cookies } from '../endpoints/hoyolab/auth.ts';
+import { _hoyolab_complete_cookies } from '#/endpoints/hoyolab/auth.ts';
 import type {
 	TeyvatAccountsOptions,
 	TeyvatAuthOptions,
@@ -9,9 +9,9 @@ import type {
 	TeyvatOptions,
 	TeyvatWishClient,
 	TeyvatWishesOptions,
-} from '../types/index.ts';
-import { _hoyolab_id_from_cookies, _parse_cookies } from '../utils/cookies.ts';
-import { _recognize_genshin_server } from '../utils/uid.ts';
+} from '#/types/index.ts';
+import { _hoyolab_id_from_cookies, _parse_cookies } from '#/utils/cookies.ts';
+import { _recognize_genshin_server } from '#/utils/uid.ts';
 import { TeyvatAccount } from './account/index.ts';
 import { _get_accounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';

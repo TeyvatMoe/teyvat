@@ -1,15 +1,15 @@
-import { _get_hoyolab_genshin_imaginarium_theater } from '../../endpoints/hoyolab/genshin/imaginarium_theater.ts';
-import { _enable_hoyolab_genshin_battle_chronicle } from '../../endpoints/hoyolab/settings.ts';
+import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { _get_http_client } from '#/client/request.ts';
+import { _get_hoyolab_genshin_imaginarium_theater } from '#/endpoints/hoyolab/genshin/imaginarium_theater.ts';
+import { _enable_hoyolab_genshin_battle_chronicle } from '#/endpoints/hoyolab/settings.ts';
 import {
 	schema_teyvat_account_imaginarium_theater,
 	type TeyvatAccountImaginariumTheater,
 	type TeyvatImaginariumTheaterCharacterRole,
 	type TeyvatImaginariumTheaterDifficulty,
 	type TeyvatImaginariumTheaterOptions,
-} from '../../types/account/imaginarium_theater.ts';
-import { _sleep, _unix_date } from '../../utils/misc.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '../errors.ts';
-import { _get_http_client } from '../request.ts';
+} from '#/types/account/imaginarium_theater.ts';
+import { _sleep, _unix_date } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/role_combat';

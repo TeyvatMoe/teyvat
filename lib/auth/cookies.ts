@@ -1,4 +1,4 @@
-import type { TeyvatCookies } from '../types/cookies.ts';
+import type { TeyvatCookies } from '#/types/cookies.ts';
 
 export type CookieInput = TeyvatCookies | string;
 

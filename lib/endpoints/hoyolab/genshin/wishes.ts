@@ -1,7 +1,7 @@
 import { type } from 'arktype';
-import type { TeyvatHttpClient } from '../../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../../consts/domains.ts';
-import { _short_language } from '../../../utils/misc.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
+import { _short_language } from '#/utils/misc.ts';
 
 const schema_wish = type({
 	uid: 'string',

@@ -1,28 +1,28 @@
-import type { TeyvatAccountCalendar, TeyvatCalendarOptions } from '../../types/account/calendar.ts';
-import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '../../types/account/character.ts';
-import type { TeyvatCodeRedemptionResult } from '../../types/account/code_redemption.ts';
-import type { TeyvatAccountDailyNotes, TeyvatDailyNotesOptions } from '../../types/account/daily_notes.ts';
+import type { Teyvat } from '#/client/teyvat.ts';
+import type { TeyvatAccountCalendar, TeyvatCalendarOptions } from '#/types/account/calendar.ts';
+import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '#/types/account/character.ts';
+import type { TeyvatCodeRedemptionResult } from '#/types/account/code_redemption.ts';
+import type { TeyvatAccountDailyNotes, TeyvatDailyNotesOptions } from '#/types/account/daily_notes.ts';
 import type {
 	TeyvatAccountImaginariumTheater,
 	TeyvatImaginariumTheaterOptions,
-} from '../../types/account/imaginarium_theater.ts';
-import type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from '../../types/account/info.ts';
-import type { TeyvatAccountInventory } from '../../types/account/inventory.ts';
-import type { TeyvatServer } from '../../types/account/server.ts';
-import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '../../types/account/spiral_abyss.ts';
+} from '#/types/account/imaginarium_theater.ts';
+import type { TeyvatAccountInfo, TeyvatAccountInfoOptions } from '#/types/account/info.ts';
+import type { TeyvatAccountInventory } from '#/types/account/inventory.ts';
+import type { TeyvatServer } from '#/types/account/server.ts';
+import type { TeyvatAccountSpiralAbyss, TeyvatSpiralAbyssOptions } from '#/types/account/spiral_abyss.ts';
 import type {
 	TeyvatAccountStygianOnslaught,
 	TeyvatStygianOnslaughtOptions,
-} from '../../types/account/stygian_onslaught.ts';
+} from '#/types/account/stygian_onslaught.ts';
 import type {
 	TeyvatAccountTravelerDiary,
 	TeyvatTravelerDiaryEntry,
 	TeyvatTravelerDiaryLogOptions,
 	TeyvatTravelerDiaryOptions,
-} from '../../types/account/traveler_diary.ts';
-import type { TeyvatPaginator } from '../../types/paginator.ts';
-import { _recognize_genshin_server } from '../../utils/uid.ts';
-import type { Teyvat } from '../teyvat.ts';
+} from '#/types/account/traveler_diary.ts';
+import type { TeyvatPaginator } from '#/types/paginator.ts';
+import { _recognize_genshin_server } from '#/utils/uid.ts';
 import { _get_account_calendar } from './calendar.ts';
 import { _get_account_characters } from './characters.ts';
 import { _redeem_account_code } from './code_redemption.ts';

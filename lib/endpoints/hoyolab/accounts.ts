@@ -1,6 +1,6 @@
 import { type } from 'arktype';
-import type { TeyvatHttpClient } from '../../client/request.ts';
-import { TEYVAT_DOMAINS } from '../../consts/domains.ts';
+import type { TeyvatHttpClient } from '#/client/request.ts';
+import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
 import { _hoyolab_headers } from './headers.ts';
 
 export const schema_hoyolab_game_roles_response = type({
