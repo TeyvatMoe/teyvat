@@ -108,10 +108,12 @@ export class TeyvatAccount {
 		return await _getAccountCharacters(this, options);
 	}
 
+	/** Returns the HoYoLAB Battle Chronicle character showcase in its displayed order. */
 	async showcase(): Promise<TeyvatAccountShowcaseCharacter[]> {
 		return await _getAccountShowcase(this);
 	}
 
+	/** Sets up to 12 Battle Chronicle showcase characters in the submitted order. */
 	async setShowcase(characterIds: number[]): Promise<TeyvatAccountShowcaseCharacter[]> {
 		return await _setAccountShowcase(this, characterIds);
 	}

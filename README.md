@@ -49,7 +49,7 @@ const [info, characters, dailyNotes] = await Promise.all([
 
 Whenever `onCookiesUpdate` runs, save the new cookies securely. Teyvat can use a stored `stoken` to fill in or repair read-session cookies when they expire, but no credential lasts forever.
 
-An account gives you profile and exploration data, achievements, inventory, detailed characters, showcase management, daily notes, the event calendar, Spiral Abyss, Imaginarium Theater, Stygian Onslaught, Envisaged Echoes, Traveler's Diary, enhancement calculations, and code redemption. The [API documentation](https://lib.teyvat.moe) has the complete return models.
+An account gives you profile and exploration data, achievements, inventory, detailed characters, Battle Chronicle showcase management, daily notes, the event calendar, Spiral Abyss, Imaginarium Theater, Stygian Onslaught, Envisaged Echoes, Traveler's Diary, enhancement calculations, and code redemption. The [API documentation](https://lib.teyvat.moe) has the complete return models.
 
 ## Authentication
 

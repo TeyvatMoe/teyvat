@@ -63,10 +63,8 @@ function _mapShowcase(
 	}
 }
 
-function _sameIds(actual: number[], expected: number[]): boolean {
-	if (actual.length !== expected.length) return false;
-	const expectedIds = new Set(expected);
-	return actual.every((id) => expectedIds.has(id));
+function _sameOrderedIds(actual: number[], expected: number[]): boolean {
+	return actual.length === expected.length && actual.every((id, index) => id === expected[index]);
 }
 
 export async function _getAccountShowcase(account: TeyvatAccount): Promise<TeyvatAccountShowcaseCharacter[]> {
@@ -78,7 +76,8 @@ export async function _setAccountShowcase(
 	requestedCharacterIds: number[],
 ): Promise<TeyvatAccountShowcaseCharacter[]> {
 	const ids = _characterIds(requestedCharacterIds);
-	if (ids.length > 8) throw new TeyvatError('A Genshin showcase cannot contain more than eight characters');
+	if (ids.length > 12)
+		throw new TeyvatError('A Battle Chronicle character showcase cannot contain more than 12 characters');
 
 	const bound = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
 	if (!bound) throw new TeyvatError('Cannot change the showcase of an account not bound to these cookies');
@@ -86,14 +85,14 @@ export async function _setAccountShowcase(
 	const list = await _characterList(account);
 	const ownedIds = new Set(list.list.map((character) => character.id));
 	if (ids.some((id) => !ownedIds.has(id)))
-		throw new TeyvatError('A Genshin showcase can contain only characters owned by the account');
+		throw new TeyvatError('A Battle Chronicle character showcase can contain only characters owned by the account');
 
 	await _setHoyolabGenshinShowcase(_getHttpClient(account.inst), account.uid, account.server, ids);
 	for (const delay of PROPAGATION_RETRY_DELAYS) {
 		await _sleep(delay);
 		const showcase = _mapShowcase((await _characterList(account)).list);
 		if (
-			_sameIds(
+			_sameOrderedIds(
 				showcase.map((character) => character.id),
 				ids,
 			)

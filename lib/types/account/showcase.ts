@@ -15,6 +15,8 @@ export const schemaTeyvatAccountShowcaseCharacter = type({
 });
 
 /**
+ * A character pinned to the HoYoLAB Battle Chronicle character showcase.
+ *
  * @interface
  * @useDeclaredType
  * @category Character Showcase
