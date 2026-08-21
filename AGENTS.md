@@ -36,7 +36,7 @@ Agents may run static TypeScript checks and non-mutating Biome checks. Do not ru
 
 ## Roadmap
 
-- Implement wish history next, reusing the public paginator with private `end_id` cursors.
+- Wish history uses an isolated authkey-scoped client and private `end_id` cursors; it never uses account cookies.
 - Defer Genius Invokation TCG support until the account and inventory surfaces are complete.
 - Add configurable language after the English endpoint surface is stable.
 - Expand the app-authentication flow only when concrete session behavior requires it.

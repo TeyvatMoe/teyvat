@@ -7,6 +7,7 @@ export const TEYVAT_DOMAINS = {
 	hoyolab_map: 'https://sg-public-api.hoyolab.com/common/map_user/ys_obc/v1/user/',
 	hoyolab_map_static: 'https://sg-public-api-static.hoyolab.com/common/map_user/ys_obc/v2/map/label/',
 	genshin_diary: 'https://sg-hk4e-api.hoyolab.com/event/ysledgeros/',
+	genshin_wishes: 'https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/',
 } as const;
 
 export type TeyvatDomain = (typeof TEYVAT_DOMAINS)[keyof typeof TEYVAT_DOMAINS];

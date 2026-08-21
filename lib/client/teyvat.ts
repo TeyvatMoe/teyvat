@@ -5,6 +5,8 @@ import type {
 	TeyvatAuthSession,
 	TeyvatCookies,
 	TeyvatOptions,
+	TeyvatWishClient,
+	TeyvatWishesOptions,
 } from '../types/index.ts';
 import { _hoyolab_id_from_cookies, _parse_cookies } from '../utils/cookies.ts';
 import { _recognize_genshin_server } from '../utils/uid.ts';
@@ -13,6 +15,7 @@ import { _get_accounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';
 import { TeyvatError } from './errors.ts';
 import { _get_http_client, _initialize_http_client } from './request.ts';
+import { _TeyvatWishClient } from './wishes.ts';
 
 /** @category Core */
 export class Teyvat {
@@ -26,6 +29,10 @@ export class Teyvat {
 
 	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
 		return new _TeyvatAuthSession(options);
+	}
+
+	static wishes(options: TeyvatWishesOptions): TeyvatWishClient {
+		return new _TeyvatWishClient(options);
 	}
 
 	constructor(opts: TeyvatOptions) {

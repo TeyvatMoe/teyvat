@@ -12,6 +12,15 @@ export type {
 /** @category Authentication */
 export type { TeyvatCookies } from './cookies.ts';
 export type { TeyvatPaginator } from './paginator.ts';
+/** @category Wish History */
+export type {
+	TeyvatWish,
+	TeyvatWishBannerType,
+	TeyvatWishClient,
+	TeyvatWishHistoryOptions,
+	TeyvatWishItemType,
+	TeyvatWishesOptions,
+} from './wishes.ts';
 
 /** @category Authentication */
 export interface TeyvatCookiesUpdate {

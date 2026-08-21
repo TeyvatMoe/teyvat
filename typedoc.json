@@ -11,7 +11,8 @@
 			"*": "https://bun.sh/docs/runtime/nodejs-apis"
 		},
 		"typescript": {
-			"Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+			"Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+			"AsyncIterableIterator": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator"
 		}
 	},
 	"navigationLinks": {
@@ -31,6 +32,7 @@
 		"Inventory",
 		"Traveler's Diary",
 		"Event Calendar",
+		"Wish History",
 		"Daily Notes",
 		"Characters",
 		"Imaginarium Theater",
