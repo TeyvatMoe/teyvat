@@ -10,6 +10,16 @@ export type {
 	TeyvatAuthResult,
 	TeyvatAuthSession,
 } from './auth.ts';
+/** @category Daily Check-In */
+export type {
+	TeyvatCheckInCaptchaSolution,
+	TeyvatCheckInClaimOptions,
+	TeyvatCheckInClient,
+	TeyvatCheckInHistoryEntry,
+	TeyvatCheckInHistoryOptions,
+	TeyvatCheckInInfo,
+	TeyvatCheckInResult,
+} from './check_in.ts';
 /** @category Authentication */
 export type { TeyvatCookies } from './cookies.ts';
 /** @category Core */

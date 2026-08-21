@@ -94,6 +94,25 @@ export class TeyvatHttpClient {
 		return await this.#request(options, false);
 	}
 
+	async authenticated_raw_request(options: TeyvatRawRequestOptions, repair_auth = false): Promise<TeyvatRawResponse> {
+		const use_cookies = options.use_cookies !== false;
+		if (use_cookies && !options.skip_auth) await this.#prepare_auth?.();
+		if (use_cookies && this.#cookies_dirty) await this.#persist_cookies();
+		const response = await this.raw_request(options);
+		if (
+			repair_auth &&
+			use_cookies &&
+			!options.skip_auth &&
+			typeof response.data === 'object' &&
+			response.data !== null &&
+			'retcode' in response.data &&
+			typeof response.data.retcode === 'number' &&
+			AUTH_RETCODES.has(response.data.retcode)
+		)
+			await this.#repair_auth?.();
+		return response;
+	}
+
 	async #request<schema extends Type>(
 		options: TeyvatRequestOptions<schema>,
 		retried: boolean,
@@ -102,10 +121,7 @@ export class TeyvatHttpClient {
 		const url = _build_url(options.domain, options.path, options.params);
 		const endpoint = _safe_endpoint(url);
 		const use_cookies = options.use_cookies !== false;
-		if (use_cookies && !options.skip_auth) await this.#prepare_auth?.();
-		if (use_cookies && this.#cookies_dirty) await this.#persist_cookies();
-
-		const response = await this.raw_request(options);
+		const response = await this.authenticated_raw_request(options);
 		const raw = response.data;
 
 		if (typeof raw === 'object' && raw !== null && 'retcode' in raw && typeof raw.retcode === 'number') {

@@ -4,6 +4,10 @@
 
 Teyvat is a TypeScript library focused exclusively on Genshin Impact. Its public API should be small, stable, and centered on useful domain objects rather than upstream HTTP details.
 
+## Working process
+
+Before implementing any substantial feature, broad refactor, or cross-cutting change, first work in Plan mode: inspect the relevant code and upstream behavior, resolve important assumptions with the user, and obtain approval for a concrete implementation plan. Do not begin partial implementation while the plan is still being discussed. Small, clearly scoped fixes may be implemented directly.
+
 ## Architecture
 
 - `lib/client/` contains the public client classes and private orchestration that maps endpoint data into public models.
@@ -22,6 +26,8 @@ Each cookie-backed, authkey-backed, or authentication client owns one immutable 
 Wish and transaction history use one isolated authkey-scoped client with no cookies, cookie preparation, session repair, or authkey renewal. Authkeys must never appear in public properties, logs, endpoint identifiers, errors, or nested error causes.
 
 Public paginators are lazy, single-use async iterators. They serialize concurrent `next()` calls, keep upstream cursors private, and advance cursor state only after a page has been fetched, validated, and mapped successfully.
+
+Genshin daily check-in is scoped to the HoYoLAB account, not an individual game UID. Its shared attendance and history APIs do not identify which bound server profiles received each reward.
 
 ## Naming and organization
 

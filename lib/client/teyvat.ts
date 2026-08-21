@@ -3,6 +3,7 @@ import type {
 	TeyvatAccountsOptions,
 	TeyvatAuthOptions,
 	TeyvatAuthSession,
+	TeyvatCheckInClient,
 	TeyvatCookies,
 	TeyvatLanguage,
 	TeyvatOptions,
@@ -14,6 +15,7 @@ import { _recognize_genshin_server } from '../utils/uid.ts';
 import { TeyvatAccount } from './account/index.ts';
 import { _get_accounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';
+import { _TeyvatCheckInClient } from './check_in.ts';
 import { TeyvatError } from './errors.ts';
 import { _get_http_client, _initialize_http_client } from './request.ts';
 import { _TeyvatWishClient } from './wishes.ts';
@@ -28,6 +30,7 @@ export class Teyvat {
 	#cookies_completion?: Promise<boolean>;
 	readonly hoyolab_id: string;
 	readonly language: TeyvatLanguage;
+	readonly check_in: TeyvatCheckInClient;
 
 	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
 		return new _TeyvatAuthSession(options);
@@ -60,6 +63,7 @@ export class Teyvat {
 			},
 		});
 		this.language = _get_http_client(this).language;
+		this.check_in = new _TeyvatCheckInClient(this);
 	}
 
 	get cookies(): TeyvatCookies {

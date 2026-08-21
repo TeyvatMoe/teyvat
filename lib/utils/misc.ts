@@ -40,6 +40,10 @@ export function _current_utc_offset_month(now = Date.now(), offset_hours = 8): n
 	return new Date(now + offset_hours * 3_600_000).getUTCMonth() + 1;
 }
 
+export function _current_utc_offset_day(now = Date.now(), offset_hours = 8): number {
+	return new Date(now + offset_hours * 3_600_000).getUTCDate();
+}
+
 export function _hoyolab_datetime(value: string, offset_hours: number, field: string): Date {
 	const match = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/.exec(value);
 	if (!match) throw new TypeError(`${field} must be a HoYoLAB date-time`);
