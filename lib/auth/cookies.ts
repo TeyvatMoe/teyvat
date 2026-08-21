@@ -48,6 +48,35 @@ function _getSetCookieHeaders(headers: Headers): string[] {
 	return combined ? _splitSetCookieHeader(combined) : [];
 }
 
+interface ParsedSetCookie {
+	name: string;
+	value: string;
+	shouldDelete: boolean;
+}
+
+function _deletesCookie(attributes: string[], now: number): boolean {
+	return attributes.some((attribute) => {
+		const separator = attribute.indexOf('=');
+		const name = (separator === -1 ? attribute : attribute.slice(0, separator)).trim().toLowerCase();
+		const value = separator === -1 ? '' : attribute.slice(separator + 1).trim();
+		if (name === 'max-age') return Number(value) <= 0;
+		if (name !== 'expires') return false;
+		const expiresAt = Date.parse(value);
+		return !Number.isNaN(expiresAt) && expiresAt <= now;
+	});
+}
+
+function _parseSetCookie(header: string, now: number): ParsedSetCookie | undefined {
+	const [pair, ...attributes] = header.split(';').map((segment) => segment.trim());
+	if (!pair) return undefined;
+	const separator = pair.indexOf('=');
+	if (separator <= 0) return undefined;
+	const name = pair.slice(0, separator).trim();
+	const value = pair.slice(separator + 1).trim();
+	if (!COOKIE_NAME.test(name) || _hasInvalidCookieValueCharacter(value)) return undefined;
+	return { name, value, shouldDelete: _deletesCookie(attributes, now) };
+}
+
 export class CookieJar {
 	readonly #cookies = new Map<string, string>();
 	#revision = 0;
@@ -105,35 +134,11 @@ export class CookieJar {
 	updateFromResponse(headers: Headers, now = Date.now()): void {
 		let changed = false;
 		for (const header of _getSetCookieHeaders(headers)) {
-			const segments = header.split(';').map((segment) => segment.trim());
-			const pair = segments.shift();
-			if (!pair) continue;
-
-			const separator = pair.indexOf('=');
-			if (separator <= 0) continue;
-
-			const name = pair.slice(0, separator).trim();
-			const value = pair.slice(separator + 1).trim();
-			if (!COOKIE_NAME.test(name) || _hasInvalidCookieValueCharacter(value)) continue;
-
-			let shouldDelete = false;
-			for (const segment of segments) {
-				const attributeSeparator = segment.indexOf('=');
-				const attributeName = (attributeSeparator === -1 ? segment : segment.slice(0, attributeSeparator))
-					.trim()
-					.toLowerCase();
-				const attributeValue = attributeSeparator === -1 ? '' : segment.slice(attributeSeparator + 1).trim();
-
-				if (attributeName === 'max-age' && Number(attributeValue) <= 0) shouldDelete = true;
-				if (attributeName === 'expires') {
-					const expiresAt = Date.parse(attributeValue);
-					if (!Number.isNaN(expiresAt) && expiresAt <= now) shouldDelete = true;
-				}
-			}
-
-			if (shouldDelete) changed = this.#cookies.delete(name) || changed;
-			else if (this.#cookies.get(name) !== value) {
-				this.#cookies.set(name, value);
+			const parsed = _parseSetCookie(header, now);
+			if (!parsed) continue;
+			if (parsed.shouldDelete) changed = this.#cookies.delete(parsed.name) || changed;
+			else if (this.#cookies.get(parsed.name) !== parsed.value) {
+				this.#cookies.set(parsed.name, parsed.value);
 				changed = true;
 			}
 		}

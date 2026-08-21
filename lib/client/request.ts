@@ -62,6 +62,46 @@ function _validationIssues(cause: unknown): string[] {
 	return [String(cause)];
 }
 
+function _apiError(raw: unknown, method: string, endpoint: string): TeyvatApiError | undefined {
+	if (typeof raw !== 'object' || raw === null || !('retcode' in raw) || typeof raw.retcode !== 'number') return;
+	if (raw.retcode === 0) return;
+	const message = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
+	return new TeyvatApiError(raw.retcode, message, method, endpoint);
+}
+
+function _serializeBody(body: unknown, method: string, endpoint: string): string {
+	try {
+		return JSON.stringify(body);
+	} catch (cause) {
+		throw new TeyvatRequestError(
+			'body',
+			method,
+			endpoint,
+			`Could not serialize request body for ${method} ${endpoint}`,
+			{
+				cause,
+			},
+		);
+	}
+}
+
+async function _parseResponseJson(response: Response, method: string, endpoint: string): Promise<unknown> {
+	try {
+		return JSON.parse(await response.text());
+	} catch (cause) {
+		throw new TeyvatRequestError(
+			'json',
+			method,
+			endpoint,
+			`HoYoLAB returned invalid JSON for ${method} ${endpoint}`,
+			{
+				cause,
+				status: response.status,
+			},
+		);
+	}
+}
+
 export class TeyvatHttpClient {
 	readonly cookies: CookieJar;
 	readonly language: TeyvatLanguage;
@@ -121,21 +161,17 @@ export class TeyvatHttpClient {
 		const method = (options.method ?? 'GET').toUpperCase();
 		const url = _buildUrl(options.domain, options.path, options.params);
 		const endpoint = _safeEndpoint(url);
-		const useCookies = options.useCookies !== false;
 		const response = await this.authenticatedRawRequest(options);
 		const raw = response.data;
-
-		if (typeof raw === 'object' && raw !== null && 'retcode' in raw && typeof raw.retcode === 'number') {
-			if (raw.retcode !== 0) {
-				const upstreamMessage = 'message' in raw && typeof raw.message === 'string' ? raw.message : '';
-				const error = new TeyvatApiError(raw.retcode, upstreamMessage, method, endpoint);
-				if (!retried && useCookies && !options.skipAuth && AUTH_RETCODES.has(raw.retcode) && this.#repairAuth) {
-					const repaired = await this.#repairAuth();
-					if (repaired && options.replayAuth !== false && (method === 'GET' || method === 'HEAD'))
-						return await this.#request(options, true);
-				}
-				throw error;
+		const error = _apiError(raw, method, endpoint);
+		if (error) {
+			const canRepair = !retried && options.useCookies !== false && !options.skipAuth && this.#repairAuth;
+			if (canRepair && AUTH_RETCODES.has(error.retcode)) {
+				const repaired = await this.#repairAuth?.();
+				const canReplay = options.replayAuth !== false && (method === 'GET' || method === 'HEAD');
+				if (repaired && canReplay) return await this.#request(options, true);
 			}
+			throw error;
 		}
 
 		let validated: unknown;
@@ -161,47 +197,9 @@ export class TeyvatHttpClient {
 			if (cookieHeader && !headers.has('Cookie')) headers.set('Cookie', cookieHeader);
 		}
 
-		let body: string | undefined;
-		if (options.body !== undefined) {
-			try {
-				body = JSON.stringify(options.body);
-			} catch (cause) {
-				throw new TeyvatRequestError(
-					'body',
-					method,
-					endpoint,
-					`Could not serialize request body for ${method} ${endpoint}`,
-					{
-						cause,
-					},
-				);
-			}
-			if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-		}
-
-		const controller = new AbortController();
-		let timedOut = false;
-		const onAbort = () => controller.abort(options.signal?.reason);
-		if (options.signal?.aborted) onAbort();
-		else options.signal?.addEventListener('abort', onAbort, { once: true });
-		const timeout = setTimeout(() => {
-			timedOut = true;
-			controller.abort(new Error('Request timed out'));
-		}, this.#timeoutMs);
-
-		let response: Response;
-		try {
-			response = await this.#fetch(url, { method, headers, body, signal: controller.signal });
-		} catch (cause) {
-			const kind = timedOut ? 'timeout' : 'network';
-			const message = timedOut
-				? `HoYoLAB request timed out for ${method} ${endpoint}`
-				: `HoYoLAB request failed for ${method} ${endpoint}`;
-			throw new TeyvatRequestError(kind, method, endpoint, message, { cause });
-		} finally {
-			clearTimeout(timeout);
-			options.signal?.removeEventListener('abort', onAbort);
-		}
+		const body = options.body === undefined ? undefined : _serializeBody(options.body, method, endpoint);
+		if (body !== undefined && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+		const response = await this.#performFetch(url, { method, headers, body }, options.signal, endpoint);
 
 		if (useCookies) {
 			const revision = this.cookies.revision;
@@ -209,21 +207,7 @@ export class TeyvatHttpClient {
 			if (this.cookies.revision !== revision) await this.#persistCookies();
 		}
 
-		let raw: unknown;
-		try {
-			raw = JSON.parse(await response.text());
-		} catch (cause) {
-			throw new TeyvatRequestError(
-				'json',
-				method,
-				endpoint,
-				`HoYoLAB returned invalid JSON for ${method} ${endpoint}`,
-				{
-					cause,
-					status: response.status,
-				},
-			);
-		}
+		const raw = await _parseResponseJson(response, method, endpoint);
 
 		if (!response.ok) {
 			throw new TeyvatRequestError(
@@ -236,6 +220,36 @@ export class TeyvatHttpClient {
 		}
 
 		return { data: raw, headers: response.headers };
+	}
+
+	async #performFetch(
+		url: URL,
+		init: RequestInit,
+		signal: AbortSignal | undefined,
+		endpoint: string,
+	): Promise<Response> {
+		const controller = new AbortController();
+		let timedOut = false;
+		const onAbort = () => controller.abort(signal?.reason);
+		if (signal?.aborted) onAbort();
+		else signal?.addEventListener('abort', onAbort, { once: true });
+		const timeout = setTimeout(() => {
+			timedOut = true;
+			controller.abort(new Error('Request timed out'));
+		}, this.#timeoutMs);
+		try {
+			return await this.#fetch(url, { ...init, signal: controller.signal });
+		} catch (cause) {
+			const method = init.method ?? 'GET';
+			const kind = timedOut ? 'timeout' : 'network';
+			const message = timedOut
+				? `HoYoLAB request timed out for ${method} ${endpoint}`
+				: `HoYoLAB request failed for ${method} ${endpoint}`;
+			throw new TeyvatRequestError(kind, method, endpoint, message, { cause });
+		} finally {
+			clearTimeout(timeout);
+			signal?.removeEventListener('abort', onAbort);
+		}
 	}
 
 	async mergeCookies(cookies: TeyvatCookies): Promise<void> {

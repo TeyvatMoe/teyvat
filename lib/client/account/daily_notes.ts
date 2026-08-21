@@ -1,4 +1,4 @@
-import { _enableAccountFeature } from '#/client/auto_enable.ts';
+import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinDailyNotes } from '#/endpoints/hoyolab/genshin/daily_notes.ts';
@@ -10,11 +10,10 @@ import {
 	type TeyvatExpeditionStatus,
 	type TeyvatTaskRewardStatus,
 } from '#/types/account/daily_notes.ts';
-import { _completionDate, _numericValue, _sleep } from '#/utils/misc.ts';
+import { _completionDate, _numericValue } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/dailyNote';
-const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
 function _isDailyNotesPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
@@ -52,27 +51,12 @@ async function _requestDailyNotes(account: TeyvatAccount) {
 }
 
 export async function _getAccountDailyNotes(account: TeyvatAccount): Promise<TeyvatAccountDailyNotes> {
-	let raw: Awaited<ReturnType<typeof _requestDailyNotes>>;
-	try {
-		raw = await _requestDailyNotes(account);
-	} catch (cause) {
-		if (!(account.inst.autoEnable && _isDailyNotesPrivate(cause))) throw cause;
-		await _enableAccountFeature(account, 'daily_notes', cause);
-		let retryError: TeyvatApiError = cause;
-		let enabledNotes: Awaited<ReturnType<typeof _requestDailyNotes>> | undefined;
-		for (const delay of ENABLE_RETRY_DELAYS) {
-			await _sleep(delay);
-			try {
-				enabledNotes = await _requestDailyNotes(account);
-				break;
-			} catch (retryCause) {
-				if (!_isDailyNotesPrivate(retryCause)) throw retryCause;
-				retryError = retryCause;
-			}
-		}
-		if (!enabledNotes) throw retryError;
-		raw = enabledNotes;
-	}
+	const raw = await _requestWithAutoEnable(
+		account,
+		'daily_notes',
+		() => _requestDailyNotes(account),
+		_isDailyNotesPrivate,
+	);
 
 	const now = Date.now();
 	try {

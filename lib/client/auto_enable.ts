@@ -1,9 +1,12 @@
 import { _getHttpClient } from '#/client/request.ts';
 import { _enableHoyolabCalculatorSync } from '#/endpoints/hoyolab/genshin/calculator.ts';
 import { _enableHoyolabGenshinSetting } from '#/endpoints/hoyolab/settings.ts';
+import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './account/index.ts';
-import { TeyvatError } from './errors.ts';
+import { type TeyvatApiError, TeyvatError } from './errors.ts';
 import type { Teyvat } from './teyvat.ts';
+
+const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
 type TeyvatAutoEnableFeature = 'battle_chronicle' | 'character_details' | 'daily_notes' | 'calculator';
 
@@ -63,4 +66,30 @@ export async function _enableAccountFeature(
 		});
 	state.pending.set(feature, enabling);
 	await enabling;
+}
+
+export async function _requestWithAutoEnable<T>(
+	account: TeyvatAccount,
+	feature: TeyvatAutoEnableFeature,
+	request: () => Promise<T>,
+	isFeatureDisabled: (cause: unknown) => cause is TeyvatApiError,
+): Promise<T> {
+	try {
+		return await request();
+	} catch (cause) {
+		if (!(account.inst.autoEnable && isFeatureDisabled(cause))) throw cause;
+		await _enableAccountFeature(account, feature, cause);
+
+		let retryError = cause;
+		for (const delay of ENABLE_RETRY_DELAYS) {
+			await _sleep(delay);
+			try {
+				return await request();
+			} catch (retryCause) {
+				if (!isFeatureDisabled(retryCause)) throw retryCause;
+				retryError = retryCause;
+			}
+		}
+		throw retryError;
+	}
 }

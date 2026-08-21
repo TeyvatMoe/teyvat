@@ -1,4 +1,4 @@
-import { _enableAccountFeature } from '#/client/auto_enable.ts';
+import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinImaginariumTheater } from '#/endpoints/hoyolab/genshin/imaginarium_theater.ts';
@@ -8,11 +8,10 @@ import {
 	type TeyvatImaginariumTheaterCharacterRole,
 	type TeyvatImaginariumTheaterDifficulty,
 } from '#/types/account/imaginarium_theater.ts';
-import { _sleep, _unixDate } from '#/utils/misc.ts';
+import { _unixDate } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/role_combat';
-const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
 function _isImaginariumTheaterPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
@@ -48,27 +47,12 @@ async function _requestImaginariumTheater(account: TeyvatAccount) {
 }
 
 export async function _getAccountImaginariumTheater(account: TeyvatAccount): Promise<TeyvatAccountImaginariumTheater> {
-	let raw: Awaited<ReturnType<typeof _requestImaginariumTheater>>;
-	try {
-		raw = await _requestImaginariumTheater(account);
-	} catch (cause) {
-		if (!(account.inst.autoEnable && _isImaginariumTheaterPrivate(cause))) throw cause;
-		await _enableAccountFeature(account, 'battle_chronicle', cause);
-		let retryError: TeyvatApiError = cause;
-		let enabledTheater: Awaited<ReturnType<typeof _requestImaginariumTheater>> | undefined;
-		for (const delay of ENABLE_RETRY_DELAYS) {
-			await _sleep(delay);
-			try {
-				enabledTheater = await _requestImaginariumTheater(account);
-				break;
-			} catch (retryCause) {
-				if (!_isImaginariumTheaterPrivate(retryCause)) throw retryCause;
-				retryError = retryCause;
-			}
-		}
-		if (!enabledTheater) throw retryError;
-		raw = enabledTheater;
-	}
+	const raw = await _requestWithAutoEnable(
+		account,
+		'battle_chronicle',
+		() => _requestImaginariumTheater(account),
+		_isImaginariumTheaterPrivate,
+	);
 
 	try {
 		const character = (item: {

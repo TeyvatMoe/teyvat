@@ -31,6 +31,15 @@ const ENDPOINT = '/gacha_info/api/getGachaLog';
 const TRANSACTION_ENDPOINT = '/common/hk4e_self_help_query/User';
 const PAGE_SIZE = 20;
 
+type RawWish = Awaited<ReturnType<typeof _getHoyolabGenshinWishes>>['list'][number];
+type RawCurrencyTransaction = Awaited<ReturnType<typeof _getHoyolabGenshinCurrencyTransactions>>['list'][number];
+type RawItemTransaction = Awaited<ReturnType<typeof _getHoyolabGenshinItemTransactions>>['list'][number];
+
+interface WishPageState {
+	uid?: number;
+	server?: TeyvatServer;
+}
+
 const BANNER_TYPES: Record<TeyvatWishBannerType, number> = {
 	novice: 100,
 	standard: 200,
@@ -83,6 +92,49 @@ function _itemType(value: string): TeyvatWishItemType {
 	return 'unknown';
 }
 
+function _safeRequestError(cause: unknown): never {
+	if (cause instanceof TeyvatRequestError)
+		throw new TeyvatRequestError(cause.kind, cause.method, cause.endpoint, cause.message, { status: cause.status });
+	throw cause;
+}
+
+function _wish(raw: RawWish, server: TeyvatServer, bannerType: TeyvatWishBannerType): TeyvatWish {
+	const uid = _positiveInteger(raw.uid, 'wish.uid');
+	if (_recognizeGenshinServer(uid) !== server)
+		throw new TypeError('wish.uid does not agree with the returned region');
+	return schemaTeyvatWish.assert({
+		id: _integerString(raw.id, 'wish.id'),
+		uid,
+		server,
+		name: raw.name,
+		itemType: _itemType(raw.item_type),
+		rarity: _positiveInteger(raw.rank_type, 'wish.rank_type'),
+		bannerType,
+		wishedAt: _hoyolabDatetime(raw.time, server === 'os_usa' ? -5 : server === 'os_euro' ? 1 : 8, 'wish.time'),
+	});
+}
+
+function _currencyTransaction(raw: RawCurrencyTransaction, type: 'primogem' | 'crystal' | 'resin'): TeyvatTransaction {
+	return schemaTeyvatCurrencyTransaction.assert({
+		id: _integerString(raw.id, 'transaction.id'),
+		type,
+		amount: _signedInteger(raw.add_num, 'transaction.add_num'),
+		reason: raw.reason,
+		transactedAt: _hoyolabDatetime(raw.datetime, 8, 'transaction.datetime'),
+	});
+}
+
+function _itemTransaction(raw: RawItemTransaction, type: 'artifact' | 'weapon'): TeyvatTransaction {
+	return schemaTeyvatItemTransaction.assert({
+		id: _integerString(raw.id, 'transaction.id'),
+		type,
+		amount: _signedInteger(raw.add_num, 'transaction.add_num'),
+		reason: raw.reason,
+		transactedAt: _hoyolabDatetime(raw.datetime, 8, 'transaction.datetime'),
+		item: { name: raw.name, rarity: _positiveInteger(raw.quality, 'transaction.quality') },
+	});
+}
+
 export class _TeyvatWishClient implements TeyvatWishClient {
 	readonly #authkey: string;
 	readonly #client: TeyvatHttpClient;
@@ -103,70 +155,11 @@ export class _TeyvatWishClient implements TeyvatWishClient {
 		if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 0))
 			throw new TeyvatError('limit must be a nonnegative safe integer');
 
-		let expectedUid: number | undefined;
-		let expectedServer: TeyvatServer | undefined;
+		const state: WishPageState = {};
 		return new _TeyvatPaginator<TeyvatWish, string>({
 			initialCursor: '0',
 			limit: options.limit,
-			getPage: async (endId) => {
-				let raw: Awaited<ReturnType<typeof _getHoyolabGenshinWishes>>;
-				try {
-					raw = await _getHoyolabGenshinWishes(this.#client, this.#authkey, bannerType, endId);
-				} catch (cause) {
-					if (cause instanceof TeyvatRequestError)
-						throw new TeyvatRequestError(cause.kind, cause.method, cause.endpoint, cause.message, {
-							status: cause.status,
-						});
-					throw cause;
-				}
-				try {
-					const server = _server(raw.region);
-					if (expectedServer !== undefined && server !== expectedServer)
-						throw new TypeError('region changed between wish-history pages');
-
-					let pageUid: number | undefined;
-					const items = raw.list.map((wish) => {
-						const uid = _positiveInteger(wish.uid, 'wish.uid');
-						if (_recognizeGenshinServer(uid) !== server)
-							throw new TypeError('wish.uid does not agree with the returned region');
-						if (expectedUid !== undefined && uid !== expectedUid)
-							throw new TypeError('uid changed between wish-history pages');
-						if (pageUid !== undefined && uid !== pageUid)
-							throw new TypeError('uid changed within a wish-history page');
-						pageUid ??= uid;
-
-						return schemaTeyvatWish.assert({
-							id: _integerString(wish.id, 'wish.id'),
-							uid,
-							server,
-							name: wish.name,
-							itemType: _itemType(wish.item_type),
-							rarity: _positiveInteger(wish.rank_type, 'wish.rank_type'),
-							bannerType: options.type,
-							wishedAt: _hoyolabDatetime(
-								wish.time,
-								server === 'os_usa' ? -5 : server === 'os_euro' ? 1 : 8,
-								'wish.time',
-							),
-						});
-					});
-
-					if (items[0]) {
-						expectedUid ??= pageUid;
-						expectedServer ??= server;
-					}
-					const lastId = items.at(-1)?.id;
-					if (items.length === PAGE_SIZE && lastId === endId)
-						throw new TypeError('wish-history cursor did not advance');
-
-					return {
-						items,
-						nextCursor: items.length < PAGE_SIZE ? null : (lastId ?? null),
-					};
-				} catch (cause) {
-					throw new TeyvatResponseValidationError('GET', ENDPOINT, [String(cause)], { cause });
-				}
-			},
+			getPage: (endId) => this.#wishPage(options.type, bannerType, endId, state),
 		});
 	}
 
@@ -184,56 +177,63 @@ export class _TeyvatWishClient implements TeyvatWishClient {
 		const paginator = new _TeyvatPaginator<TeyvatTransaction, string>({
 			initialCursor: '0',
 			limit: options.limit,
-			getPage: async (endId) => {
-				try {
-					if (_itemType) {
-						const raw = await _getHoyolabGenshinItemTransactions(this.#client, {
-							authkey: this.#authkey,
-							type: options.type,
-							endId: endId,
-						});
-						const items = raw.list.map((transaction) =>
-							schemaTeyvatItemTransaction.assert({
-								id: _integerString(transaction.id, 'transaction.id'),
-								type: options.type,
-								amount: _signedInteger(transaction.add_num, 'transaction.add_num'),
-								reason: transaction.reason,
-								transactedAt: _hoyolabDatetime(transaction.datetime, 8, 'transaction.datetime'),
-								item: {
-									name: transaction.name,
-									rarity: _positiveInteger(transaction.quality, 'transaction.quality'),
-								},
-							}),
-						);
-						return this.#transactionPage(items, endId);
-					}
-
-					const raw = await _getHoyolabGenshinCurrencyTransactions(this.#client, {
-						authkey: this.#authkey,
-						type: options.type,
-						endId: endId,
-					});
-					const items = raw.list.map((transaction) =>
-						schemaTeyvatCurrencyTransaction.assert({
-							id: _integerString(transaction.id, 'transaction.id'),
-							type: options.type,
-							amount: _signedInteger(transaction.add_num, 'transaction.add_num'),
-							reason: transaction.reason,
-							transactedAt: _hoyolabDatetime(transaction.datetime, 8, 'transaction.datetime'),
-						}),
-					);
-					return this.#transactionPage(items, endId);
-				} catch (cause) {
-					if (cause instanceof TeyvatRequestError)
-						throw new TeyvatRequestError(cause.kind, cause.method, cause.endpoint, cause.message, {
-							status: cause.status,
-						});
-					if (cause instanceof TeyvatResponseValidationError) throw cause;
-					throw new TeyvatResponseValidationError('GET', TRANSACTION_ENDPOINT, [String(cause)], { cause });
-				}
-			},
+			getPage: (endId) => this.#transactionsPage(options.type, endId),
 		});
 		return paginator as _TeyvatPaginator<TeyvatTransaction & { type: T }, string>;
+	}
+
+	async #wishPage(type: TeyvatWishBannerType, bannerType: number, endId: string, state: WishPageState) {
+		let raw: Awaited<ReturnType<typeof _getHoyolabGenshinWishes>>;
+		try {
+			raw = await _getHoyolabGenshinWishes(this.#client, this.#authkey, bannerType, endId);
+		} catch (cause) {
+			_safeRequestError(cause);
+		}
+		try {
+			const server = _server(raw.region);
+			if (state.server !== undefined && server !== state.server)
+				throw new TypeError('region changed between wish-history pages');
+			const items = raw.list.map((item) => _wish(item, server, type));
+			const pageUid = items[0]?.uid;
+			if (items.some((item) => item.uid !== pageUid))
+				throw new TypeError('uid changed within a wish-history page');
+			if (state.uid !== undefined && pageUid !== undefined && pageUid !== state.uid)
+				throw new TypeError('uid changed between wish-history pages');
+			if (pageUid !== undefined) {
+				state.uid ??= pageUid;
+				state.server ??= server;
+			}
+			const lastId = items.at(-1)?.id;
+			if (items.length === PAGE_SIZE && lastId === endId)
+				throw new TypeError('wish-history cursor did not advance');
+			return { items, nextCursor: items.length < PAGE_SIZE ? null : (lastId ?? null) };
+		} catch (cause) {
+			throw new TeyvatResponseValidationError('GET', ENDPOINT, [String(cause)], { cause });
+		}
+	}
+
+	async #transactionsPage(type: TeyvatTransactionType, endId: string) {
+		try {
+			const items =
+				type === 'artifact' || type === 'weapon'
+					? await this.#itemTransactions(type, endId)
+					: await this.#currencyTransactions(type, endId);
+			return this.#transactionPage(items, endId);
+		} catch (cause) {
+			if (cause instanceof TeyvatRequestError) _safeRequestError(cause);
+			if (cause instanceof TeyvatResponseValidationError) throw cause;
+			throw new TeyvatResponseValidationError('GET', TRANSACTION_ENDPOINT, [String(cause)], { cause });
+		}
+	}
+
+	async #itemTransactions(type: 'artifact' | 'weapon', endId: string): Promise<TeyvatTransaction[]> {
+		const raw = await _getHoyolabGenshinItemTransactions(this.#client, { authkey: this.#authkey, type, endId });
+		return raw.list.map((item) => _itemTransaction(item, type));
+	}
+
+	async #currencyTransactions(type: 'primogem' | 'crystal' | 'resin', endId: string): Promise<TeyvatTransaction[]> {
+		const raw = await _getHoyolabGenshinCurrencyTransactions(this.#client, { authkey: this.#authkey, type, endId });
+		return raw.list.map((item) => _currencyTransaction(item, type));
 	}
 
 	#transactionPage<T extends TeyvatTransaction>(items: T[], endId: string) {

@@ -70,40 +70,43 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 	}
 
 	async completeCaptcha(solution: TeyvatAuthCaptchaSolution): Promise<TeyvatAuthResult> {
-		return await this.#run(async () => {
-			if (this.#state.status !== 'captcha')
-				throw new TeyvatError('This authentication session is not awaiting a captcha');
-			let validated: TeyvatAuthCaptchaSolution;
-			try {
-				validated = schemaTeyvatAuthCaptchaSolution.assert(solution);
-			} catch {
-				throw new TeyvatError('Invalid captcha solution');
-			}
-			if (validated.version !== this.#state.captcha.version) {
-				throw new TeyvatError(`Expected a ${this.#state.captcha.version} captcha solution`);
-			}
-			if (validated.version === 'v4' && validated.captchaId !== this.#state.captcha.gt) {
-				throw new TeyvatError('Captcha solution does not match the pending challenge');
-			}
+		return await this.#run(() => this.#completeCaptcha(solution));
+	}
 
-			const pending = this.#state;
-			this.#state = { status: 'ready' };
-			try {
-				if (pending.purpose === 'login') {
-					return await this.#login(
-						{ ['session_id']: pending.captcha.session_id, solution: validated },
-						pending.ticket,
-					);
-				}
-				return await this.#sendEmail(pending.ticket, {
-					['session_id']: pending.captcha.session_id,
-					solution: validated,
-				});
-			} catch (cause) {
-				if (this.#state.status === 'ready') this.#state = pending;
-				throw cause;
-			}
-		});
+	async #completeCaptcha(solution: TeyvatAuthCaptchaSolution): Promise<TeyvatAuthResult> {
+		if (this.#state.status !== 'captcha')
+			throw new TeyvatError('This authentication session is not awaiting a captcha');
+		const pending = this.#state;
+		const validated = this.#validateCaptchaSolution(solution, pending.captcha);
+		this.#state = { status: 'ready' };
+		try {
+			if (pending.purpose === 'login')
+				return await this.#login(
+					{ ['session_id']: pending.captcha.session_id, solution: validated },
+					pending.ticket,
+				);
+			return await this.#sendEmail(pending.ticket, {
+				['session_id']: pending.captcha.session_id,
+				solution: validated,
+			});
+		} catch (cause) {
+			if (this.#state.status === 'ready') this.#state = pending;
+			throw cause;
+		}
+	}
+
+	#validateCaptchaSolution(solution: TeyvatAuthCaptchaSolution, captcha: HoyolabCaptcha): TeyvatAuthCaptchaSolution {
+		let validated: TeyvatAuthCaptchaSolution;
+		try {
+			validated = schemaTeyvatAuthCaptchaSolution.assert(solution);
+		} catch {
+			throw new TeyvatError('Invalid captcha solution');
+		}
+		if (validated.version !== captcha.version)
+			throw new TeyvatError(`Expected a ${captcha.version} captcha solution`);
+		if (validated.version === 'v4' && validated.captchaId !== captcha.gt)
+			throw new TeyvatError('Captcha solution does not match the pending challenge');
+		return validated;
 	}
 
 	async completeEmail(code: string): Promise<TeyvatAuthResult> {

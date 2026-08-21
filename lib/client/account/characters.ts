@@ -1,4 +1,4 @@
-import { _enableAccountFeature } from '#/client/auto_enable.ts';
+import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
 import {
@@ -11,11 +11,9 @@ import {
 	type TeyvatCharactersOptions,
 } from '#/types/account/character.ts';
 import { _characterElement, _characterIds, _weaponType } from '#/utils/character.ts';
-import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/character/detail';
-const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
 function _isCharacterDetailsPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
@@ -36,25 +34,12 @@ export async function _getAccountCharacters(
 	const ids = options.ids === undefined ? undefined : _characterIds(options.ids);
 	if (ids?.length === 0) return [];
 
-	let raw: Awaited<ReturnType<typeof _requestCharacters>>;
-	try {
-		raw = await _requestCharacters(account, ids);
-	} catch (cause) {
-		if (!(account.inst.autoEnable && _isCharacterDetailsPrivate(cause))) throw cause;
-		await _enableAccountFeature(account, 'character_details', cause);
-		let retryError: TeyvatApiError = cause;
-		for (const delay of ENABLE_RETRY_DELAYS) {
-			await _sleep(delay);
-			try {
-				raw = await _requestCharacters(account, ids);
-				break;
-			} catch (retryCause) {
-				if (!_isCharacterDetailsPrivate(retryCause)) throw retryCause;
-				retryError = retryCause;
-			}
-		}
-		if (!raw) throw retryError;
-	}
+	const raw = await _requestWithAutoEnable(
+		account,
+		'character_details',
+		() => _requestCharacters(account, ids),
+		_isCharacterDetailsPrivate,
+	);
 
 	if (!raw) return [];
 	try {

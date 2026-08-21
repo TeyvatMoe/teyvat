@@ -1,14 +1,12 @@
-import { _enableAccountFeature } from '#/client/auto_enable.ts';
+import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
 import { _getHoyolabGenshinInfo } from '#/endpoints/hoyolab/genshin/info.ts';
 import { schemaTeyvatAccountInfo, type TeyvatAccountInfo } from '#/types/account/info.ts';
-import { _sleep } from '#/utils/misc.ts';
 import { _recognizeGenshinServer } from '#/utils/uid.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/index';
-const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
 function _isInfoPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
@@ -26,27 +24,7 @@ async function _requestInfo(account: TeyvatAccount) {
 
 export async function _getAccountInfo(account: TeyvatAccount): Promise<TeyvatAccountInfo> {
 	const server = _recognizeGenshinServer(account.uid);
-	let raw: Awaited<ReturnType<typeof _requestInfo>>;
-	try {
-		raw = await _requestInfo(account);
-	} catch (cause) {
-		if (!(account.inst.autoEnable && _isInfoPrivate(cause))) throw cause;
-		await _enableAccountFeature(account, 'battle_chronicle', cause);
-		let retryError: TeyvatApiError = cause;
-		let enabledInfo: Awaited<ReturnType<typeof _requestInfo>> | undefined;
-		for (const delay of ENABLE_RETRY_DELAYS) {
-			await _sleep(delay);
-			try {
-				enabledInfo = await _requestInfo(account);
-				break;
-			} catch (retryCause) {
-				if (!_isInfoPrivate(retryCause)) throw retryCause;
-				retryError = retryCause;
-			}
-		}
-		if (!enabledInfo) throw retryError;
-		raw = enabledInfo;
-	}
+	const raw = await _requestWithAutoEnable(account, 'battle_chronicle', () => _requestInfo(account), _isInfoPrivate);
 
 	if (raw.role.region && raw.role.region !== server) {
 		throw new TeyvatResponseValidationError('GET', '/event/game_record/genshin/api/index', [
