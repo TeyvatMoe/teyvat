@@ -70,8 +70,8 @@ const schemaSeason = type({
 	schedule: {
 		['schedule_id']: 'number.integer',
 		['schedule_type']: 'number.integer',
-		['start_time']: 'number.integer',
-		['end_time']: 'number.integer',
+		['start_time']: 'number.integer | string',
+		['end_time']: 'number.integer | string',
 	},
 	'detail?': schemaDetail.or('null'),
 });
