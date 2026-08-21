@@ -21,6 +21,7 @@ export interface TeyvatRequestOptions<schema extends Type> {
 	signal?: AbortSignal;
 	skip_auth?: boolean;
 	use_cookies?: boolean;
+	replay_auth?: boolean;
 }
 
 export interface TeyvatHttpClientOptions {
@@ -136,7 +137,8 @@ export class TeyvatHttpClient {
 					this.#repair_auth
 				) {
 					const repaired = await this.#repair_auth();
-					if (repaired && (method === 'GET' || method === 'HEAD')) return await this.#request(options, true);
+					if (repaired && options.replay_auth !== false && (method === 'GET' || method === 'HEAD'))
+						return await this.#request(options, true);
 				}
 				throw error;
 			}

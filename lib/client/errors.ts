@@ -47,6 +47,25 @@ export class TeyvatApiError extends TeyvatError {
 	}
 }
 
+/** @category Code Redemption */
+export class TeyvatCodeRedemptionError extends TeyvatApiError {
+	readonly reason:
+		| 'invalid'
+		| 'expired'
+		| 'malformed'
+		| 'usage_limit_reached'
+		| 'not_active'
+		| 'region_locked'
+		| 'cooldown'
+		| 'already_redeemed'
+		| 'level_too_low';
+
+	constructor(reason: TeyvatCodeRedemptionError['reason'], retcode: number, endpoint: string) {
+		super(retcode, `Code redemption failed: ${reason.replaceAll('_', ' ')}`, 'GET', endpoint);
+		this.reason = reason;
+	}
+}
+
 /** @category Errors */
 export class TeyvatResponseValidationError extends TeyvatError {
 	readonly method: string;

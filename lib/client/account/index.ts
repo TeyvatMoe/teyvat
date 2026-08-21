@@ -1,5 +1,6 @@
 import type { TeyvatAccountCalendar, TeyvatCalendarOptions } from '../../types/account/calendar.ts';
 import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '../../types/account/character.ts';
+import type { TeyvatCodeRedemptionResult } from '../../types/account/code_redemption.ts';
 import type { TeyvatAccountDailyNotes, TeyvatDailyNotesOptions } from '../../types/account/daily_notes.ts';
 import type {
 	TeyvatAccountImaginariumTheater,
@@ -24,6 +25,7 @@ import { _recognize_genshin_server } from '../../utils/uid.ts';
 import type { Teyvat } from '../teyvat.ts';
 import { _get_account_calendar } from './calendar.ts';
 import { _get_account_characters } from './characters.ts';
+import { _redeem_account_code } from './code_redemption.ts';
 import { _get_account_daily_notes } from './daily_notes.ts';
 import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
 import { _get_account_info } from './info.ts';
@@ -92,6 +94,10 @@ export class TeyvatAccount {
 
 	async characters(options?: TeyvatCharactersOptions): Promise<TeyvatAccountCharacter[]> {
 		return await _get_account_characters(this, options);
+	}
+
+	async redeem_code(code: string): Promise<TeyvatCodeRedemptionResult> {
+		return await _redeem_account_code(this, code);
 	}
 
 	async calendar(options?: TeyvatCalendarOptions): Promise<TeyvatAccountCalendar> {

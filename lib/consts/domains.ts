@@ -10,6 +10,7 @@ export const TEYVAT_DOMAINS = {
 	genshin_wishes: 'https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/',
 	genshin_transactions: 'https://hk4e-api-os.hoyoverse.com/common/hk4e_self_help_query/User/',
 	genshin_check_in: 'https://sg-hk4e-api.hoyolab.com/event/sol/',
+	genshin_redemption: 'https://public-operation-hk4e.hoyoverse.com/common/apicdkey/api/',
 } as const;
 
 export type TeyvatDomain = (typeof TEYVAT_DOMAINS)[keyof typeof TEYVAT_DOMAINS];

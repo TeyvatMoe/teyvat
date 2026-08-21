@@ -12,6 +12,8 @@ export type {
 	TeyvatCharactersOptions,
 	TeyvatWeaponType,
 } from './character.ts';
+/** @category Code Redemption */
+export type { TeyvatCodeRedemptionResult } from './code_redemption.ts';
 /** @category Daily Notes */
 export type {
 	TeyvatAccountDailyNotes,
