@@ -22,5 +22,6 @@
 	"editor.minimap.scale": 2,
 	"editor.minimap.sectionHeaderFontSize": 12,
 	"remote.autoForwardPorts": false,
-	"js/ts.experimental.useTsgo": true
+	"js/ts.experimental.useTsgo": true,
+	"discord.enabled": false
 }

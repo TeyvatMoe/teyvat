@@ -1,3 +1,12 @@
+/** @category Enhancement Calculator */
+export type {
+	TeyvatCalculatorAccessOptions,
+	TeyvatCalculatorCharacter,
+	TeyvatCalculatorCharacterDetails,
+	TeyvatCalculatorClient,
+	TeyvatCalculatorOptions,
+	TeyvatCalculatorResult,
+} from './calculator.ts';
 /** @category Event Calendar */
 export type {
 	TeyvatAccountCalendar,

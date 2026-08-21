@@ -235,6 +235,22 @@ const accounts = await teyvat.accounts();
 const account = accounts[0];
 if (!account) throw new Error('No overseas Genshin accounts are bound to these cookies');
 
+async function _calculator_result() {
+	const characters = await account.calculator.characters({ auto_enable: true });
+	const character = characters[0];
+	if (!character) return { characters, character: null, calculation: null };
+	const details = await account.calculator.character(character.id, { auto_enable: true });
+	const calculation = await account.calculator.calculate({
+		auto_enable: true,
+		character: {
+			id: character.id,
+			current_level: character.current_level,
+			target_level: character.maximum_level,
+		},
+	});
+	return { characters, character: details, calculation };
+}
+
 function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
 	const file = Bun.file(join(import.meta.dir, 'results', `${name}.json`));
 
@@ -258,6 +274,7 @@ const tasks = [
 	_make_task('traveler_diary_primogems', () => account.traveler_diary_log().all()),
 	_make_task('traveler_diary_mora', () => account.traveler_diary_log({ currency: 'mora' }).all()),
 	_make_task('calendar', () => account.calendar({ auto_enable: true })),
+	_make_task('calculator', _calculator_result),
 	_make_task('check_in', async () => ({
 		info: await teyvat.check_in.info(),
 		history: await teyvat.check_in.history().all(),

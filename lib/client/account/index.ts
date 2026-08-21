@@ -1,4 +1,5 @@
 import type { Teyvat } from '#/client/teyvat.ts';
+import type { TeyvatCalculatorClient } from '#/types/account/calculator.ts';
 import type { TeyvatAccountCalendar, TeyvatCalendarOptions } from '#/types/account/calendar.ts';
 import type { TeyvatAccountCharacter, TeyvatCharactersOptions } from '#/types/account/character.ts';
 import type { TeyvatCodeRedemptionResult } from '#/types/account/code_redemption.ts';
@@ -23,6 +24,7 @@ import type {
 } from '#/types/account/traveler_diary.ts';
 import type { TeyvatPaginator } from '#/types/paginator.ts';
 import { _recognize_genshin_server } from '#/utils/uid.ts';
+import { _TeyvatCalculatorClient } from './calculator.ts';
 import { _get_account_calendar } from './calendar.ts';
 import { _get_account_characters } from './characters.ts';
 import { _redeem_account_code } from './code_redemption.ts';
@@ -49,11 +51,13 @@ export class TeyvatAccount {
 	readonly inst: Teyvat;
 	readonly uid: number;
 	readonly server: TeyvatServer;
+	readonly calculator: TeyvatCalculatorClient;
 
 	constructor(inst: Teyvat, uid: number) {
 		this.inst = inst;
 		this.uid = uid;
 		this.server = _recognize_genshin_server(uid);
+		this.calculator = new _TeyvatCalculatorClient(this);
 	}
 
 	get nickname(): string | undefined {
