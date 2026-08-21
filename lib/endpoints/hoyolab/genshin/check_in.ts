@@ -2,22 +2,22 @@ import { type } from 'arktype';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
-import { _hoyolab_headers } from '#/endpoints/hoyolab/headers.ts';
+import { _hoyolabHeaders } from '#/endpoints/hoyolab/headers.ts';
 import type { TeyvatCheckInCaptchaSolution } from '#/types/check_in.ts';
 
 const ACTIVITY_ID = 'e202102251931481';
 const CLAIM_ENDPOINT = '/event/sol/sign';
 
-const schema_hoyolab_check_in_info_response = type({
+const schemaHoyolabCheckInInfoResponse = type({
 	retcode: 'number.integer',
 	message: 'string',
 	data: {
-		is_sign: 'boolean',
-		total_sign_day: 'number.integer >= 0',
+		['is_sign']: 'boolean',
+		['total_sign_day']: 'number.integer >= 0',
 	},
 });
 
-const schema_hoyolab_check_in_rewards_response = type({
+const schemaHoyolabCheckInRewardsResponse = type({
 	retcode: 'number.integer',
 	message: 'string',
 	data: {
@@ -29,7 +29,7 @@ const schema_hoyolab_check_in_rewards_response = type({
 	},
 });
 
-const schema_hoyolab_check_in_history_response = type({
+const schemaHoyolabCheckInHistoryResponse = type({
 	retcode: 'number.integer',
 	message: 'string',
 	data: {
@@ -38,94 +38,94 @@ const schema_hoyolab_check_in_history_response = type({
 			name: 'string',
 			cnt: 'number.integer >= 0',
 			img: 'string',
-			created_at: 'string',
+			['created_at']: 'string',
 		}).array(),
 	},
 });
 
-const schema_hoyolab_check_in_claim_envelope = type({
+const schemaHoyolabCheckInClaimEnvelope = type({
 	retcode: 'number.integer',
 	message: 'string',
 	data: 'object | null',
 });
 
-const schema_hoyolab_check_in_captcha = type({
-	risk_code: 'number.integer',
+const schemaHoyolabCheckInCaptcha = type({
+	['risk_code']: 'number.integer',
 	gt: 'string',
 	challenge: 'string',
 	success: 'number.integer',
 });
 
-export type HoyolabCheckInCaptcha = typeof schema_hoyolab_check_in_captcha.infer;
+export type HoyolabCheckInCaptcha = typeof schemaHoyolabCheckInCaptcha.infer;
 export type HoyolabCheckInClaimResult =
 	| { status: 'claimed' }
 	| { status: 'already_claimed' }
 	| { status: 'captcha_required'; captcha: HoyolabCheckInCaptcha };
 
 function _params(client: TeyvatHttpClient): Record<string, string> {
-	return { act_id: ACTIVITY_ID, lang: client.language };
+	return { ['act_id']: ACTIVITY_ID, lang: client.language };
 }
 
 function _headers(client: TeyvatHttpClient): Headers {
 	return new Headers({
-		..._hoyolab_headers(client.language),
-		Referer: 'https://act.hoyolab.com/',
+		..._hoyolabHeaders(client.language),
+		['Referer']: 'https://act.hoyolab.com/',
 		'x-rpc-signgame': 'hk4e',
 	});
 }
 
-export async function _get_hoyolab_check_in_info(client: TeyvatHttpClient) {
+export async function _getHoyolabCheckInInfo(client: TeyvatHttpClient) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_check_in,
+		domain: TEYVAT_DOMAINS.genshinCheckIn,
 		path: 'info',
 		params: _params(client),
 		headers: _headers(client),
-		schema: schema_hoyolab_check_in_info_response,
+		schema: schemaHoyolabCheckInInfoResponse,
 	});
 }
 
-export async function _get_hoyolab_check_in_rewards(client: TeyvatHttpClient) {
+export async function _getHoyolabCheckInRewards(client: TeyvatHttpClient) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_check_in,
+		domain: TEYVAT_DOMAINS.genshinCheckIn,
 		path: 'home',
 		params: _params(client),
 		headers: _headers(client),
-		schema: schema_hoyolab_check_in_rewards_response,
+		schema: schemaHoyolabCheckInRewardsResponse,
 	});
 }
 
-export async function _get_hoyolab_check_in_history_page(client: TeyvatHttpClient, page: number) {
+export async function _getHoyolabCheckInHistoryPage(client: TeyvatHttpClient, page: number) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_check_in,
+		domain: TEYVAT_DOMAINS.genshinCheckIn,
 		path: 'award',
-		params: { ..._params(client), current_page: page },
+		params: { ..._params(client), ['current_page']: page },
 		headers: _headers(client),
-		schema: schema_hoyolab_check_in_history_response,
+		schema: schemaHoyolabCheckInHistoryResponse,
 	});
 }
 
 function _captcha(data: object): HoyolabCheckInCaptcha | undefined {
 	const candidate =
 		'gt_result' in data && typeof data.gt_result === 'object' && data.gt_result !== null ? data.gt_result : data;
-	const validated = schema_hoyolab_check_in_captcha(candidate);
+	const validated = schemaHoyolabCheckInCaptcha(candidate);
 	if (validated instanceof type.errors) return undefined;
 	if (validated.risk_code === 0 || validated.success === 0 || !validated.gt || !validated.challenge) return undefined;
 	return validated;
 }
 
-export async function _claim_hoyolab_check_in(
+export async function _claimHoyolabCheckIn(
 	client: TeyvatHttpClient,
 	solution?: TeyvatCheckInCaptchaSolution,
 ): Promise<HoyolabCheckInClaimResult> {
 	const headers = _headers(client);
 	if (solution) {
-		headers.set('x-rpc-challenge', solution.geetest_challenge);
-		headers.set('x-rpc-validate', solution.geetest_validate);
-		headers.set('x-rpc-seccode', solution.geetest_seccode);
+		headers.set('x-rpc-challenge', solution.geetestChallenge);
+		headers.set('x-rpc-validate', solution.geetestValidate);
+		headers.set('x-rpc-seccode', solution.geetestSeccode);
 	}
-	const response = await client.authenticated_raw_request(
+	const response = await client.authenticatedRawRequest(
 		{
-			domain: TEYVAT_DOMAINS.genshin_check_in,
+			domain: TEYVAT_DOMAINS.genshinCheckIn,
 			path: 'sign',
 			method: 'POST',
 			params: _params(client),
@@ -134,9 +134,9 @@ export async function _claim_hoyolab_check_in(
 		true,
 	);
 
-	let envelope: typeof schema_hoyolab_check_in_claim_envelope.infer;
+	let envelope: typeof schemaHoyolabCheckInClaimEnvelope.infer;
 	try {
-		envelope = schema_hoyolab_check_in_claim_envelope.assert(response.data);
+		envelope = schemaHoyolabCheckInClaimEnvelope.assert(response.data);
 	} catch {
 		throw new TeyvatResponseValidationError('POST', CLAIM_ENDPOINT, ['invalid daily check-in response']);
 	}

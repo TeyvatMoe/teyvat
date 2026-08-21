@@ -34,14 +34,14 @@ export class TeyvatRequestError extends TeyvatError {
 /** @category Errors */
 export class TeyvatApiError extends TeyvatError {
 	readonly retcode: number;
-	readonly upstream_message: string;
+	readonly upstreamMessage: string;
 	readonly method: string;
 	readonly endpoint: string;
 
-	constructor(retcode: number, upstream_message: string, method: string, endpoint: string) {
-		super(`HoYoLAB request failed [${retcode}]: ${upstream_message || 'Unknown API error'}`);
+	constructor(retcode: number, upstreamMessage: string, method: string, endpoint: string) {
+		super(`HoYoLAB request failed [${retcode}]: ${upstreamMessage || 'Unknown API error'}`);
 		this.retcode = retcode;
-		this.upstream_message = upstream_message;
+		this.upstreamMessage = upstreamMessage;
 		this.method = method;
 		this.endpoint = endpoint;
 	}

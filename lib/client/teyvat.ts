@@ -1,4 +1,4 @@
-import { _hoyolab_complete_cookies } from '#/endpoints/hoyolab/auth.ts';
+import { _hoyolabCompleteCookies } from '#/endpoints/hoyolab/auth.ts';
 import type {
 	TeyvatAccountsOptions,
 	TeyvatAuthOptions,
@@ -10,28 +10,28 @@ import type {
 	TeyvatWishClient,
 	TeyvatWishesOptions,
 } from '#/types/index.ts';
-import { _hoyolab_id_from_cookies, _parse_cookies } from '#/utils/cookies.ts';
-import { _recognize_genshin_server } from '#/utils/uid.ts';
+import { _hoyolabIdFromCookies, _parseCookies } from '#/utils/cookies.ts';
+import { _recognizeGenshinServer } from '#/utils/uid.ts';
 import { TeyvatAccount } from './account/index.ts';
-import { _get_accounts } from './accounts.ts';
+import { _getAccounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';
 import { _TeyvatCheckInClient } from './check_in.ts';
 import { TeyvatError } from './errors.ts';
-import { _get_http_client, _initialize_http_client } from './request.ts';
+import { _getHttpClient, _initializeHttpClient } from './request.ts';
 import { _TeyvatWishClient } from './wishes.ts';
 
 /** @category Core */
 export class Teyvat {
 	#accounts = new Map<number, TeyvatAccount>();
-	#accounts_cache?: Array<TeyvatAccount>;
-	#accounts_cache_updated_at = 0;
-	#accounts_refresh?: Promise<Array<TeyvatAccount>>;
-	readonly #accounts_cache_ttl: number;
-	#cookies_completion?: Promise<boolean>;
-	readonly hoyolab_id: string;
+	#accountsCache?: TeyvatAccount[];
+	#accountsCacheUpdatedAt = 0;
+	#accountsRefresh?: Promise<TeyvatAccount[]>;
+	readonly #accountsCacheTtl: number;
+	#cookiesCompletion?: Promise<boolean>;
+	readonly hoyolabId: string;
 	readonly language: TeyvatLanguage;
-	readonly auto_enable: boolean;
-	readonly check_in: TeyvatCheckInClient;
+	readonly autoEnable: boolean;
+	readonly checkIn: TeyvatCheckInClient;
 
 	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
 		return new _TeyvatAuthSession(options);
@@ -43,84 +43,84 @@ export class Teyvat {
 
 	constructor(opts: TeyvatOptions) {
 		if (!opts.cookies) throw new TeyvatError('missing cookies');
-		const cookies = _parse_cookies(opts.cookies);
-		this.hoyolab_id = _hoyolab_id_from_cookies(cookies, opts.hoyolab_id);
+		const cookies = _parseCookies(opts.cookies);
+		this.hoyolabId = _hoyolabIdFromCookies(cookies, opts.hoyolabId);
 		if (
-			opts.accounts_cache_ttl !== undefined &&
-			(!Number.isFinite(opts.accounts_cache_ttl) || opts.accounts_cache_ttl < 0)
+			opts.accountsCacheTtl !== undefined &&
+			(!Number.isFinite(opts.accountsCacheTtl) || opts.accountsCacheTtl < 0)
 		) {
-			throw new TeyvatError('accounts_cache_ttl must be a finite, nonnegative number');
+			throw new TeyvatError('accountsCacheTtl must be a finite, nonnegative number');
 		}
-		this.#accounts_cache_ttl = opts.accounts_cache_ttl ?? 3_600_000;
-		this.auto_enable = opts.auto_enable ?? false;
-		_initialize_http_client(this, cookies, {
+		this.#accountsCacheTtl = opts.accountsCacheTtl ?? 3_600_000;
+		this.autoEnable = opts.autoEnable ?? false;
+		_initializeHttpClient(this, cookies, {
 			language: opts.language,
-			prepare_auth: async () => {
-				await this.#complete_cookies(false);
+			prepareAuth: async () => {
+				await this.#completeCookies(false);
 			},
-			repair_auth: async () => await this.#complete_cookies(true),
-			on_cookies_update: async (updated_cookies) => {
-				_hoyolab_id_from_cookies(updated_cookies, this.hoyolab_id);
-				await opts.on_cookies_update?.({ hoyolab_id: this.hoyolab_id, cookies: updated_cookies });
+			repairAuth: async () => await this.#completeCookies(true),
+			onCookiesUpdate: async (updatedCookies) => {
+				_hoyolabIdFromCookies(updatedCookies, this.hoyolabId);
+				await opts.onCookiesUpdate?.({ hoyolabId: this.hoyolabId, cookies: updatedCookies });
 			},
 		});
-		this.language = _get_http_client(this).language;
-		this.check_in = new _TeyvatCheckInClient(this);
+		this.language = _getHttpClient(this).language;
+		this.checkIn = new _TeyvatCheckInClient(this);
 	}
 
 	get cookies(): TeyvatCookies {
-		return _get_http_client(this).cookies.to_json();
+		return _getHttpClient(this).cookies.toJson();
 	}
 
-	async accounts(options: TeyvatAccountsOptions = {}): Promise<Array<TeyvatAccount>> {
-		if (!this.#accounts_cache || options.update) return await this.#refresh_accounts();
+	async accounts(options: TeyvatAccountsOptions = {}): Promise<TeyvatAccount[]> {
+		if (!this.#accountsCache || options.update) return await this.#refreshAccounts();
 
-		if (Date.now() - this.#accounts_cache_updated_at >= this.#accounts_cache_ttl) {
-			void this.#refresh_accounts().catch(() => undefined);
+		if (Date.now() - this.#accountsCacheUpdatedAt >= this.#accountsCacheTtl) {
+			void this.#refreshAccounts().catch(() => undefined);
 		}
 
-		return [...this.#accounts_cache];
+		return [...this.#accountsCache];
 	}
 
 	account(uid: number): TeyvatAccount {
-		_recognize_genshin_server(uid);
+		_recognizeGenshinServer(uid);
 		const account = this.#accounts.get(uid) ?? new TeyvatAccount(this, uid);
 		if (!this.#accounts.has(uid)) this.#accounts.set(uid, account);
 		return account;
 	}
 
-	#refresh_accounts(): Promise<Array<TeyvatAccount>> {
-		if (this.#accounts_refresh) return this.#accounts_refresh;
+	#refreshAccounts(): Promise<TeyvatAccount[]> {
+		if (this.#accountsRefresh) return this.#accountsRefresh;
 
-		const refresh = _get_accounts(this)
+		const refresh = _getAccounts(this)
 			.then((accounts) => {
-				this.#accounts_cache = [...accounts];
-				this.#accounts_cache_updated_at = Date.now();
+				this.#accountsCache = [...accounts];
+				this.#accountsCacheUpdatedAt = Date.now();
 				return [...accounts];
 			})
 			.finally(() => {
-				if (this.#accounts_refresh === refresh) this.#accounts_refresh = undefined;
+				if (this.#accountsRefresh === refresh) this.#accountsRefresh = undefined;
 			});
-		this.#accounts_refresh = refresh;
+		this.#accountsRefresh = refresh;
 		return refresh;
 	}
 
-	async #complete_cookies(force: boolean): Promise<boolean> {
-		const client = _get_http_client(this);
+	async #completeCookies(force: boolean): Promise<boolean> {
+		const client = _getHttpClient(this);
 		if (!client.cookies.has('stoken')) return false;
 		if (!force && client.cookies.has('ltoken_v2') && client.cookies.has('cookie_token_v2')) return false;
-		if (this.#cookies_completion) return await this.#cookies_completion;
+		if (this.#cookiesCompletion) return await this.#cookiesCompletion;
 
 		const completion = (async () => {
-			const cookies = await _hoyolab_complete_cookies(client);
-			await client.merge_cookies(cookies);
+			const cookies = await _hoyolabCompleteCookies(client);
+			await client.mergeCookies(cookies);
 			return true;
 		})();
-		this.#cookies_completion = completion;
+		this.#cookiesCompletion = completion;
 		try {
 			return await completion;
 		} finally {
-			if (this.#cookies_completion === completion) this.#cookies_completion = undefined;
+			if (this.#cookiesCompletion === completion) this.#cookiesCompletion = undefined;
 		}
 	}
 }

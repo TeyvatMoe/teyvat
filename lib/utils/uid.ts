@@ -9,7 +9,7 @@ const SERVER_PREFIXES: Readonly<Record<string, TeyvatServer>> = {
 	'18': 'os_asia',
 };
 
-export function _recognize_genshin_server(uid: number): TeyvatServer {
+export function _recognizeGenshinServer(uid: number): TeyvatServer {
 	if (!Number.isSafeInteger(uid) || uid <= 0) throw new TeyvatError(`Invalid Genshin UID: ${uid}`);
 
 	const value = String(uid);

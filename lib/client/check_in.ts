@@ -1,15 +1,15 @@
 import {
-	_claim_hoyolab_check_in,
-	_get_hoyolab_check_in_history_page,
-	_get_hoyolab_check_in_info,
-	_get_hoyolab_check_in_rewards,
+	_claimHoyolabCheckIn,
+	_getHoyolabCheckInHistoryPage,
+	_getHoyolabCheckInInfo,
+	_getHoyolabCheckInRewards,
 	type HoyolabCheckInCaptcha,
 } from '#/endpoints/hoyolab/genshin/check_in.ts';
 import {
-	schema_teyvat_check_in_captcha_solution,
-	schema_teyvat_check_in_history_entry,
-	schema_teyvat_check_in_info,
-	schema_teyvat_check_in_result,
+	schemaTeyvatCheckInCaptchaSolution,
+	schemaTeyvatCheckInHistoryEntry,
+	schemaTeyvatCheckInInfo,
+	schemaTeyvatCheckInResult,
 	type TeyvatCheckInCaptchaSolution,
 	type TeyvatCheckInClaimOptions,
 	type TeyvatCheckInClient,
@@ -19,17 +19,17 @@ import {
 	type TeyvatCheckInResult,
 } from '#/types/check_in.ts';
 import type { TeyvatPaginator } from '#/types/paginator.ts';
-import { _current_utc_offset_day, _hoyolab_datetime } from '#/utils/misc.ts';
+import { _currentUtcOffsetDay, _hoyolabDatetime } from '#/utils/misc.ts';
 import { TeyvatError, TeyvatResponseValidationError } from './errors.ts';
 import { _TeyvatPaginator } from './paginator.ts';
-import { _get_http_client, type TeyvatHttpClient } from './request.ts';
+import { _getHttpClient, type TeyvatHttpClient } from './request.ts';
 
 const INFO_ENDPOINT = '/event/sol/info';
 const CLAIM_ENDPOINT = '/event/sol/sign';
 const HISTORY_ENDPOINT = '/event/sol/award';
 const PAGE_SIZE = 10;
 
-function _mapping_error(method: string, endpoint: string, cause: unknown): TeyvatResponseValidationError {
+function _mappingError(method: string, endpoint: string, cause: unknown): TeyvatResponseValidationError {
 	return new TeyvatResponseValidationError(
 		method,
 		endpoint,
@@ -49,23 +49,23 @@ function _limit(value: unknown): number | undefined {
 
 export class _TeyvatCheckInClient implements TeyvatCheckInClient {
 	readonly #client: TeyvatHttpClient;
-	#pending_captcha?: HoyolabCheckInCaptcha;
+	#pendingCaptcha?: HoyolabCheckInCaptcha;
 	#operation: Promise<void> = Promise.resolve();
 
 	constructor(owner: object) {
-		this.#client = _get_http_client(owner);
+		this.#client = _getHttpClient(owner);
 	}
 
 	async info(): Promise<TeyvatCheckInInfo> {
 		const [status, calendar] = await Promise.all([
-			_get_hoyolab_check_in_info(this.#client),
-			_get_hoyolab_check_in_rewards(this.#client),
+			_getHoyolabCheckInInfo(this.#client),
+			_getHoyolabCheckInRewards(this.#client),
 		]);
 		try {
-			return schema_teyvat_check_in_info.assert({
-				signed_in: status.is_sign,
-				claimed_days: status.total_sign_day,
-				missed_days: Math.max(0, _current_utc_offset_day() - status.total_sign_day),
+			return schemaTeyvatCheckInInfo.assert({
+				signedIn: status.is_sign,
+				claimedDays: status.total_sign_day,
+				missedDays: Math.max(0, _currentUtcOffsetDay() - status.total_sign_day),
 				rewards: calendar.awards.map((reward) => ({
 					name: reward.name,
 					amount: reward.cnt,
@@ -73,7 +73,7 @@ export class _TeyvatCheckInClient implements TeyvatCheckInClient {
 				})),
 			});
 		} catch (cause) {
-			throw _mapping_error('GET', INFO_ENDPOINT, cause);
+			throw _mappingError('GET', INFO_ENDPOINT, cause);
 		}
 	}
 
@@ -89,86 +89,86 @@ export class _TeyvatCheckInClient implements TeyvatCheckInClient {
 	history(options: TeyvatCheckInHistoryOptions = {}): TeyvatPaginator<TeyvatCheckInHistoryEntry> {
 		const limit = _limit(options.limit);
 		return new _TeyvatPaginator({
-			initial_cursor: 1,
+			initialCursor: 1,
 			limit,
-			get_page: async (page) => {
-				const raw = await _get_hoyolab_check_in_history_page(this.#client, page);
+			getPage: async (page) => {
+				const raw = await _getHoyolabCheckInHistoryPage(this.#client, page);
 				try {
 					const items = raw.list.map((entry) =>
-						schema_teyvat_check_in_history_entry.assert({
+						schemaTeyvatCheckInHistoryEntry.assert({
 							id: entry.id,
 							name: entry.name,
 							amount: entry.cnt,
 							icon: entry.img,
-							claimed_at: _hoyolab_datetime(entry.created_at, 8, 'created_at'),
+							claimedAt: _hoyolabDatetime(entry.created_at, 8, 'created_at'),
 						}),
 					);
-					return { items, next_cursor: items.length < PAGE_SIZE ? null : page + 1 };
+					return { items, nextCursor: items.length < PAGE_SIZE ? null : page + 1 };
 				} catch (cause) {
-					throw _mapping_error('GET', HISTORY_ENDPOINT, cause);
+					throw _mappingError('GET', HISTORY_ENDPOINT, cause);
 				}
 			},
 		});
 	}
 
 	async #claim(options: TeyvatCheckInClaimOptions): Promise<TeyvatCheckInResult> {
-		const solution = this.#solution(options.captcha_solution);
-		const status = await _get_hoyolab_check_in_info(this.#client);
+		const solution = this.#solution(options.captchaSolution);
+		const status = await _getHoyolabCheckInInfo(this.#client);
 		if (status.is_sign) {
-			this.#pending_captcha = undefined;
-			return await this.#claimed_result('already_claimed', status.total_sign_day);
+			this.#pendingCaptcha = undefined;
+			return await this.#claimedResult('already_claimed', status.total_sign_day);
 		}
-		if (this.#pending_captcha && !solution) return this.#captcha_result(this.#pending_captcha);
+		if (this.#pendingCaptcha && !solution) return this.#captchaResult(this.#pendingCaptcha);
 
-		const result = await _claim_hoyolab_check_in(this.#client, solution);
+		const result = await _claimHoyolabCheckIn(this.#client, solution);
 		if (result.status === 'captcha_required') {
-			this.#pending_captcha = result.captcha;
-			return this.#captcha_result(result.captcha);
+			this.#pendingCaptcha = result.captcha;
+			return this.#captchaResult(result.captcha);
 		}
 
-		this.#pending_captcha = undefined;
-		const updated = await _get_hoyolab_check_in_info(this.#client);
+		this.#pendingCaptcha = undefined;
+		const updated = await _getHoyolabCheckInInfo(this.#client);
 		if (!updated.is_sign) {
 			throw new TeyvatResponseValidationError('POST', CLAIM_ENDPOINT, [
 				'daily check-in was not marked as claimed after a successful response',
 			]);
 		}
-		return await this.#claimed_result(result.status, updated.total_sign_day);
+		return await this.#claimedResult(result.status, updated.total_sign_day);
 	}
 
 	#solution(value: unknown): TeyvatCheckInCaptchaSolution | undefined {
 		if (value === undefined) return undefined;
-		if (!this.#pending_captcha) throw new TeyvatError('Daily check-in is not awaiting a captcha solution');
+		if (!this.#pendingCaptcha) throw new TeyvatError('Daily check-in is not awaiting a captcha solution');
 		let solution: TeyvatCheckInCaptchaSolution;
 		try {
-			solution = schema_teyvat_check_in_captcha_solution.assert(value);
+			solution = schemaTeyvatCheckInCaptchaSolution.assert(value);
 		} catch {
 			throw new TeyvatError('Invalid daily check-in captcha solution');
 		}
-		if (solution.geetest_challenge !== this.#pending_captcha.challenge)
+		if (solution.geetestChallenge !== this.#pendingCaptcha.challenge)
 			throw new TeyvatError('Captcha solution does not match the pending daily check-in challenge');
 		return solution;
 	}
 
-	#captcha_result(captcha: HoyolabCheckInCaptcha): TeyvatCheckInResult {
-		return schema_teyvat_check_in_result.assert({
+	#captchaResult(captcha: HoyolabCheckInCaptcha): TeyvatCheckInResult {
+		return schemaTeyvatCheckInResult.assert({
 			status: 'captcha_required',
 			captcha: { version: 'v3', gt: captcha.gt, challenge: captcha.challenge },
 		});
 	}
 
-	async #claimed_result(status: 'claimed' | 'already_claimed', claimed_days: number): Promise<TeyvatCheckInResult> {
-		const calendar = await _get_hoyolab_check_in_rewards(this.#client);
+	async #claimedResult(status: 'claimed' | 'already_claimed', claimedDays: number): Promise<TeyvatCheckInResult> {
+		const calendar = await _getHoyolabCheckInRewards(this.#client);
 		try {
-			const reward = calendar.awards[claimed_days - 1];
+			const reward = calendar.awards[claimedDays - 1];
 			if (!reward) throw new TypeError('claimed reward is missing from the monthly calendar');
-			return schema_teyvat_check_in_result.assert({
+			return schemaTeyvatCheckInResult.assert({
 				status,
-				claimed_days,
+				claimedDays: claimedDays,
 				reward: { name: reward.name, amount: reward.cnt, icon: reward.icon },
 			});
 		} catch (cause) {
-			throw _mapping_error('POST', CLAIM_ENDPOINT, cause);
+			throw _mappingError('POST', CLAIM_ENDPOINT, cause);
 		}
 	}
 }

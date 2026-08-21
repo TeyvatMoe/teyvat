@@ -1,6 +1,6 @@
 import { type } from 'arktype';
 
-export const schema_teyvat_cookies = type({
+export const schemaTeyvatCookies = type({
 	'[string]': 'string',
 });
 
@@ -9,4 +9,4 @@ export const schema_teyvat_cookies = type({
  * @useDeclaredType
  * @category Authentication
  */
-export type TeyvatCookies = typeof schema_teyvat_cookies.infer;
+export type TeyvatCookies = typeof schemaTeyvatCookies.infer;

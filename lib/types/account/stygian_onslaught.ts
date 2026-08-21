@@ -1,16 +1,16 @@
 import { type } from 'arktype';
 
-const schema_metric_type = type.enumerated('unknown', 'strongest_strike', 'highest_damage');
-const schema_tag_type = type.enumerated('unknown', 'advantage', 'disadvantage');
-const schema_tag_element = type.enumerated('cryo', 'hydro', 'pyro', 'dendro');
+const schemaMetricType = type.enumerated('unknown', 'strongest_strike', 'highest_damage');
+const schemaTagType = type.enumerated('unknown', 'advantage', 'disadvantage');
+const schemaTagElement = type.enumerated('cryo', 'hydro', 'pyro', 'dendro');
 
-const schema_best_record = type({
+const schemaBestRecord = type({
 	difficulty: 'number.integer',
-	completion_seconds: 'number.integer',
-	badge_icon: 'string',
+	completionSeconds: 'number.integer',
+	badgeIcon: 'string',
 });
 
-const schema_character = type({
+const schemaCharacter = type({
 	id: 'number.integer',
 	name: 'string',
 	element: 'string',
@@ -20,51 +20,51 @@ const schema_character = type({
 	constellation: 'number.integer',
 });
 
-const schema_best_character = type({
+const schemaBestCharacter = type({
 	id: 'number.integer',
-	side_icon: 'string',
+	sideIcon: 'string',
 	value: 'string',
-	metric: schema_metric_type,
+	metric: schemaMetricType,
 });
 
-const schema_enemy_tag = type({
-	type: schema_tag_type,
+const schemaEnemyTag = type({
+	type: schemaTagType,
 	description: 'string',
-	elements: schema_tag_element.array(),
+	elements: schemaTagElement.array(),
 });
 
-const schema_enemy = type({
+const schemaEnemy = type({
 	id: 'number.integer',
 	name: 'string',
 	level: 'number.integer',
 	icon: 'string',
 	descriptions: 'string[]',
-	tags: schema_enemy_tag.array(),
+	tags: schemaEnemyTag.array(),
 });
 
-const schema_challenge = type({
+const schemaChallenge = type({
 	name: 'string',
-	completion_seconds: 'number.integer',
-	team: schema_character.array(),
-	best_characters: schema_best_character.array(),
-	enemy: schema_enemy,
+	completionSeconds: 'number.integer',
+	team: schemaCharacter.array(),
+	bestCharacters: schemaBestCharacter.array(),
+	enemy: schemaEnemy,
 });
 
-const schema_mode = type({
-	has_data: 'boolean',
-	best_record: schema_best_record.or('null'),
-	challenges: schema_challenge.array(),
+const schemaMode = type({
+	hasData: 'boolean',
+	bestRecord: schemaBestRecord.or('null'),
+	challenges: schemaChallenge.array(),
 });
 
-export const schema_teyvat_account_stygian_onslaught = type({
+export const schemaTeyvatAccountStygianOnslaught = type({
 	schedule: {
 		id: 'string',
 		name: 'string',
-		starts_at: 'Date',
-		ends_at: 'Date',
+		startsAt: 'Date',
+		endsAt: 'Date',
 	},
-	single_player: schema_mode,
-	multiplayer: schema_mode,
+	singlePlayer: schemaMode,
+	multiplayer: schemaMode,
 });
 
 /**
@@ -72,4 +72,4 @@ export const schema_teyvat_account_stygian_onslaught = type({
  * @useDeclaredType
  * @category Stygian Onslaught
  */
-export type TeyvatAccountStygianOnslaught = typeof schema_teyvat_account_stygian_onslaught.infer;
+export type TeyvatAccountStygianOnslaught = typeof schemaTeyvatAccountStygianOnslaught.infer;

@@ -1,16 +1,16 @@
 import { type } from 'arktype';
 
-const schema_category = type({
+const schemaCategory = type({
 	id: 'string',
 	name: 'string',
 	icon: 'string',
 	completed: 'number.integer >= 0',
-	completion_percentage: '0 <= number <= 100 | null',
+	completionPercentage: '0 <= number <= 100 | null',
 });
 
-export const schema_teyvat_account_achievements = type({
+export const schemaTeyvatAccountAchievements = type({
 	completed: 'number.integer >= 0',
-	categories: schema_category.array(),
+	categories: schemaCategory.array(),
 });
 
 /**
@@ -20,4 +20,4 @@ export const schema_teyvat_account_achievements = type({
  * @useDeclaredType
  * @category Achievements
  */
-export type TeyvatAccountAchievements = typeof schema_teyvat_account_achievements.infer;
+export type TeyvatAccountAchievements = typeof schemaTeyvatAccountAchievements.infer;

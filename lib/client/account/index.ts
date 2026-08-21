@@ -20,31 +20,31 @@ import type {
 	TeyvatTravelerDiaryOptions,
 } from '#/types/account/traveler_diary.ts';
 import type { TeyvatPaginator } from '#/types/paginator.ts';
-import { _recognize_genshin_server } from '#/utils/uid.ts';
-import { _get_account_achievements } from './achievements.ts';
+import { _recognizeGenshinServer } from '#/utils/uid.ts';
+import { _getAccountAchievements } from './achievements.ts';
 import { _TeyvatCalculatorClient } from './calculator.ts';
-import { _get_account_calendar } from './calendar.ts';
-import { _get_account_characters } from './characters.ts';
-import { _redeem_account_code } from './code_redemption.ts';
-import { _get_account_daily_notes } from './daily_notes.ts';
-import { _get_account_envisaged_echoes } from './envisaged_echoes.ts';
-import { _get_account_imaginarium_theater } from './imaginarium_theater.ts';
-import { _get_account_info } from './info.ts';
-import { _get_account_inventory } from './inventory.ts';
-import { _get_account_showcase, _set_account_showcase } from './showcase.ts';
-import { _get_account_spiral_abyss } from './spiral_abyss.ts';
-import { _get_account_stygian_onslaught } from './stygian_onslaught.ts';
-import { _get_account_traveler_diary, _get_account_traveler_diary_log } from './traveler_diary.ts';
+import { _getAccountCalendar } from './calendar.ts';
+import { _getAccountCharacters } from './characters.ts';
+import { _redeemAccountCode } from './code_redemption.ts';
+import { _getAccountDailyNotes } from './daily_notes.ts';
+import { _getAccountEnvisagedEchoes } from './envisaged_echoes.ts';
+import { _getAccountImaginariumTheater } from './imaginarium_theater.ts';
+import { _getAccountInfo } from './info.ts';
+import { _getAccountInventory } from './inventory.ts';
+import { _getAccountShowcase, _setAccountShowcase } from './showcase.ts';
+import { _getAccountSpiralAbyss } from './spiral_abyss.ts';
+import { _getAccountStygianOnslaught } from './stygian_onslaught.ts';
+import { _getAccountTravelerDiary, _getAccountTravelerDiaryLog } from './traveler_diary.ts';
 
 interface TeyvatAccountDetails {
 	nickname: string;
-	server_name: string;
+	serverName: string;
 	level: number;
-	is_selected: boolean;
-	is_official: boolean;
+	isSelected: boolean;
+	isOfficial: boolean;
 }
 
-const account_details = new WeakMap<TeyvatAccount, TeyvatAccountDetails>();
+const accountDetails = new WeakMap<TeyvatAccount, TeyvatAccountDetails>();
 
 /** @category Core */
 export class TeyvatAccount {
@@ -56,91 +56,91 @@ export class TeyvatAccount {
 	constructor(inst: Teyvat, uid: number) {
 		this.inst = inst;
 		this.uid = uid;
-		this.server = _recognize_genshin_server(uid);
+		this.server = _recognizeGenshinServer(uid);
 		this.calculator = new _TeyvatCalculatorClient(this);
 	}
 
 	get nickname(): string | undefined {
-		return account_details.get(this)?.nickname;
+		return accountDetails.get(this)?.nickname;
 	}
 
-	get server_name(): string | undefined {
-		return account_details.get(this)?.server_name;
+	get serverName(): string | undefined {
+		return accountDetails.get(this)?.serverName;
 	}
 
 	get level(): number | undefined {
-		return account_details.get(this)?.level;
+		return accountDetails.get(this)?.level;
 	}
 
-	get is_selected(): boolean | undefined {
-		return account_details.get(this)?.is_selected;
+	get isSelected(): boolean | undefined {
+		return accountDetails.get(this)?.isSelected;
 	}
 
-	get is_official(): boolean | undefined {
-		return account_details.get(this)?.is_official;
+	get isOfficial(): boolean | undefined {
+		return accountDetails.get(this)?.isOfficial;
 	}
 
 	async info(): Promise<TeyvatAccountInfo> {
-		return await _get_account_info(this);
+		return await _getAccountInfo(this);
 	}
 
 	async achievements(): Promise<TeyvatAccountAchievements> {
-		return await _get_account_achievements(this);
+		return await _getAccountAchievements(this);
 	}
 
 	async inventory(): Promise<TeyvatAccountInventory> {
-		return await _get_account_inventory(this);
+		return await _getAccountInventory(this);
 	}
 
-	async imaginarium_theater(): Promise<TeyvatAccountImaginariumTheater> {
-		return await _get_account_imaginarium_theater(this);
+	async imaginariumTheater(): Promise<TeyvatAccountImaginariumTheater> {
+		return await _getAccountImaginariumTheater(this);
 	}
 
-	async daily_notes(): Promise<TeyvatAccountDailyNotes> {
-		return await _get_account_daily_notes(this);
+	async dailyNotes(): Promise<TeyvatAccountDailyNotes> {
+		return await _getAccountDailyNotes(this);
 	}
 
-	async envisaged_echoes(): Promise<TeyvatAccountEnvisagedEcho[]> {
-		return await _get_account_envisaged_echoes(this);
+	async envisagedEchoes(): Promise<TeyvatAccountEnvisagedEcho[]> {
+		return await _getAccountEnvisagedEchoes(this);
 	}
 
 	async characters(options?: TeyvatCharactersOptions): Promise<TeyvatAccountCharacter[]> {
-		return await _get_account_characters(this, options);
+		return await _getAccountCharacters(this, options);
 	}
 
 	async showcase(): Promise<TeyvatAccountShowcaseCharacter[]> {
-		return await _get_account_showcase(this);
+		return await _getAccountShowcase(this);
 	}
 
-	async set_showcase(character_ids: number[]): Promise<TeyvatAccountShowcaseCharacter[]> {
-		return await _set_account_showcase(this, character_ids);
+	async setShowcase(characterIds: number[]): Promise<TeyvatAccountShowcaseCharacter[]> {
+		return await _setAccountShowcase(this, characterIds);
 	}
 
-	async redeem_code(code: string): Promise<TeyvatCodeRedemptionResult> {
-		return await _redeem_account_code(this, code);
+	async redeemCode(code: string): Promise<TeyvatCodeRedemptionResult> {
+		return await _redeemAccountCode(this, code);
 	}
 
 	async calendar(): Promise<TeyvatAccountCalendar> {
-		return await _get_account_calendar(this);
+		return await _getAccountCalendar(this);
 	}
 
-	async spiral_abyss(options?: TeyvatSpiralAbyssOptions): Promise<TeyvatAccountSpiralAbyss> {
-		return await _get_account_spiral_abyss(this, options);
+	async spiralAbyss(options?: TeyvatSpiralAbyssOptions): Promise<TeyvatAccountSpiralAbyss> {
+		return await _getAccountSpiralAbyss(this, options);
 	}
 
-	async stygian_onslaught(): Promise<TeyvatAccountStygianOnslaught[]> {
-		return await _get_account_stygian_onslaught(this);
+	async stygianOnslaught(): Promise<TeyvatAccountStygianOnslaught[]> {
+		return await _getAccountStygianOnslaught(this);
 	}
 
-	async traveler_diary(options?: TeyvatTravelerDiaryOptions): Promise<TeyvatAccountTravelerDiary> {
-		return await _get_account_traveler_diary(this, options);
+	async travelerDiary(options?: TeyvatTravelerDiaryOptions): Promise<TeyvatAccountTravelerDiary> {
+		return await _getAccountTravelerDiary(this, options);
 	}
 
-	traveler_diary_log(options?: TeyvatTravelerDiaryLogOptions): TeyvatPaginator<TeyvatTravelerDiaryEntry> {
-		return _get_account_traveler_diary_log(this, options);
+	travelerDiaryLog(options?: TeyvatTravelerDiaryLogOptions): TeyvatPaginator<TeyvatTravelerDiaryEntry> {
+		return _getAccountTravelerDiaryLog(this, options);
 	}
 }
 
-export function _set_account_details(account: TeyvatAccount, details: TeyvatAccountDetails): void {
-	account_details.set(account, details);
+export function _setAccountDetails(account: TeyvatAccount, details: TeyvatAccountDetails): void {
+	accountDetails.set(account, details);
 }

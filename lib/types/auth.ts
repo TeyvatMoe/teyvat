@@ -1,86 +1,84 @@
 import { type } from 'arktype';
-import { schema_teyvat_cookies } from './cookies.ts';
+import { schemaTeyvatCookies } from './cookies.ts';
 import type { TeyvatLanguage } from './language.ts';
 
-const schema_teyvat_auth_captcha_v3 = type({
+const schemaTeyvatAuthCaptchaV3 = type({
 	version: "'v3'",
 	gt: 'string',
 	challenge: 'string',
-	new_captcha: 'number.integer',
+	newCaptcha: 'number.integer',
 	success: 'number.integer',
 });
-const schema_teyvat_auth_captcha_v4 = type({
+const schemaTeyvatAuthCaptchaV4 = type({
 	version: "'v4'",
-	captcha_id: 'string',
-	risk_type: 'string',
-	session_id: 'string',
-	new_captcha: 'number.integer',
+	captchaId: 'string',
+	riskType: 'string',
+	sessionId: 'string',
+	newCaptcha: 'number.integer',
 	success: 'number.integer',
 });
-const schema_teyvat_auth_captcha = schema_teyvat_auth_captcha_v3.or(schema_teyvat_auth_captcha_v4);
+const schemaTeyvatAuthCaptcha = schemaTeyvatAuthCaptchaV3.or(schemaTeyvatAuthCaptchaV4);
 /**
  * @useDeclaredType
  * @category Authentication
  */
-export type TeyvatAuthCaptcha = typeof schema_teyvat_auth_captcha.infer;
+export type TeyvatAuthCaptcha = typeof schemaTeyvatAuthCaptcha.infer;
 
-const schema_teyvat_auth_captcha_solution_v3 = type({
+const schemaTeyvatAuthCaptchaSolutionV3 = type({
 	version: "'v3'",
-	geetest_challenge: 'string',
-	geetest_validate: 'string',
-	geetest_seccode: 'string',
+	geetestChallenge: 'string',
+	geetestValidate: 'string',
+	geetestSeccode: 'string',
 });
-const schema_teyvat_auth_captcha_solution_v4 = type({
+const schemaTeyvatAuthCaptchaSolutionV4 = type({
 	version: "'v4'",
-	captcha_id: 'string',
-	lot_number: 'string',
-	pass_token: 'string',
-	gen_time: 'string',
-	captcha_output: 'string',
+	captchaId: 'string',
+	lotNumber: 'string',
+	passToken: 'string',
+	genTime: 'string',
+	captchaOutput: 'string',
 });
-export const schema_teyvat_auth_captcha_solution = schema_teyvat_auth_captcha_solution_v3.or(
-	schema_teyvat_auth_captcha_solution_v4,
-);
+export const schemaTeyvatAuthCaptchaSolution = schemaTeyvatAuthCaptchaSolutionV3.or(schemaTeyvatAuthCaptchaSolutionV4);
 /**
  * @useDeclaredType
  * @category Authentication
  */
-export type TeyvatAuthCaptchaSolution = typeof schema_teyvat_auth_captcha_solution.infer;
+export type TeyvatAuthCaptchaSolution = typeof schemaTeyvatAuthCaptchaSolution.infer;
 
-export const schema_teyvat_authenticated = type({
+export const schemaTeyvatAuthenticated = type({
 	status: "'authenticated'",
-	hoyolab_id: 'string',
-	device_id: 'string',
-	cookies: schema_teyvat_cookies,
+	hoyolabId: 'string',
+	deviceId: 'string',
+	cookies: schemaTeyvatCookies,
 });
-export const schema_teyvat_auth_captcha_required = type({
+export const schemaTeyvatAuthCaptchaRequired = type({
 	status: "'captcha_required'",
-	captcha: schema_teyvat_auth_captcha,
+	captcha: schemaTeyvatAuthCaptcha,
 });
-export const schema_teyvat_auth_email_verification_required = type({
+export const schemaTeyvatAuthEmailVerificationRequired = type({
 	status: "'email_verification_required'",
 });
-const schema_teyvat_auth_result = schema_teyvat_authenticated
-	.or(schema_teyvat_auth_captcha_required)
-	.or(schema_teyvat_auth_email_verification_required);
+const schemaTeyvatAuthResult = schemaTeyvatAuthenticated
+	.or(schemaTeyvatAuthCaptchaRequired)
+	.or(schemaTeyvatAuthEmailVerificationRequired);
 /**
  * @useDeclaredType
  * @category Authentication
  */
-export type TeyvatAuthResult = typeof schema_teyvat_auth_result.infer;
+export type TeyvatAuthResult = typeof schemaTeyvatAuthResult.infer;
 
 export interface TeyvatAuthOptions {
 	account: string;
 	password: string;
 	language?: TeyvatLanguage;
-	device_id?: string;
-	device_name?: string;
-	device_model?: string;
+	deviceId?: string;
+	deviceName?: string;
+	deviceModel?: string;
 }
 
 export interface TeyvatAuthSession {
 	readonly language: TeyvatLanguage;
 	login(): Promise<TeyvatAuthResult>;
-	complete_captcha(solution: TeyvatAuthCaptchaSolution): Promise<TeyvatAuthResult>;
-	complete_email(code: string): Promise<TeyvatAuthResult>;
+	completeCaptcha(solution: TeyvatAuthCaptchaSolution): Promise<TeyvatAuthResult>;
+	completeEmail(code: string): Promise<TeyvatAuthResult>;
 }

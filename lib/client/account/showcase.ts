@@ -1,15 +1,9 @@
-import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { _enableAccountFeature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
-import { _get_http_client } from '#/client/request.ts';
-import {
-	_get_hoyolab_genshin_character_list,
-	_set_hoyolab_genshin_showcase,
-} from '#/endpoints/hoyolab/genshin/characters.ts';
-import {
-	schema_teyvat_account_showcase_character,
-	type TeyvatAccountShowcaseCharacter,
-} from '#/types/account/showcase.ts';
-import { _character_element, _character_ids, _weapon_type } from '#/utils/character.ts';
+import { _getHttpClient } from '#/client/request.ts';
+import { _getHoyolabGenshinCharacterList, _setHoyolabGenshinShowcase } from '#/endpoints/hoyolab/genshin/characters.ts';
+import { schemaTeyvatAccountShowcaseCharacter, type TeyvatAccountShowcaseCharacter } from '#/types/account/showcase.ts';
+import { _characterElement, _characterIds, _weaponType } from '#/utils/character.ts';
 import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
@@ -18,50 +12,50 @@ const TOP_ENDPOINT = '/event/game_record/genshin/api/character/top';
 const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 const PROPAGATION_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
-function _is_private(cause: unknown): cause is TeyvatApiError {
+function _isPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
-async function _character_list(account: TeyvatAccount) {
-	const client = _get_http_client(account.inst);
+async function _characterList(account: TeyvatAccount) {
+	const client = _getHttpClient(account.inst);
 	try {
-		return await _get_hoyolab_genshin_character_list(client, account.uid, account.server);
+		return await _getHoyolabGenshinCharacterList(client, account.uid, account.server);
 	} catch (cause) {
-		if (!(account.inst.auto_enable && _is_private(cause))) throw cause;
-		await _enable_account_feature(account, 'character_details', cause);
-		let retry_error: TeyvatApiError = cause;
+		if (!(account.inst.autoEnable && _isPrivate(cause))) throw cause;
+		await _enableAccountFeature(account, 'character_details', cause);
+		let retryError: TeyvatApiError = cause;
 		for (const delay of ENABLE_RETRY_DELAYS) {
 			await _sleep(delay);
 			try {
-				return await _get_hoyolab_genshin_character_list(client, account.uid, account.server);
-			} catch (retry_cause) {
-				if (!_is_private(retry_cause)) throw retry_cause;
-				retry_error = retry_cause;
+				return await _getHoyolabGenshinCharacterList(client, account.uid, account.server);
+			} catch (retryCause) {
+				if (!_isPrivate(retryCause)) throw retryCause;
+				retryError = retryCause;
 			}
 		}
-		throw retry_error;
+		throw retryError;
 	}
 }
 
-function _map_showcase(
-	list: Awaited<ReturnType<typeof _get_hoyolab_genshin_character_list>>['list'],
+function _mapShowcase(
+	list: Awaited<ReturnType<typeof _getHoyolabGenshinCharacterList>>['list'],
 ): TeyvatAccountShowcaseCharacter[] {
 	try {
 		return list
 			.filter((character) => character.is_chosen)
 			.map((character) =>
-				schema_teyvat_account_showcase_character.assert({
+				schemaTeyvatAccountShowcaseCharacter.assert({
 					id: character.id,
 					name: character.name,
-					element: _character_element(character.element),
+					element: _characterElement(character.element),
 					rarity: character.rarity > 100 ? character.rarity - 100 : character.rarity,
 					icon: character.icon,
-					side_icon: character.side_icon,
-					display_image: character.image,
+					sideIcon: character.side_icon,
+					displayImage: character.image,
 					level: character.level,
 					friendship: character.fetter,
-					active_constellations: character.actived_constellation_num,
-					weapon_type: _weapon_type(character.weapon_type),
+					activeConstellations: character.actived_constellation_num,
+					weaponType: _weaponType(character.weapon_type),
 				}),
 			);
 	} catch (cause) {
@@ -69,37 +63,37 @@ function _map_showcase(
 	}
 }
 
-function _same_ids(actual: number[], expected: number[]): boolean {
+function _sameIds(actual: number[], expected: number[]): boolean {
 	if (actual.length !== expected.length) return false;
-	const expected_ids = new Set(expected);
-	return actual.every((id) => expected_ids.has(id));
+	const expectedIds = new Set(expected);
+	return actual.every((id) => expectedIds.has(id));
 }
 
-export async function _get_account_showcase(account: TeyvatAccount): Promise<TeyvatAccountShowcaseCharacter[]> {
-	return _map_showcase((await _character_list(account)).list);
+export async function _getAccountShowcase(account: TeyvatAccount): Promise<TeyvatAccountShowcaseCharacter[]> {
+	return _mapShowcase((await _characterList(account)).list);
 }
 
-export async function _set_account_showcase(
+export async function _setAccountShowcase(
 	account: TeyvatAccount,
-	character_ids: number[],
+	requestedCharacterIds: number[],
 ): Promise<TeyvatAccountShowcaseCharacter[]> {
-	const ids = _character_ids(character_ids);
+	const ids = _characterIds(requestedCharacterIds);
 	if (ids.length > 8) throw new TeyvatError('A Genshin showcase cannot contain more than eight characters');
 
 	const bound = (await account.inst.accounts()).some((candidate) => candidate.uid === account.uid);
 	if (!bound) throw new TeyvatError('Cannot change the showcase of an account not bound to these cookies');
 
-	const list = await _character_list(account);
-	const owned_ids = new Set(list.list.map((character) => character.id));
-	if (ids.some((id) => !owned_ids.has(id)))
+	const list = await _characterList(account);
+	const ownedIds = new Set(list.list.map((character) => character.id));
+	if (ids.some((id) => !ownedIds.has(id)))
 		throw new TeyvatError('A Genshin showcase can contain only characters owned by the account');
 
-	await _set_hoyolab_genshin_showcase(_get_http_client(account.inst), account.uid, account.server, ids);
+	await _setHoyolabGenshinShowcase(_getHttpClient(account.inst), account.uid, account.server, ids);
 	for (const delay of PROPAGATION_RETRY_DELAYS) {
 		await _sleep(delay);
-		const showcase = _map_showcase((await _character_list(account)).list);
+		const showcase = _mapShowcase((await _characterList(account)).list);
 		if (
-			_same_ids(
+			_sameIds(
 				showcase.map((character) => character.id),
 				ids,
 			)

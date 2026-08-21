@@ -3,19 +3,19 @@ import type { TeyvatLanguage } from './language.ts';
 import type { TeyvatPaginator } from './paginator.ts';
 import type { TeyvatTransaction, TeyvatTransactionOptions, TeyvatTransactionType } from './transactions.ts';
 
-const schema_banner_type = type.enumerated('novice', 'standard', 'character', 'weapon', 'chronicled');
+const schemaBannerType = type.enumerated('novice', 'standard', 'character', 'weapon', 'chronicled');
 /**
  * @useDeclaredType
  * @category Wish History
  */
-export type TeyvatWishBannerType = typeof schema_banner_type.infer;
+export type TeyvatWishBannerType = typeof schemaBannerType.infer;
 
-const schema_item_type = type.enumerated('character', 'weapon', 'unknown');
+const schemaItemType = type.enumerated('character', 'weapon', 'unknown');
 /**
  * @useDeclaredType
  * @category Wish History
  */
-export type TeyvatWishItemType = typeof schema_item_type.infer;
+export type TeyvatWishItemType = typeof schemaItemType.infer;
 
 /** @category Wish History */
 export interface TeyvatWishesOptions {
@@ -29,15 +29,15 @@ export interface TeyvatWishHistoryOptions {
 	limit?: number;
 }
 
-export const schema_teyvat_wish = type({
+export const schemaTeyvatWish = type({
 	id: 'string',
 	uid: 'number.integer',
 	server: type.enumerated('os_usa', 'os_euro', 'os_asia', 'os_cht'),
 	name: 'string',
-	item_type: schema_item_type,
+	itemType: schemaItemType,
 	rarity: 'number.integer',
-	banner_type: schema_banner_type,
-	wished_at: 'Date',
+	bannerType: schemaBannerType,
+	wishedAt: 'Date',
 });
 
 /**
@@ -45,7 +45,7 @@ export const schema_teyvat_wish = type({
  * @useDeclaredType
  * @category Wish History
  */
-export type TeyvatWish = typeof schema_teyvat_wish.infer;
+export type TeyvatWish = typeof schemaTeyvatWish.infer;
 
 /** @category Wish History */
 export interface TeyvatWishClient {

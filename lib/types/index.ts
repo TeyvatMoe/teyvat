@@ -1,7 +1,47 @@
 import type { TeyvatCookies } from './cookies.ts';
 import type { TeyvatLanguage } from './language.ts';
 
-export * from './account/index.ts';
+export type {
+	TeyvatAccountAchievements,
+	TeyvatAccountCalendar,
+	TeyvatAccountCharacter,
+	TeyvatAccountDailyNotes,
+	TeyvatAccountEnvisagedEcho,
+	TeyvatAccountImaginariumTheater,
+	TeyvatAccountInfo,
+	TeyvatAccountInventory,
+	TeyvatAccountShowcaseCharacter,
+	TeyvatAccountSpiralAbyss,
+	TeyvatAccountStygianOnslaught,
+	TeyvatAccountsOptions,
+	TeyvatAccountTravelerDiary,
+	TeyvatArchonQuestStatus,
+	TeyvatAttendanceRewardStatus,
+	TeyvatCalculatorCharacter,
+	TeyvatCalculatorCharacterDetails,
+	TeyvatCalculatorClient,
+	TeyvatCalculatorOptions,
+	TeyvatCalculatorResult,
+	TeyvatCalendarElement,
+	TeyvatCalendarStatus,
+	TeyvatCharacterElement,
+	TeyvatCharactersOptions,
+	TeyvatCodeRedemptionResult,
+	TeyvatEnvisagedEchoStatus,
+	TeyvatExpeditionStatus,
+	TeyvatImaginariumTheaterCharacterRole,
+	TeyvatImaginariumTheaterDifficulty,
+	TeyvatServer,
+	TeyvatSpiralAbyssHalf,
+	TeyvatSpiralAbyssOptions,
+	TeyvatSpiralAbyssPeriod,
+	TeyvatTaskRewardStatus,
+	TeyvatTravelerDiaryCurrency,
+	TeyvatTravelerDiaryEntry,
+	TeyvatTravelerDiaryLogOptions,
+	TeyvatTravelerDiaryOptions,
+	TeyvatWeaponType,
+} from './account/index.ts';
 /** @category Authentication */
 export type {
 	TeyvatAuthCaptcha,
@@ -43,7 +83,7 @@ export type {
 
 /** @category Authentication */
 export interface TeyvatCookiesUpdate {
-	hoyolab_id: string;
+	hoyolabId: string;
 	cookies: TeyvatCookies;
 }
 
@@ -51,8 +91,8 @@ export interface TeyvatCookiesUpdate {
 export interface TeyvatOptions {
 	cookies?: TeyvatCookies | string;
 	language?: TeyvatLanguage;
-	auto_enable?: boolean;
-	hoyolab_id?: string;
-	on_cookies_update?: (update: TeyvatCookiesUpdate) => Promise<void> | void;
-	accounts_cache_ttl?: number;
+	autoEnable?: boolean;
+	hoyolabId?: string;
+	onCookiesUpdate?: (update: TeyvatCookiesUpdate) => Promise<void> | void;
+	accountsCacheTtl?: number;
 }

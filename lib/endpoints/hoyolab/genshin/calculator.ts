@@ -1,50 +1,50 @@
 import { type } from 'arktype';
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
-import { _hoyolab_headers } from '#/endpoints/hoyolab/headers.ts';
+import { _hoyolabHeaders } from '#/endpoints/hoyolab/headers.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
 
-const schema_calculator_character = type({
+const schemaCalculatorCharacter = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
-	avatar_level: 'number.integer',
-	element_attr_id: 'number.integer',
-	weapon_cat_id: 'number.integer',
-	level_current: 'number.integer',
-	max_level: 'number.integer',
+	['avatar_level']: 'number.integer',
+	['element_attr_id']: 'number.integer',
+	['weapon_cat_id']: 'number.integer',
+	['level_current']: 'number.integer',
+	['max_level']: 'number.integer',
 });
 
-const schema_calculator_weapon = type({
+const schemaCalculatorWeapon = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
-	weapon_level: 'number.integer',
-	weapon_cat_id: 'number.integer',
-	level_current: 'number.integer',
-	max_level: 'number.integer',
+	['weapon_level']: 'number.integer',
+	['weapon_cat_id']: 'number.integer',
+	['level_current']: 'number.integer',
+	['max_level']: 'number.integer',
 });
 
-const schema_calculator_talent = type({
+const schemaCalculatorTalent = type({
 	id: 'number.integer',
-	group_id: 'number.integer',
+	['group_id']: 'number.integer',
 	name: 'string',
 	icon: 'string',
-	level_current: 'number.integer',
-	max_level: 'number.integer',
+	['level_current']: 'number.integer',
+	['max_level']: 'number.integer',
 });
 
-const schema_calculator_artifact = type({
+const schemaCalculatorArtifact = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
-	reliquary_level: 'number.integer',
-	reliquary_cat_id: 'number.integer',
-	level_current: 'number.integer',
-	max_level: 'number.integer',
+	['reliquary_level']: 'number.integer',
+	['reliquary_cat_id']: 'number.integer',
+	['level_current']: 'number.integer',
+	['max_level']: 'number.integer',
 });
 
-const schema_material = type({
+const schemaMaterial = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
@@ -54,68 +54,68 @@ const schema_material = type({
 	'wiki_url?': 'string',
 });
 
-const schema_talent_result = type({
-	skill_info: {
+const schemaTalentResult = type({
+	['skill_info']: {
 		id: 'number.integer',
-		level_current: 'number.integer',
-		level_target: 'number.integer',
+		['level_current']: 'number.integer',
+		['level_target']: 'number.integer',
 	},
-	consume_list: schema_material.array(),
+	['consume_list']: schemaMaterial.array(),
 });
 
-const schema_artifact_result = type({
-	reliquary_id: 'number.integer',
-	id_consume_list: schema_material.array(),
+const schemaArtifactResult = type({
+	['reliquary_id']: 'number.integer',
+	['id_consume_list']: schemaMaterial.array(),
 });
 
-const schema_single_result = type({
-	avatar_consume: schema_material.array(),
-	weapon_consume: schema_material.array(),
-	skills_consume: schema_talent_result.array(),
-	reliquary_consume: schema_artifact_result.array(),
+const schemaSingleResult = type({
+	['avatar_consume']: schemaMaterial.array(),
+	['weapon_consume']: schemaMaterial.array(),
+	['skills_consume']: schemaTalentResult.array(),
+	['reliquary_consume']: schemaArtifactResult.array(),
 	'lineup_recommend?': 'string',
 });
 
-export const schema_hoyolab_calculator_characters_response = type({
+export const schemaHoyolabCalculatorCharactersResponse = type({
 	retcode: '0',
 	message: 'string',
-	data: { list: schema_calculator_character.array() },
+	data: { list: schemaCalculatorCharacter.array() },
 });
 
-export const schema_hoyolab_calculator_character_response = type({
-	retcode: '0',
-	message: 'string',
-	data: {
-		weapon: schema_calculator_weapon,
-		skill_list: schema_calculator_talent.array(),
-		reliquary_list: schema_calculator_artifact.array(),
-	},
-});
-
-export const schema_hoyolab_calculator_batch_response = type({
+export const schemaHoyolabCalculatorCharacterResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
-		items: schema_single_result.array(),
-		available_material: schema_material.array(),
-		overall_consume: schema_material.array(),
-		has_user_info: 'boolean',
+		weapon: schemaCalculatorWeapon,
+		['skill_list']: schemaCalculatorTalent.array(),
+		['reliquary_list']: schemaCalculatorArtifact.array(),
 	},
 });
 
-export const schema_hoyolab_calculator_auth_response = type({ retcode: '0', message: 'string', data: 'unknown' });
+export const schemaHoyolabCalculatorBatchResponse = type({
+	retcode: '0',
+	message: 'string',
+	data: {
+		items: schemaSingleResult.array(),
+		['available_material']: schemaMaterial.array(),
+		['overall_consume']: schemaMaterial.array(),
+		['has_user_info']: 'boolean',
+	},
+});
 
-function _calculator_headers(client: TeyvatHttpClient): Record<string, string> {
+export const schemaHoyolabCalculatorAuthResponse = type({ retcode: '0', message: 'string', data: 'unknown' });
+
+function _calculatorHeaders(client: TeyvatHttpClient): Record<string, string> {
 	return {
-		..._hoyolab_headers(client.language),
-		Origin: 'https://act.hoyolab.com',
-		Referer: 'https://act.hoyolab.com/',
+		..._hoyolabHeaders(client.language),
+		['Origin']: 'https://act.hoyolab.com',
+		['Referer']: 'https://act.hoyolab.com/',
 	};
 }
 
-export async function _get_hoyolab_calculator_characters(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
+export async function _getHoyolabCalculatorCharacters(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_calculator,
+		domain: TEYVAT_DOMAINS.genshinCalculator,
 		path: 'v1/sync/avatar/list',
 		method: 'POST',
 		body: {
@@ -123,53 +123,53 @@ export async function _get_hoyolab_calculator_characters(client: TeyvatHttpClien
 			size: 200,
 			uid,
 			region: server,
-			element_attr_ids: [],
-			weapon_cat_ids: [],
+			['element_attr_ids']: [],
+			['weapon_cat_ids']: [],
 			lang: client.language,
 		},
-		schema: schema_hoyolab_calculator_characters_response,
-		headers: _calculator_headers(client),
+		schema: schemaHoyolabCalculatorCharactersResponse,
+		headers: _calculatorHeaders(client),
 	});
 }
 
-export async function _get_hoyolab_calculator_character(
+export async function _getHoyolabCalculatorCharacter(
 	client: TeyvatHttpClient,
 	uid: number,
 	server: TeyvatServer,
-	character_id: number,
+	characterId: number,
 ) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_calculator,
+		domain: TEYVAT_DOMAINS.genshinCalculator,
 		path: 'v1/sync/avatar/detail',
-		params: { avatar_id: character_id, uid, region: server, lang: client.language },
-		schema: schema_hoyolab_calculator_character_response,
-		headers: _calculator_headers(client),
+		params: { ['avatar_id']: characterId, uid, region: server, lang: client.language },
+		schema: schemaHoyolabCalculatorCharacterResponse,
+		headers: _calculatorHeaders(client),
 	});
 }
 
-export async function _calculate_hoyolab_progression(
+export async function _calculateHoyolabProgression(
 	client: TeyvatHttpClient,
 	uid: number,
 	server: TeyvatServer,
 	calculation: unknown,
 ) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_calculator,
+		domain: TEYVAT_DOMAINS.genshinCalculator,
 		path: 'v3/batch_compute',
 		method: 'POST',
 		body: { uid, region: server, items: [calculation], lang: client.language },
-		schema: schema_hoyolab_calculator_batch_response,
-		headers: _calculator_headers(client),
+		schema: schemaHoyolabCalculatorBatchResponse,
+		headers: _calculatorHeaders(client),
 	});
 }
 
-export async function _enable_hoyolab_calculator_sync(client: TeyvatHttpClient): Promise<void> {
+export async function _enableHoyolabCalculatorSync(client: TeyvatHttpClient): Promise<void> {
 	await client.request({
-		domain: TEYVAT_DOMAINS.genshin_calculator,
+		domain: TEYVAT_DOMAINS.genshinCalculator,
 		path: 'v1/avatar/auth',
 		method: 'POST',
-		body: { avatar_auth: 1, lang: client.language },
-		schema: schema_hoyolab_calculator_auth_response,
-		headers: _calculator_headers(client),
+		body: { ['avatar_auth']: 1, lang: client.language },
+		schema: schemaHoyolabCalculatorAuthResponse,
+		headers: _calculatorHeaders(client),
 	});
 }

@@ -1,34 +1,34 @@
 import { type } from 'arktype';
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
-import { _short_language } from '#/utils/misc.ts';
+import { _shortLanguage } from '#/utils/misc.ts';
 
-const schema_currency_transaction = type({
+const schemaCurrencyTransaction = type({
 	id: 'string',
 	datetime: 'string',
-	add_num: 'string',
+	['add_num']: 'string',
 	reason: 'string',
 });
 
-const schema_item_transaction = type({
+const schemaItemTransaction = type({
 	id: 'string',
 	datetime: 'string',
-	add_num: 'string',
+	['add_num']: 'string',
 	reason: 'string',
 	name: 'string',
 	quality: 'string',
 });
 
-export const schema_hoyolab_genshin_currency_transactions_response = type({
+export const schemaHoyolabGenshinCurrencyTransactionsResponse = type({
 	retcode: '0',
 	message: 'string',
-	data: { list: schema_currency_transaction.array() },
+	data: { list: schemaCurrencyTransaction.array() },
 });
 
-export const schema_hoyolab_genshin_item_transactions_response = type({
+export const schemaHoyolabGenshinItemTransactionsResponse = type({
 	retcode: '0',
 	message: 'string',
-	data: { list: schema_item_transaction.array() },
+	data: { list: schemaItemTransaction.array() },
 });
 
 const TRANSACTION_PATHS = {
@@ -42,39 +42,36 @@ const TRANSACTION_PATHS = {
 interface TransactionRequest {
 	authkey: string;
 	type: keyof typeof TRANSACTION_PATHS;
-	end_id: string;
+	endId: string;
 }
 
-function _transaction_request(client: TeyvatHttpClient, options: TransactionRequest) {
+function _transactionRequest(client: TeyvatHttpClient, options: TransactionRequest) {
 	return {
-		domain: TEYVAT_DOMAINS.genshin_transactions,
+		domain: TEYVAT_DOMAINS.genshinTransactions,
 		path: TRANSACTION_PATHS[options.type],
 		params: {
-			authkey_ver: 1,
-			sign_type: 2,
+			['authkey_ver']: 1,
+			['sign_type']: 2,
 			authkey: options.authkey,
-			lang: _short_language(client.language),
+			lang: _shortLanguage(client.language),
 			size: 20,
-			end_id: options.end_id,
+			['end_id']: options.endId,
 		},
-		use_cookies: false as const,
-		skip_auth: true as const,
+		useCookies: false as const,
+		skipAuth: true as const,
 	};
 }
 
-export async function _get_hoyolab_genshin_currency_transactions(
-	client: TeyvatHttpClient,
-	options: TransactionRequest,
-) {
+export async function _getHoyolabGenshinCurrencyTransactions(client: TeyvatHttpClient, options: TransactionRequest) {
 	return await client.request({
-		..._transaction_request(client, options),
-		schema: schema_hoyolab_genshin_currency_transactions_response,
+		..._transactionRequest(client, options),
+		schema: schemaHoyolabGenshinCurrencyTransactionsResponse,
 	});
 }
 
-export async function _get_hoyolab_genshin_item_transactions(client: TeyvatHttpClient, options: TransactionRequest) {
+export async function _getHoyolabGenshinItemTransactions(client: TeyvatHttpClient, options: TransactionRequest) {
 	return await client.request({
-		..._transaction_request(client, options),
-		schema: schema_hoyolab_genshin_item_transactions_response,
+		..._transactionRequest(client, options),
+		schema: schemaHoyolabGenshinItemTransactionsResponse,
 	});
 }

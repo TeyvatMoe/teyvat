@@ -2,27 +2,27 @@ import type { TeyvatPaginator } from '#/types/paginator.ts';
 
 export interface TeyvatPaginatorPage<T, Cursor> {
 	items: readonly T[];
-	next_cursor: Cursor | null;
+	nextCursor: Cursor | null;
 }
 
 export interface TeyvatPaginatorOptions<T, Cursor> {
-	initial_cursor: Cursor;
+	initialCursor: Cursor;
 	limit?: number;
-	get_page: (cursor: Cursor) => Promise<TeyvatPaginatorPage<T, Cursor>>;
+	getPage: (cursor: Cursor) => Promise<TeyvatPaginatorPage<T, Cursor>>;
 }
 
 export class _TeyvatPaginator<T, Cursor> implements TeyvatPaginator<T> {
-	readonly #get_page: TeyvatPaginatorOptions<T, Cursor>['get_page'];
+	readonly #getPage: TeyvatPaginatorOptions<T, Cursor>['getPage'];
 	readonly #limit?: number;
 	#cursor: Cursor | null;
 	#buffer: T[] = [];
 	#exhausted: boolean;
-	#items_yielded = 0;
+	#itemsYielded = 0;
 	#operation: Promise<void> = Promise.resolve();
 
 	constructor(options: TeyvatPaginatorOptions<T, Cursor>) {
-		this.#get_page = options.get_page;
-		this.#cursor = options.initial_cursor;
+		this.#getPage = options.getPage;
+		this.#cursor = options.initialCursor;
 		this.#limit = options.limit;
 		this.#exhausted = options.limit === 0;
 	}
@@ -31,8 +31,8 @@ export class _TeyvatPaginator<T, Cursor> implements TeyvatPaginator<T> {
 		return this.#exhausted;
 	}
 
-	get items_yielded(): number {
-		return this.#items_yielded;
+	get itemsYielded(): number {
+		return this.#itemsYielded;
 	}
 
 	[Symbol.asyncIterator](): this {
@@ -56,7 +56,7 @@ export class _TeyvatPaginator<T, Cursor> implements TeyvatPaginator<T> {
 
 	async #next(): Promise<IteratorResult<T>> {
 		if (this.#exhausted) return { done: true, value: undefined };
-		if (this.#limit !== undefined && this.#items_yielded >= this.#limit) {
+		if (this.#limit !== undefined && this.#itemsYielded >= this.#limit) {
 			this.#complete();
 			return { done: true, value: undefined };
 		}
@@ -67,8 +67,8 @@ export class _TeyvatPaginator<T, Cursor> implements TeyvatPaginator<T> {
 				return { done: true, value: undefined };
 			}
 
-			const page = await this.#get_page(this.#cursor);
-			this.#cursor = page.next_cursor;
+			const page = await this.#getPage(this.#cursor);
+			this.#cursor = page.nextCursor;
 			this.#buffer.push(...page.items);
 			if (this.#buffer.length === 0) {
 				this.#complete();
@@ -78,9 +78,9 @@ export class _TeyvatPaginator<T, Cursor> implements TeyvatPaginator<T> {
 
 		const value = this.#buffer.shift();
 		if (value === undefined) throw new Error('Paginator buffer became empty unexpectedly');
-		this.#items_yielded++;
+		this.#itemsYielded++;
 		if (
-			(this.#limit !== undefined && this.#items_yielded >= this.#limit) ||
+			(this.#limit !== undefined && this.#itemsYielded >= this.#limit) ||
 			(this.#buffer.length === 0 && this.#cursor === null)
 		)
 			this.#complete();

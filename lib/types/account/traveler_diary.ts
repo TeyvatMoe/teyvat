@@ -1,8 +1,8 @@
 import { type } from 'arktype';
 
-const schema_currency = type.enumerated('primogems', 'mora');
+const schemaCurrency = type.enumerated('primogems', 'mora');
 /** @category Traveler's Diary */
-export type TeyvatTravelerDiaryCurrency = typeof schema_currency.infer;
+export type TeyvatTravelerDiaryCurrency = typeof schemaCurrency.infer;
 
 /** @category Traveler's Diary */
 export interface TeyvatTravelerDiaryOptions {
@@ -15,35 +15,35 @@ export interface TeyvatTravelerDiaryLogOptions extends TeyvatTravelerDiaryOption
 	limit?: number;
 }
 
-const schema_source = type({
+const schemaSource = type({
 	id: 'number.integer',
 	name: 'string',
 	amount: 'number.integer >= 0',
 	percentage: 'number.integer >= 0',
 });
 
-export const schema_teyvat_account_traveler_diary = type({
+export const schemaTeyvatAccountTravelerDiary = type({
 	month: 'number.integer >= 1',
-	available_months: type('number.integer >= 1').array(),
+	availableMonths: type('number.integer >= 1').array(),
 	primogems: {
-		current_month: 'number.integer >= 0',
-		previous_month: 'number.integer >= 0',
-		change_percentage: 'number.integer',
+		currentMonth: 'number.integer >= 0',
+		previousMonth: 'number.integer >= 0',
+		changePercentage: 'number.integer',
 		today: 'number.integer >= 0',
-		sources: schema_source.array(),
+		sources: schemaSource.array(),
 	},
 	mora: {
-		current_month: 'number.integer >= 0',
-		previous_month: 'number.integer >= 0',
-		change_percentage: 'number.integer',
+		currentMonth: 'number.integer >= 0',
+		previousMonth: 'number.integer >= 0',
+		changePercentage: 'number.integer',
 		today: 'number.integer >= 0',
 	},
 });
 
-export const schema_teyvat_traveler_diary_entry = type({
+export const schemaTeyvatTravelerDiaryEntry = type({
 	id: 'number.integer',
 	name: 'string',
-	earned_at: 'Date',
+	earnedAt: 'Date',
 	amount: 'number.integer >= 0',
 });
 
@@ -52,11 +52,11 @@ export const schema_teyvat_traveler_diary_entry = type({
  * @useDeclaredType
  * @category Traveler's Diary
  */
-export type TeyvatAccountTravelerDiary = typeof schema_teyvat_account_traveler_diary.infer;
+export type TeyvatAccountTravelerDiary = typeof schemaTeyvatAccountTravelerDiary.infer;
 
 /**
  * @interface
  * @useDeclaredType
  * @category Traveler's Diary
  */
-export type TeyvatTravelerDiaryEntry = typeof schema_teyvat_traveler_diary_entry.infer;
+export type TeyvatTravelerDiaryEntry = typeof schemaTeyvatTravelerDiaryEntry.infer;

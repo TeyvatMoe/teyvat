@@ -1,12 +1,12 @@
 import { TeyvatResponseValidationError } from '#/client/errors.ts';
-import { _get_http_client } from '#/client/request.ts';
-import { _get_hoyolab_genshin_inventory, _get_hoyolab_teyvat_tree } from '#/endpoints/hoyolab/genshin/inventory.ts';
-import { schema_teyvat_account_inventory, type TeyvatAccountInventory } from '#/types/account/inventory.ts';
+import { _getHttpClient } from '#/client/request.ts';
+import { _getHoyolabGenshinInventory, _getHoyolabTeyvatTree } from '#/endpoints/hoyolab/genshin/inventory.ts';
+import { schemaTeyvatAccountInventory, type TeyvatAccountInventory } from '#/types/account/inventory.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/common/map_user/ys_obc/v1/user/sync_game_material_info';
 
-function _inventory_integer(value: number | string, field: string): number {
+function _inventoryInteger(value: number | string, field: string): number {
 	if (typeof value === 'string' && !/^\d+$/.test(value)) throw new TypeError(`${field} must be an integer`);
 	const numeric = Number(value);
 	if (!Number.isSafeInteger(numeric) || numeric < 0)
@@ -14,17 +14,17 @@ function _inventory_integer(value: number | string, field: string): number {
 	return numeric;
 }
 
-function _inventory_counts(material_info: Record<string, number | string>): Map<number, number> {
+function _inventoryCounts(materialInfo: Record<string, number | string>): Map<number, number> {
 	const counts = new Map<number, number>();
-	for (const [raw_id, raw_count] of Object.entries(material_info)) {
-		const id = _inventory_integer(raw_id, 'material_info id');
+	for (const [rawId, rawCount] of Object.entries(materialInfo)) {
+		const id = _inventoryInteger(rawId, 'material_info id');
 		if (counts.has(id)) throw new TypeError(`material_info contains duplicate numeric id ${id}`);
-		counts.set(id, _inventory_integer(raw_count, `material_info.${raw_id}`));
+		counts.set(id, _inventoryInteger(rawCount, `material_info.${rawId}`));
 	}
 	return counts;
 }
 
-function _tree_item_ids(tree: Awaited<ReturnType<typeof _get_hoyolab_teyvat_tree>>): Set<number> {
+function _treeItemIds(tree: Awaited<ReturnType<typeof _getHoyolabTeyvatTree>>): Set<number> {
 	const ids = new Set<number>();
 	for (const category of tree) {
 		for (const item of category.children) {
@@ -36,30 +36,30 @@ function _tree_item_ids(tree: Awaited<ReturnType<typeof _get_hoyolab_teyvat_tree
 	return ids;
 }
 
-function _missing_inventory_ids(
+function _missingInventoryIds(
 	counts: Map<number, number>,
-	tree: Awaited<ReturnType<typeof _get_hoyolab_teyvat_tree>>,
+	tree: Awaited<ReturnType<typeof _getHoyolabTeyvatTree>>,
 ): number[] {
-	const tree_ids = _tree_item_ids(tree);
-	return [...counts.keys()].filter((id) => !tree_ids.has(id));
+	const treeIds = _treeItemIds(tree);
+	return [...counts.keys()].filter((id) => !treeIds.has(id));
 }
 
-export async function _get_account_inventory(account: TeyvatAccount): Promise<TeyvatAccountInventory> {
-	const client = _get_http_client(account.inst);
-	const [raw, initial_tree] = await Promise.all([
-		_get_hoyolab_genshin_inventory(client, account.uid, account.server),
-		_get_hoyolab_teyvat_tree(client),
+export async function _getAccountInventory(account: TeyvatAccount): Promise<TeyvatAccountInventory> {
+	const client = _getHttpClient(account.inst);
+	const [raw, initialTree] = await Promise.all([
+		_getHoyolabGenshinInventory(client, account.uid, account.server),
+		_getHoyolabTeyvatTree(client),
 	]);
 
 	try {
-		const counts = _inventory_counts(raw.material_info);
-		let tree = initial_tree;
-		if (_missing_inventory_ids(counts, tree).length > 0) tree = await _get_hoyolab_teyvat_tree(client, true);
-		const missing_ids = _missing_inventory_ids(counts, tree);
-		if (missing_ids.length > 0)
-			throw new TypeError(`Teyvat tree is missing ${missing_ids.length} owned inventory item identifiers`);
+		const counts = _inventoryCounts(raw.material_info);
+		let tree = initialTree;
+		if (_missingInventoryIds(counts, tree).length > 0) tree = await _getHoyolabTeyvatTree(client, true);
+		const missingIds = _missingInventoryIds(counts, tree);
+		if (missingIds.length > 0)
+			throw new TypeError(`Teyvat tree is missing ${missingIds.length} owned inventory item identifiers`);
 
-		return schema_teyvat_account_inventory.assert(
+		return schemaTeyvatAccountInventory.assert(
 			tree
 				.filter((category) => category.children.some((item) => item.item_id !== 0))
 				.map((category) => ({
@@ -69,7 +69,7 @@ export async function _get_account_inventory(account: TeyvatAccount): Promise<Te
 						.filter((item) => item.item_id !== 0)
 						.map((item) => ({
 							id: item.id,
-							item_id: item.item_id,
+							itemId: item.item_id,
 							name: item.name,
 							icon: item.icon,
 							count: counts.get(item.id) ?? 0,

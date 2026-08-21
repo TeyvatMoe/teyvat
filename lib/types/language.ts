@@ -1,6 +1,6 @@
 import { type } from 'arktype';
 
-export const schema_teyvat_language = type.enumerated(
+export const schemaTeyvatLanguage = type.enumerated(
 	'zh-cn',
 	'zh-tw',
 	'de-de',
@@ -22,4 +22,4 @@ export const schema_teyvat_language = type.enumerated(
  * @useDeclaredType
  * @category Core
  */
-export type TeyvatLanguage = typeof schema_teyvat_language.infer;
+export type TeyvatLanguage = typeof schemaTeyvatLanguage.infer;

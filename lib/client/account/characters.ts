@@ -1,107 +1,106 @@
-import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { _enableAccountFeature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
-import { _get_http_client } from '#/client/request.ts';
+import { _getHttpClient } from '#/client/request.ts';
 import {
-	_get_hoyolab_genshin_character_details,
-	_get_hoyolab_genshin_character_list,
+	_getHoyolabGenshinCharacterDetails,
+	_getHoyolabGenshinCharacterList,
 } from '#/endpoints/hoyolab/genshin/characters.ts';
 import {
-	schema_teyvat_account_character,
+	schemaTeyvatAccountCharacter,
 	type TeyvatAccountCharacter,
 	type TeyvatCharactersOptions,
 } from '#/types/account/character.ts';
-import { _character_element, _character_ids, _weapon_type } from '#/utils/character.ts';
+import { _characterElement, _characterIds, _weaponType } from '#/utils/character.ts';
 import { _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/character/detail';
 const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
-function _is_character_details_private(cause: unknown): cause is TeyvatApiError {
+function _isCharacterDetailsPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
-async function _request_characters(account: TeyvatAccount, ids?: number[]) {
-	const client = _get_http_client(account.inst);
-	const character_ids =
-		ids ??
-		(await _get_hoyolab_genshin_character_list(client, account.uid, account.server)).list.map(({ id }) => id);
-	if (character_ids.length === 0) return undefined;
-	return await _get_hoyolab_genshin_character_details(client, account.uid, account.server, character_ids);
+async function _requestCharacters(account: TeyvatAccount, ids?: number[]) {
+	const client = _getHttpClient(account.inst);
+	const characterIds =
+		ids ?? (await _getHoyolabGenshinCharacterList(client, account.uid, account.server)).list.map(({ id }) => id);
+	if (characterIds.length === 0) return undefined;
+	return await _getHoyolabGenshinCharacterDetails(client, account.uid, account.server, characterIds);
 }
 
-export async function _get_account_characters(
+export async function _getAccountCharacters(
 	account: TeyvatAccount,
 	options: TeyvatCharactersOptions = {},
 ): Promise<TeyvatAccountCharacter[]> {
-	const ids = options.ids === undefined ? undefined : _character_ids(options.ids);
+	const ids = options.ids === undefined ? undefined : _characterIds(options.ids);
 	if (ids?.length === 0) return [];
 
-	let raw: Awaited<ReturnType<typeof _request_characters>>;
+	let raw: Awaited<ReturnType<typeof _requestCharacters>>;
 	try {
-		raw = await _request_characters(account, ids);
+		raw = await _requestCharacters(account, ids);
 	} catch (cause) {
-		if (!(account.inst.auto_enable && _is_character_details_private(cause))) throw cause;
-		await _enable_account_feature(account, 'character_details', cause);
-		let retry_error: TeyvatApiError = cause;
+		if (!(account.inst.autoEnable && _isCharacterDetailsPrivate(cause))) throw cause;
+		await _enableAccountFeature(account, 'character_details', cause);
+		let retryError: TeyvatApiError = cause;
 		for (const delay of ENABLE_RETRY_DELAYS) {
 			await _sleep(delay);
 			try {
-				raw = await _request_characters(account, ids);
+				raw = await _requestCharacters(account, ids);
 				break;
-			} catch (retry_cause) {
-				if (!_is_character_details_private(retry_cause)) throw retry_cause;
-				retry_error = retry_cause;
+			} catch (retryCause) {
+				if (!_isCharacterDetailsPrivate(retryCause)) throw retryCause;
+				retryError = retryCause;
 			}
 		}
-		if (!raw) throw retry_error;
+		if (!raw) throw retryError;
 	}
 
 	if (!raw) return [];
 	try {
-		const property_info = (property_type: number) => {
-			const info = raw.property_map[String(property_type)];
-			if (!info) throw new TypeError(`Missing property definition for property type ${property_type}`);
+		const propertyInfo = (propertyType: number) => {
+			const info = raw.property_map[String(propertyType)];
+			if (!info) throw new TypeError(`Missing property definition for property type ${propertyType}`);
 			return {
 				type: info.property_type,
 				name: info.name.replaceAll('\u00a0', ' '),
 				icon: info.icon,
-				filter_name: info.filter_name.replaceAll('\u00a0', ' '),
+				filterName: info.filter_name.replaceAll('\u00a0', ' '),
 			};
 		};
-		const property_value = (property: { property_type: number; base: string; add: string; final: string }) => ({
+		const propertyValue = (property: { ['property_type']: number; base: string; add: string; final: string }) => ({
 			base: property.base,
 			add: property.add,
 			final: property.final,
-			info: property_info(property.property_type),
+			info: propertyInfo(property.property_type),
 		});
-		const artifact_stat = (property: { property_type: number; value: string; times: number }) => ({
+		const artifactStat = (property: { ['property_type']: number; value: string; times: number }) => ({
 			value: property.value,
 			times: property.times,
-			info: property_info(property.property_type),
+			info: propertyInfo(property.property_type),
 		});
 
 		return raw.list.map((character) => {
 			const base = character.base;
 			const rarity = base.rarity > 100 ? base.rarity - 100 : base.rarity;
-			const set_counts = new Map<number, number>();
+			const setCounts = new Map<number, number>();
 			for (const artifact of character.relics)
-				set_counts.set(artifact.set.id, (set_counts.get(artifact.set.id) ?? 0) + 1);
+				setCounts.set(artifact.set.id, (setCounts.get(artifact.set.id) ?? 0) + 1);
 
-			return schema_teyvat_account_character.assert({
+			return schemaTeyvatAccountCharacter.assert({
 				id: base.id,
 				name: base.name,
-				element: _character_element(base.element),
+				element: _characterElement(base.element),
 				rarity,
 				collab: base.rarity > 100 || base.id === 10000062,
 				icon: base.icon,
-				side_icon: base.side_icon,
-				display_image: base.image,
+				sideIcon: base.side_icon,
+				displayImage: base.image,
 				level: base.level,
 				friendship: base.fetter,
-				active_constellations: base.actived_constellation_num,
+				activeConstellations: base.actived_constellation_num,
 				selected: base.is_chosen,
-				weapon_type: _weapon_type(base.weapon_type),
+				weaponType: _weaponType(base.weapon_type),
 				weapon: {
 					id: character.weapon.id,
 					name: character.weapon.name,
@@ -111,9 +110,9 @@ export async function _get_account_characters(
 					refinement: character.weapon.affix_level,
 					ascension: character.weapon.promote_level,
 					description: character.weapon.desc,
-					main_stat: property_value(character.weapon.main_property),
-					sub_stat: character.weapon.sub_property ? property_value(character.weapon.sub_property) : null,
-					wiki_url: raw.weapon_wiki[String(character.weapon.id)] ?? null,
+					mainStat: propertyValue(character.weapon.main_property),
+					subStat: character.weapon.sub_property ? propertyValue(character.weapon.sub_property) : null,
+					wikiUrl: raw.weapon_wiki[String(character.weapon.id)] ?? null,
 				},
 				costumes: character.costumes.map((costume) => ({
 					id: costume.id,
@@ -125,21 +124,21 @@ export async function _get_account_characters(
 					name: artifact.name,
 					icon: artifact.icon,
 					position: artifact.pos,
-					position_name: artifact.pos_name,
+					positionName: artifact.pos_name,
 					rarity: artifact.rarity,
 					level: artifact.level,
 					set: {
 						id: artifact.set.id,
 						name: artifact.set.name,
 						effects: artifact.set.affixes.map((effect) => ({
-							required_pieces: effect.activation_number,
+							requiredPieces: effect.activation_number,
 							effect: effect.effect,
-							active: (set_counts.get(artifact.set.id) ?? 0) >= effect.activation_number,
+							active: (setCounts.get(artifact.set.id) ?? 0) >= effect.activation_number,
 						})),
 					},
-					main_stat: artifact_stat(artifact.main_property),
-					sub_stats: artifact.sub_property_list.map(artifact_stat),
-					wiki_url: raw.relic_wiki[String(artifact.id)] ?? null,
+					mainStat: artifactStat(artifact.main_property),
+					subStats: artifact.sub_property_list.map(artifactStat),
+					wikiUrl: raw.relic_wiki[String(artifact.id)] ?? null,
 				})),
 				constellations: character.constellations.map((constellation) => ({
 					id: constellation.id,
@@ -149,8 +148,8 @@ export async function _get_account_characters(
 					effect: constellation.effect,
 					activated: constellation.is_actived,
 					enhanced: constellation.is_enhanced,
-					enhanced_effect: constellation.enhanced_effect,
-					can_be_enhanced: constellation.can_enhanced,
+					enhancedEffect: constellation.enhanced_effect,
+					canBeEnhanced: constellation.can_enhanced,
 				})),
 				skills: character.skills.map((skill) => ({
 					id: skill.skill_id,
@@ -162,14 +161,14 @@ export async function _get_account_characters(
 					icon: skill.icon,
 					unlocked: skill.is_unlock,
 					enhanced: skill.is_enhanced,
-					enhanced_description: skill.enhanced_desc,
-					can_be_enhanced: skill.can_enhanced,
+					enhancedDescription: skill.enhanced_desc,
+					canBeEnhanced: skill.can_enhanced,
 				})),
-				base_properties: character.base_properties.map(property_value),
-				selected_properties: character.selected_properties.map(property_value),
-				extra_properties: character.extra_properties.map(property_value),
-				element_properties: character.element_properties.map(property_value),
-				wiki_url: raw.avatar_wiki[String(base.id)] ?? null,
+				baseProperties: character.base_properties.map(propertyValue),
+				selectedProperties: character.selected_properties.map(propertyValue),
+				extraProperties: character.extra_properties.map(propertyValue),
+				elementProperties: character.element_properties.map(propertyValue),
+				wikiUrl: raw.avatar_wiki[String(base.id)] ?? null,
 			});
 		});
 	} catch (cause) {

@@ -1,61 +1,61 @@
-import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { _enableAccountFeature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
-import { _get_http_client } from '#/client/request.ts';
-import { _get_hoyolab_genshin_calendar } from '#/endpoints/hoyolab/genshin/calendar.ts';
+import { _getHttpClient } from '#/client/request.ts';
+import { _getHoyolabGenshinCalendar } from '#/endpoints/hoyolab/genshin/calendar.ts';
 import {
-	schema_teyvat_account_calendar,
+	schemaTeyvatAccountCalendar,
 	type TeyvatAccountCalendar,
 	type TeyvatCalendarElement,
 	type TeyvatCalendarStatus,
 } from '#/types/account/calendar.ts';
-import { _nullable_unix_date, _numeric_value, _sleep } from '#/utils/misc.ts';
+import { _nullableUnixDate, _numericValue, _sleep } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/act_calendar';
 const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
-function _is_calendar_private(cause: unknown): cause is TeyvatApiError {
+function _isCalendarPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
-function _calendar_status(value: number): TeyvatCalendarStatus {
+function _calendarStatus(value: number): TeyvatCalendarStatus {
 	if (value === 1) return 'upcoming';
 	if (value === 2) return 'active';
 	if (value === 3) return 'finished';
 	return 'unknown';
 }
 
-function _calendar_element(value: string): TeyvatCalendarElement {
+function _calendarElement(value: string): TeyvatCalendarElement {
 	const element = value.toLowerCase();
 	if (['anemo', 'geo', 'electro', 'dendro', 'hydro', 'pyro', 'cryo'].includes(element))
 		return element as TeyvatCalendarElement;
 	return 'unknown';
 }
 
-async function _request_calendar(account: TeyvatAccount) {
-	return await _get_hoyolab_genshin_calendar(_get_http_client(account.inst), account.uid, account.server);
+async function _requestCalendar(account: TeyvatAccount) {
+	return await _getHoyolabGenshinCalendar(_getHttpClient(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_calendar(account: TeyvatAccount): Promise<TeyvatAccountCalendar> {
-	let raw: Awaited<ReturnType<typeof _request_calendar>>;
+export async function _getAccountCalendar(account: TeyvatAccount): Promise<TeyvatAccountCalendar> {
+	let raw: Awaited<ReturnType<typeof _requestCalendar>>;
 	try {
-		raw = await _request_calendar(account);
+		raw = await _requestCalendar(account);
 	} catch (cause) {
-		if (!(account.inst.auto_enable && _is_calendar_private(cause))) throw cause;
-		await _enable_account_feature(account, 'battle_chronicle', cause);
-		let retry_error: TeyvatApiError = cause;
-		let enabled: Awaited<ReturnType<typeof _request_calendar>> | undefined;
+		if (!(account.inst.autoEnable && _isCalendarPrivate(cause))) throw cause;
+		await _enableAccountFeature(account, 'battle_chronicle', cause);
+		let retryError: TeyvatApiError = cause;
+		let enabled: Awaited<ReturnType<typeof _requestCalendar>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {
 			await _sleep(delay);
 			try {
-				enabled = await _request_calendar(account);
+				enabled = await _requestCalendar(account);
 				break;
-			} catch (retry_cause) {
-				if (!_is_calendar_private(retry_cause)) throw retry_cause;
-				retry_error = retry_cause;
+			} catch (retryCause) {
+				if (!_isCalendarPrivate(retryCause)) throw retryCause;
+				retryError = retryCause;
 			}
 		}
-		if (!enabled) throw retry_error;
+		if (!enabled) throw retryError;
 		raw = enabled;
 	}
 
@@ -64,16 +64,16 @@ export async function _get_account_calendar(account: TeyvatAccount): Promise<Tey
 			id: value.pool_id,
 			version: value.version_name,
 			name: value.pool_name,
-			starts_at: _nullable_unix_date(value.start_timestamp, 'banner.start_timestamp'),
-			ends_at: _nullable_unix_date(value.end_timestamp, 'banner.end_timestamp'),
-			countdown_seconds: value.countdown_seconds,
-			jump_url: value.jump_url,
-			status: _calendar_status(value.pool_status),
+			startsAt: _nullableUnixDate(value.start_timestamp, 'banner.start_timestamp'),
+			endsAt: _nullableUnixDate(value.end_timestamp, 'banner.end_timestamp'),
+			countdownSeconds: value.countdown_seconds,
+			jumpUrl: value.jump_url,
+			status: _calendarStatus(value.pool_status),
 			characters: value.avatars.map((character) => ({
 				id: character.id,
 				name: character.name,
 				icon: character.icon,
-				element: _calendar_element(character.element),
+				element: _calendarElement(character.element),
 				rarity: character.rarity,
 			})),
 			weapons: value.weapon.map((weapon) => ({
@@ -81,7 +81,7 @@ export async function _get_account_calendar(account: TeyvatAccount): Promise<Tey
 				name: weapon.name,
 				icon: weapon.icon,
 				rarity: weapon.rarity,
-				wiki_url: weapon.wiki_url || null,
+				wikiUrl: weapon.wiki_url || null,
 			})),
 		});
 
@@ -91,44 +91,44 @@ export async function _get_account_calendar(account: TeyvatAccount): Promise<Tey
 			description: value.desc.replaceAll('\\n', '\n'),
 			strategy: value.strategy,
 			type: value.type,
-			starts_at: _nullable_unix_date(value.start_timestamp, 'activity.start_timestamp'),
-			ends_at: _nullable_unix_date(value.end_timestamp, 'activity.end_timestamp'),
-			countdown_seconds: value.countdown_seconds,
-			status: _calendar_status(value.status),
+			startsAt: _nullableUnixDate(value.start_timestamp, 'activity.start_timestamp'),
+			endsAt: _nullableUnixDate(value.end_timestamp, 'activity.end_timestamp'),
+			countdownSeconds: value.countdown_seconds,
+			status: _calendarStatus(value.status),
 			finished: value.is_finished,
 			rewards: value.reward_list.map((reward) => ({
 				id: reward.item_id,
 				name: reward.name,
 				icon: reward.icon,
 				amount: reward.num,
-				rarity: _numeric_value(reward.rarity, 'reward.rarity'),
-				wiki_url: reward.wiki_url || null,
+				rarity: _numericValue(reward.rarity, 'reward.rarity'),
+				wikiUrl: reward.wiki_url || null,
 				featured: reward.homepage_show,
 			})),
 			exploration: value.explore_detail
 				? { explored: value.explore_detail.explore_percent, finished: value.explore_detail.is_finished }
 				: null,
-			double_rewards: value.double_detail
+			doubleRewards: value.double_detail
 				? { total: value.double_detail.total, remaining: value.double_detail.left }
 				: null,
-			spiral_abyss: value.tower_detail
+			spiralAbyss: value.tower_detail
 				? {
 						unlocked: value.tower_detail.is_unlock,
-						maximum_stars: value.tower_detail.max_star,
-						total_stars: value.tower_detail.total_star,
-						has_data: value.tower_detail.has_data,
+						maximumStars: value.tower_detail.max_star,
+						totalStars: value.tower_detail.total_star,
+						hasData: value.tower_detail.has_data,
 					}
 				: null,
-			imaginarium_theater: value.role_combat_detail
+			imaginariumTheater: value.role_combat_detail
 				? {
 						unlocked: value.role_combat_detail.is_unlock,
-						maximum_act: value.role_combat_detail.max_round_id,
-						has_data: value.role_combat_detail.has_data,
+						maximumAct: value.role_combat_detail.max_round_id,
+						hasData: value.role_combat_detail.has_data,
 					}
 				: null,
 		});
 
-		return schema_teyvat_account_calendar.assert({
+		return schemaTeyvatAccountCalendar.assert({
 			banners: {
 				characters: raw.avatar_card_pool_list.map(banner),
 				weapons: raw.weapon_card_pool_list.map(banner),

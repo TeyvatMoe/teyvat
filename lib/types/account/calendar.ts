@@ -1,94 +1,94 @@
 import { type } from 'arktype';
 
-const schema_status = type.enumerated('unknown', 'upcoming', 'active', 'finished');
+const schemaStatus = type.enumerated('unknown', 'upcoming', 'active', 'finished');
 /**
  * @useDeclaredType
  * @category Event Calendar
  */
-export type TeyvatCalendarStatus = typeof schema_status.infer;
+export type TeyvatCalendarStatus = typeof schemaStatus.infer;
 
-const schema_element = type.enumerated('unknown', 'anemo', 'geo', 'electro', 'dendro', 'hydro', 'pyro', 'cryo');
+const schemaElement = type.enumerated('unknown', 'anemo', 'geo', 'electro', 'dendro', 'hydro', 'pyro', 'cryo');
 /**
  * @useDeclaredType
  * @category Event Calendar
  */
-export type TeyvatCalendarElement = typeof schema_element.infer;
+export type TeyvatCalendarElement = typeof schemaElement.infer;
 
-const schema_character = type({
+const schemaCharacter = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
-	element: schema_element,
+	element: schemaElement,
 	rarity: 'number.integer',
 });
 
-const schema_weapon = type({
+const schemaWeapon = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
 	rarity: 'number.integer',
-	wiki_url: 'string | null',
+	wikiUrl: 'string | null',
 });
 
-const schema_banner = type({
+const schemaBanner = type({
 	id: 'number.integer',
 	version: 'string',
 	name: 'string',
-	starts_at: 'Date | null',
-	ends_at: 'Date | null',
-	countdown_seconds: 'number.integer >= 0',
-	jump_url: 'string',
-	status: schema_status,
-	characters: schema_character.array(),
-	weapons: schema_weapon.array(),
+	startsAt: 'Date | null',
+	endsAt: 'Date | null',
+	countdownSeconds: 'number.integer >= 0',
+	jumpUrl: 'string',
+	status: schemaStatus,
+	characters: schemaCharacter.array(),
+	weapons: schemaWeapon.array(),
 });
 
-const schema_reward = type({
+const schemaReward = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
 	amount: 'number.integer >= 0',
 	rarity: 'number.integer',
-	wiki_url: 'string | null',
+	wikiUrl: 'string | null',
 	featured: 'boolean',
 });
 
-const schema_activity = type({
+const schemaActivity = type({
 	id: 'number.integer',
 	name: 'string',
 	description: 'string',
 	strategy: 'string',
 	type: 'string',
-	starts_at: 'Date | null',
-	ends_at: 'Date | null',
-	countdown_seconds: 'number.integer >= 0',
-	status: schema_status,
+	startsAt: 'Date | null',
+	endsAt: 'Date | null',
+	countdownSeconds: 'number.integer >= 0',
+	status: schemaStatus,
 	finished: 'boolean',
-	rewards: schema_reward.array(),
+	rewards: schemaReward.array(),
 	exploration: type({ explored: 'number', finished: 'boolean' }).or('null'),
-	double_rewards: type({ total: 'number.integer >= 0', remaining: 'number.integer >= 0' }).or('null'),
-	spiral_abyss: type({
+	doubleRewards: type({ total: 'number.integer >= 0', remaining: 'number.integer >= 0' }).or('null'),
+	spiralAbyss: type({
 		unlocked: 'boolean',
-		maximum_stars: 'number.integer >= 0',
-		total_stars: 'number.integer >= 0',
-		has_data: 'boolean',
+		maximumStars: 'number.integer >= 0',
+		totalStars: 'number.integer >= 0',
+		hasData: 'boolean',
 	}).or('null'),
-	imaginarium_theater: type({
+	imaginariumTheater: type({
 		unlocked: 'boolean',
-		maximum_act: 'number.integer >= 0',
-		has_data: 'boolean',
+		maximumAct: 'number.integer >= 0',
+		hasData: 'boolean',
 	}).or('null'),
 });
 
-export const schema_teyvat_account_calendar = type({
+export const schemaTeyvatAccountCalendar = type({
 	banners: {
-		characters: schema_banner.array(),
-		weapons: schema_banner.array(),
-		chronicled: schema_banner.array(),
+		characters: schemaBanner.array(),
+		weapons: schemaBanner.array(),
+		chronicled: schemaBanner.array(),
 	},
 	activities: {
-		events: schema_activity.array(),
-		challenges: schema_activity.array(),
+		events: schemaActivity.array(),
+		challenges: schemaActivity.array(),
 	},
 });
 
@@ -97,4 +97,4 @@ export const schema_teyvat_account_calendar = type({
  * @useDeclaredType
  * @category Event Calendar
  */
-export type TeyvatAccountCalendar = typeof schema_teyvat_account_calendar.infer;
+export type TeyvatAccountCalendar = typeof schemaTeyvatAccountCalendar.infer;

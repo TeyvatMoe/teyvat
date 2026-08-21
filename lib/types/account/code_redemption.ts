@@ -1,6 +1,6 @@
 import { type } from 'arktype';
 
-export const schema_teyvat_code_redemption_result = type({
+export const schemaTeyvatCodeRedemptionResult = type({
 	status: "'redeemed'",
 });
 
@@ -11,4 +11,4 @@ export const schema_teyvat_code_redemption_result = type({
  * @useDeclaredType
  * @category Code Redemption
  */
-export type TeyvatCodeRedemptionResult = typeof schema_teyvat_code_redemption_result.infer;
+export type TeyvatCodeRedemptionResult = typeof schemaTeyvatCodeRedemptionResult.infer;

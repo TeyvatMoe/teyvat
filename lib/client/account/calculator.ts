@@ -1,15 +1,15 @@
-import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { _enableAccountFeature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
-import { _get_http_client, type TeyvatHttpClient } from '#/client/request.ts';
+import { _getHttpClient, type TeyvatHttpClient } from '#/client/request.ts';
 import {
-	_calculate_hoyolab_progression,
-	_get_hoyolab_calculator_character,
-	_get_hoyolab_calculator_characters,
+	_calculateHoyolabProgression,
+	_getHoyolabCalculatorCharacter,
+	_getHoyolabCalculatorCharacters,
 } from '#/endpoints/hoyolab/genshin/calculator.ts';
 import {
-	schema_teyvat_calculator_character_details,
-	schema_teyvat_calculator_characters,
-	schema_teyvat_calculator_result,
+	schemaTeyvatCalculatorCharacterDetails,
+	schemaTeyvatCalculatorCharacters,
+	schemaTeyvatCalculatorResult,
 	type TeyvatCalculatorCharacter,
 	type TeyvatCalculatorCharacterDetails,
 	type TeyvatCalculatorClient,
@@ -23,9 +23,9 @@ const LIST_ENDPOINT = '/event/e20200928calculate/v1/sync/avatar/list';
 const DETAIL_ENDPOINT = '/event/e20200928calculate/v1/sync/avatar/detail';
 const CALCULATE_ENDPOINT = '/event/e20200928calculate/v3/batch_compute';
 
-type LevelInput = { id: number; current_level: number; target_level: number };
+type LevelInput = { id: number; currentLevel: number; targetLevel: number };
 
-function _mapping_error(method: string, endpoint: string, cause: unknown): TeyvatResponseValidationError {
+function _mappingError(method: string, endpoint: string, cause: unknown): TeyvatResponseValidationError {
 	return new TeyvatResponseValidationError(
 		method,
 		endpoint,
@@ -45,7 +45,7 @@ function _element(value: number): TeyvatCharacterElement {
 	throw new TypeError(`Unknown calculator element code: ${value}`);
 }
 
-function _element_id(value: TeyvatCharacterElement | undefined): number | undefined {
+function _elementId(value: TeyvatCharacterElement | undefined): number | undefined {
 	if (value === undefined) return undefined;
 	if (value === 'pyro') return 1;
 	if (value === 'anemo') return 2;
@@ -57,7 +57,7 @@ function _element_id(value: TeyvatCharacterElement | undefined): number | undefi
 	throw new TeyvatError('Calculator character element must be a supported Genshin element');
 }
 
-function _weapon_type(value: number): TeyvatWeaponType {
+function _weaponType(value: number): TeyvatWeaponType {
 	if (value === 1) return 'sword';
 	if (value === 10) return 'catalyst';
 	if (value === 11) return 'claymore';
@@ -72,19 +72,19 @@ function _id(value: unknown, name: string): number {
 	return Number(value);
 }
 
-function _level_input(value: LevelInput, name: string): LevelInput {
+function _levelInput(value: LevelInput, name: string): LevelInput {
 	const id = _id(value.id, `${name} ID`);
-	if (!Number.isSafeInteger(value.current_level) || value.current_level < 0)
-		throw new TeyvatError(`${name} current_level must be a nonnegative safe integer`);
-	if (!Number.isSafeInteger(value.target_level) || value.target_level < value.current_level)
-		throw new TeyvatError(`${name} target_level must be a safe integer greater than or equal to current_level`);
-	return { id, current_level: value.current_level, target_level: value.target_level };
+	if (!Number.isSafeInteger(value.currentLevel) || value.currentLevel < 0)
+		throw new TeyvatError(`${name} currentLevel must be a nonnegative safe integer`);
+	if (!Number.isSafeInteger(value.targetLevel) || value.targetLevel < value.currentLevel)
+		throw new TeyvatError(`${name} targetLevel must be a safe integer greater than or equal to currentLevel`);
+	return { id, currentLevel: value.currentLevel, targetLevel: value.targetLevel };
 }
 
-function _unique_inputs(values: LevelInput[] | undefined, name: string): LevelInput[] {
+function _uniqueInputs(values: LevelInput[] | undefined, name: string): LevelInput[] {
 	const unique = new Map<number, LevelInput>();
 	for (const value of values ?? []) {
-		const normalized = _level_input(value, name);
+		const normalized = _levelInput(value, name);
 		if (!unique.has(normalized.id)) unique.set(normalized.id, normalized);
 	}
 	return [...unique.values()];
@@ -96,52 +96,52 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 
 	constructor(account: TeyvatAccount) {
 		this.#account = account;
-		this.#client = _get_http_client(account.inst);
+		this.#client = _getHttpClient(account.inst);
 	}
 
 	async characters(): Promise<TeyvatCalculatorCharacter[]> {
-		const raw = await this.#with_sync(
-			async () => await _get_hoyolab_calculator_characters(this.#client, this.#account.uid, this.#account.server),
+		const raw = await this.#withSync(
+			async () => await _getHoyolabCalculatorCharacters(this.#client, this.#account.uid, this.#account.server),
 		);
 		try {
-			return schema_teyvat_calculator_characters.assert(
+			return schemaTeyvatCalculatorCharacters.assert(
 				raw.list.map((character) => ({
 					id: character.id,
 					name: character.name,
 					icon: character.icon,
 					rarity: character.avatar_level,
 					element: _element(character.element_attr_id),
-					weapon_type: _weapon_type(character.weapon_cat_id),
-					current_level: character.level_current,
-					maximum_level: character.max_level,
+					weaponType: _weaponType(character.weapon_cat_id),
+					currentLevel: character.level_current,
+					maximumLevel: character.max_level,
 				})),
 			);
 		} catch (cause) {
-			throw _mapping_error('POST', LIST_ENDPOINT, cause);
+			throw _mappingError('POST', LIST_ENDPOINT, cause);
 		}
 	}
 
 	async character(id: number): Promise<TeyvatCalculatorCharacterDetails> {
-		const character_id = _id(id, 'Calculator character ID');
-		const raw = await this.#with_sync(
+		const characterId = _id(id, 'Calculator character ID');
+		const raw = await this.#withSync(
 			async () =>
-				await _get_hoyolab_calculator_character(
+				await _getHoyolabCalculatorCharacter(
 					this.#client,
 					this.#account.uid,
 					this.#account.server,
-					character_id,
+					characterId,
 				),
 		);
 		try {
-			return schema_teyvat_calculator_character_details.assert({
+			return schemaTeyvatCalculatorCharacterDetails.assert({
 				weapon: {
 					id: raw.weapon.id,
 					name: raw.weapon.name,
 					icon: raw.weapon.icon,
 					rarity: raw.weapon.weapon_level,
-					type: _weapon_type(raw.weapon.weapon_cat_id),
-					current_level: raw.weapon.level_current,
-					maximum_level: raw.weapon.max_level,
+					type: _weaponType(raw.weapon.weapon_cat_id),
+					currentLevel: raw.weapon.level_current,
+					maximumLevel: raw.weapon.max_level,
 				},
 				talents: raw.skill_list
 					.filter((talent) => talent.max_level > 1)
@@ -149,8 +149,8 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 						id: talent.group_id,
 						name: talent.name,
 						icon: talent.icon,
-						current_level: talent.level_current,
-						maximum_level: talent.max_level,
+						currentLevel: talent.level_current,
+						maximumLevel: talent.max_level,
 					})),
 				artifacts: raw.reliquary_list.map((artifact) => ({
 					id: artifact.id,
@@ -158,49 +158,44 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 					icon: artifact.icon,
 					rarity: artifact.reliquary_level,
 					position: artifact.reliquary_cat_id,
-					current_level: artifact.level_current,
-					maximum_level: artifact.max_level,
+					currentLevel: artifact.level_current,
+					maximumLevel: artifact.max_level,
 				})),
 			});
 		} catch (cause) {
-			throw _mapping_error('GET', DETAIL_ENDPOINT, cause);
+			throw _mappingError('GET', DETAIL_ENDPOINT, cause);
 		}
 	}
 
 	async calculate(options: TeyvatCalculatorOptions): Promise<TeyvatCalculatorResult> {
-		const character = _level_input(options.character, 'Character');
-		const weapon = options.weapon ? _level_input(options.weapon, 'Weapon') : undefined;
-		const talents = _unique_inputs(options.talents, 'Talent');
-		const artifacts = _unique_inputs(options.artifacts, 'Artifact');
+		const character = _levelInput(options.character, 'Character');
+		const weapon = options.weapon ? _levelInput(options.weapon, 'Weapon') : undefined;
+		const talents = _uniqueInputs(options.talents, 'Talent');
+		const artifacts = _uniqueInputs(options.artifacts, 'Artifact');
 		const calculation = {
-			avatar_id: character.id,
-			avatar_level_current: character.current_level,
-			avatar_level_target: character.target_level,
-			...(_element_id(options.character.element) === undefined
+			avatarId: character.id,
+			avatarLevelCurrent: character.currentLevel,
+			avatarLevelTarget: character.targetLevel,
+			...(_elementId(options.character.element) === undefined
 				? {}
-				: { element_attr_id: _element_id(options.character.element) }),
+				: { elementAttrId: _elementId(options.character.element) }),
 			...(weapon
-				? { weapon: { id: weapon.id, level_current: weapon.current_level, level_target: weapon.target_level } }
+				? { weapon: { id: weapon.id, levelCurrent: weapon.currentLevel, levelTarget: weapon.targetLevel } }
 				: {}),
-			skill_list: talents.map((talent) => ({
+			skillList: talents.map((talent) => ({
 				id: talent.id,
-				level_current: talent.current_level,
-				level_target: talent.target_level,
+				levelCurrent: talent.currentLevel,
+				levelTarget: talent.targetLevel,
 			})),
-			reliquary_list: artifacts.map((artifact) => ({
+			reliquaryList: artifacts.map((artifact) => ({
 				id: artifact.id,
-				level_current: artifact.current_level,
-				level_target: artifact.target_level,
+				levelCurrent: artifact.currentLevel,
+				levelTarget: artifact.targetLevel,
 			})),
 		};
-		const raw = await this.#with_sync(
+		const raw = await this.#withSync(
 			async () =>
-				await _calculate_hoyolab_progression(
-					this.#client,
-					this.#account.uid,
-					this.#account.server,
-					calculation,
-				),
+				await _calculateHoyolabProgression(this.#client, this.#account.uid, this.#account.server, calculation),
 		);
 		try {
 			if (!raw.has_user_info)
@@ -213,19 +208,19 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 				name: value.name,
 				icon: value.icon,
 				rarity: value.level,
-				wiki_url: value.wiki_url || null,
+				wikiUrl: value.wiki_url || null,
 				required: value.num,
 				owned: owned.get(value.id) ?? 0,
 				missing: Math.max(0, value.num - (owned.get(value.id) ?? 0)),
 			});
 
-			return schema_teyvat_calculator_result.assert({
+			return schemaTeyvatCalculatorResult.assert({
 				character: result.avatar_consume.map(material),
 				weapon: result.weapon_consume.map(material),
 				talents: result.skills_consume.map((talent) => ({
 					id: talent.skill_info.id,
-					current_level: talent.skill_info.level_current,
-					target_level: talent.skill_info.level_target,
+					currentLevel: talent.skill_info.level_current,
+					targetLevel: talent.skill_info.level_target,
 					materials: talent.consume_list.map(material),
 				})),
 				artifacts: result.reliquary_consume.map((artifact) => ({
@@ -233,20 +228,20 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 					materials: artifact.id_consume_list.map(material),
 				})),
 				total: raw.overall_consume.map(material),
-				lineup_recommendation: result.lineup_recommend || null,
+				lineupRecommendation: result.lineup_recommend || null,
 			});
 		} catch (cause) {
-			throw _mapping_error('POST', CALCULATE_ENDPOINT, cause);
+			throw _mappingError('POST', CALCULATE_ENDPOINT, cause);
 		}
 	}
 
-	async #with_sync<T>(request: () => Promise<T>): Promise<T> {
+	async #withSync<T>(request: () => Promise<T>): Promise<T> {
 		try {
 			return await request();
 		} catch (cause) {
-			if (!(this.#account.inst.auto_enable && cause instanceof TeyvatApiError && cause.retcode === -502002))
+			if (!(this.#account.inst.autoEnable && cause instanceof TeyvatApiError && cause.retcode === -502002))
 				throw cause;
-			await _enable_account_feature(this.#account, 'calculator', cause);
+			await _enableAccountFeature(this.#account, 'calculator', cause);
 			return await request();
 		}
 	}

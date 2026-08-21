@@ -1,7 +1,7 @@
 import { type } from 'arktype';
-import { schema_teyvat_server } from './server.ts';
+import { schemaTeyvatServer } from './server.ts';
 
-const schema_teyvat_account_oculi = type({
+const schemaTeyvatAccountOculi = type({
 	anemo: 'number.integer',
 	geo: 'number.integer',
 	electro: 'number.integer',
@@ -11,7 +11,7 @@ const schema_teyvat_account_oculi = type({
 	lunar: 'number.integer',
 });
 
-const schema_teyvat_account_chests = type({
+const schemaTeyvatAccountChests = type({
 	common: 'number.integer',
 	exquisite: 'number.integer',
 	precious: 'number.integer',
@@ -19,59 +19,59 @@ const schema_teyvat_account_chests = type({
 	remarkable: 'number.integer',
 });
 
-const schema_teyvat_account_imaginarium_theater = type({
+const schemaTeyvatAccountImaginariumTheater = type({
 	unlocked: 'boolean',
-	max_act: 'number.integer',
-	has_data: 'boolean',
-	has_detail_data: 'boolean',
+	maxAct: 'number.integer',
+	hasData: 'boolean',
+	hasDetailData: 'boolean',
 });
 
-const schema_teyvat_account_stygian_onslaught = type({
+const schemaTeyvatAccountStygianOnslaught = type({
 	unlocked: 'boolean',
 	difficulty: 'number.integer',
 	name: 'string',
-	has_data: 'boolean',
+	hasData: 'boolean',
 });
 
-const schema_teyvat_account_stats = type({
+const schemaTeyvatAccountStats = type({
 	achievements: 'number.integer',
-	active_days: 'number.integer',
+	activeDays: 'number.integer',
 	characters: 'number.integer',
-	spiral_abyss: 'string',
-	oculi: schema_teyvat_account_oculi,
-	chests: schema_teyvat_account_chests,
-	unlocked_waypoints: 'number.integer',
-	unlocked_domains: 'number.integer',
-	max_friendship_characters: 'number.integer',
-	imaginarium_theater: schema_teyvat_account_imaginarium_theater,
-	stygian_onslaught: schema_teyvat_account_stygian_onslaught,
+	spiralAbyss: 'string',
+	oculi: schemaTeyvatAccountOculi,
+	chests: schemaTeyvatAccountChests,
+	unlockedWaypoints: 'number.integer',
+	unlockedDomains: 'number.integer',
+	maxFriendshipCharacters: 'number.integer',
+	imaginariumTheater: schemaTeyvatAccountImaginariumTheater,
+	stygianOnslaught: schemaTeyvatAccountStygianOnslaught,
 });
 
-const schema_teyvat_exploration_visuals = type({
+const schemaTeyvatExplorationVisuals = type({
 	icon: 'string',
-	inner_icon: 'string',
-	background_image: 'string',
+	innerIcon: 'string',
+	backgroundImage: 'string',
 	cover: 'string',
-	map_url: 'string',
+	mapUrl: 'string',
 });
 
-const schema_teyvat_exploration_offering = type({
+const schemaTeyvatExplorationOffering = type({
 	name: 'string',
 	level: 'number.integer',
 	icon: 'string',
 });
 
-const schema_teyvat_exploration_area = type({
+const schemaTeyvatExplorationArea = type({
 	name: 'string',
 	explored: 'number >= 0',
 });
 
-const schema_teyvat_exploration_boss = type({
+const schemaTeyvatExplorationBoss = type({
 	name: 'string',
 	kills: 'number.integer',
 });
 
-const schema_teyvat_exploration_natlan_tribe = type({
+const schemaTeyvatExplorationNatlanTribe = type({
 	id: 'number.integer',
 	name: 'string',
 	level: 'number.integer',
@@ -79,44 +79,44 @@ const schema_teyvat_exploration_natlan_tribe = type({
 	image: 'string',
 });
 
-const schema_teyvat_account_exploration = type({
+const schemaTeyvatAccountExploration = type({
 	id: 'number.integer',
-	parent_id: 'number.integer',
+	parentId: 'number.integer',
 	name: 'string',
 	explored: 'number >= 0',
-	visuals: schema_teyvat_exploration_visuals,
-	offerings: schema_teyvat_exploration_offering.array(),
-	areas: schema_teyvat_exploration_area.array(),
-	bosses: schema_teyvat_exploration_boss.array(),
-	natlan_tribes: schema_teyvat_exploration_natlan_tribe.array(),
+	visuals: schemaTeyvatExplorationVisuals,
+	offerings: schemaTeyvatExplorationOffering.array(),
+	areas: schemaTeyvatExplorationArea.array(),
+	bosses: schemaTeyvatExplorationBoss.array(),
+	natlanTribes: schemaTeyvatExplorationNatlanTribe.array(),
 });
 
-const schema_teyvat_teapot_realm = type({
+const schemaTeyvatTeapotRealm = type({
 	name: 'string',
 	icon: 'string',
 });
 
-const schema_teyvat_account_teapot = type({
+const schemaTeyvatAccountTeapot = type({
 	level: 'number.integer',
 	visitors: 'number.integer',
 	furnishings: 'number.integer',
-	adeptal_energy: {
+	adeptalEnergy: {
 		value: 'number.integer',
 		name: 'string',
 		icon: 'string',
 	},
-	realms: schema_teyvat_teapot_realm.array(),
+	realms: schemaTeyvatTeapotRealm.array(),
 });
 
-export const schema_teyvat_account_info = type({
+export const schemaTeyvatAccountInfo = type({
 	uid: 'number.integer',
 	nickname: 'string',
 	pfp: 'string',
-	server: schema_teyvat_server,
+	server: schemaTeyvatServer,
 	level: 'number.integer',
-	stats: schema_teyvat_account_stats,
-	explorations: schema_teyvat_account_exploration.array(),
-	teapot: schema_teyvat_account_teapot.or('null'),
+	stats: schemaTeyvatAccountStats,
+	explorations: schemaTeyvatAccountExploration.array(),
+	teapot: schemaTeyvatAccountTeapot.or('null'),
 });
 
 /** @category Account Info */
@@ -126,4 +126,4 @@ export const schema_teyvat_account_info = type({
  * @useDeclaredType
  * @category Account Info
  */
-export type TeyvatAccountInfo = typeof schema_teyvat_account_info.infer;
+export type TeyvatAccountInfo = typeof schemaTeyvatAccountInfo.infer;

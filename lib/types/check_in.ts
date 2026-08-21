@@ -1,49 +1,49 @@
 import { type } from 'arktype';
 import type { TeyvatPaginator } from './paginator.ts';
 
-const schema_reward = type({
+const schemaReward = type({
 	name: 'string',
 	amount: 'number.integer >= 0',
 	icon: 'string',
 });
 
-export const schema_teyvat_check_in_info = type({
-	signed_in: 'boolean',
-	claimed_days: 'number.integer >= 0',
-	missed_days: 'number.integer >= 0',
-	rewards: schema_reward.array(),
+export const schemaTeyvatCheckInInfo = type({
+	signedIn: 'boolean',
+	claimedDays: 'number.integer >= 0',
+	missedDays: 'number.integer >= 0',
+	rewards: schemaReward.array(),
 });
 
-const schema_captcha = type({
+const schemaCaptcha = type({
 	version: "'v3'",
 	gt: 'string',
 	challenge: 'string',
 });
 
-export const schema_teyvat_check_in_captcha_solution = type({
+export const schemaTeyvatCheckInCaptchaSolution = type({
 	version: "'v3'",
-	geetest_challenge: 'string',
-	geetest_validate: 'string',
-	geetest_seccode: 'string',
+	geetestChallenge: 'string',
+	geetestValidate: 'string',
+	geetestSeccode: 'string',
 });
 
-const schema_claimed = type({
+const schemaClaimed = type({
 	status: type.enumerated('claimed', 'already_claimed'),
-	claimed_days: 'number.integer >= 1',
-	reward: schema_reward,
+	claimedDays: 'number.integer >= 1',
+	reward: schemaReward,
 });
-const schema_captcha_required = type({
+const schemaCaptchaRequired = type({
 	status: "'captcha_required'",
-	captcha: schema_captcha,
+	captcha: schemaCaptcha,
 });
-export const schema_teyvat_check_in_result = schema_claimed.or(schema_captcha_required);
+export const schemaTeyvatCheckInResult = schemaClaimed.or(schemaCaptchaRequired);
 
-export const schema_teyvat_check_in_history_entry = type({
+export const schemaTeyvatCheckInHistoryEntry = type({
 	id: 'number.integer >= 0',
 	name: 'string',
 	amount: 'number.integer >= 0',
 	icon: 'string',
-	claimed_at: 'Date',
+	claimedAt: 'Date',
 });
 
 /**
@@ -53,7 +53,7 @@ export const schema_teyvat_check_in_history_entry = type({
  * @useDeclaredType
  * @category Daily Check-In
  */
-export type TeyvatCheckInInfo = typeof schema_teyvat_check_in_info.infer;
+export type TeyvatCheckInInfo = typeof schemaTeyvatCheckInInfo.infer;
 
 /**
  * The result of attempting to claim the current daily check-in reward.
@@ -61,7 +61,7 @@ export type TeyvatCheckInInfo = typeof schema_teyvat_check_in_info.infer;
  * @useDeclaredType
  * @category Daily Check-In
  */
-export type TeyvatCheckInResult = typeof schema_teyvat_check_in_result.infer;
+export type TeyvatCheckInResult = typeof schemaTeyvatCheckInResult.infer;
 
 /**
  * A Geetest v3 solution for a pending daily check-in challenge.
@@ -70,7 +70,7 @@ export type TeyvatCheckInResult = typeof schema_teyvat_check_in_result.infer;
  * @useDeclaredType
  * @category Daily Check-In
  */
-export type TeyvatCheckInCaptchaSolution = typeof schema_teyvat_check_in_captcha_solution.infer;
+export type TeyvatCheckInCaptchaSolution = typeof schemaTeyvatCheckInCaptchaSolution.infer;
 
 /**
  * One reward from the HoYoLAB account-wide check-in history.
@@ -79,11 +79,11 @@ export type TeyvatCheckInCaptchaSolution = typeof schema_teyvat_check_in_captcha
  * @useDeclaredType
  * @category Daily Check-In
  */
-export type TeyvatCheckInHistoryEntry = typeof schema_teyvat_check_in_history_entry.infer;
+export type TeyvatCheckInHistoryEntry = typeof schemaTeyvatCheckInHistoryEntry.infer;
 
 /** @category Daily Check-In */
 export interface TeyvatCheckInClaimOptions {
-	captcha_solution?: TeyvatCheckInCaptchaSolution;
+	captchaSolution?: TeyvatCheckInCaptchaSolution;
 }
 
 /** @category Daily Check-In */

@@ -1,7 +1,7 @@
 import { TeyvatError } from '#/client/errors.ts';
 import type { TeyvatCharacterElement, TeyvatWeaponType } from '#/types/account/character.ts';
 
-export function _character_element(element: string): TeyvatCharacterElement {
+export function _characterElement(element: string): TeyvatCharacterElement {
 	const normalized = element.toLowerCase();
 	if (
 		normalized === 'anemo' ||
@@ -16,7 +16,7 @@ export function _character_element(element: string): TeyvatCharacterElement {
 	throw new TypeError(`Unknown character element: ${element}`);
 }
 
-export function _character_ids(ids: number[]): number[] {
+export function _characterIds(ids: number[]): number[] {
 	const unique = new Set<number>();
 	for (const id of ids) {
 		if (!Number.isSafeInteger(id) || id <= 0) throw new TeyvatError('Character IDs must be positive safe integers');
@@ -25,7 +25,7 @@ export function _character_ids(ids: number[]): number[] {
 	return [...unique];
 }
 
-export function _weapon_type(type: number): TeyvatWeaponType {
+export function _weaponType(type: number): TeyvatWeaponType {
 	if (type === 1) return 'sword';
 	if (type === 10) return 'catalyst';
 	if (type === 11) return 'claymore';

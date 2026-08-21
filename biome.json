@@ -2,7 +2,17 @@
 	"$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
 	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"files": {
-		"includes": ["**", "!!dist", "!!docs", "!!**/*.js", "!!.direnv", "!!node_modules", "!!.tmp", "!!tests/results"]
+		"includes": [
+			"**",
+			"!!dist",
+			"!!docs",
+			"!!**/*.js",
+			"!!.direnv",
+			"!!node_modules",
+			"!!.tmp",
+			"!!tests/results",
+			"!!tsdown.config.ts"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -27,9 +37,11 @@
 		"enabled": true,
 		"rules": {
 			"preset": "recommended",
+
 			"suspicious": {
 				"noAssignInExpressions": "off"
 			},
+
 			"correctness": {
 				"noUnusedImports": {
 					"level": "warn",
@@ -39,11 +51,27 @@
 					"level": "warn",
 					"fix": "safe"
 				},
-				"useImportExtensions": "error"
+				"useImportExtensions": "error",
+				"noUndeclaredDependencies": "error"
 			},
+
+			"complexity": {
+				"noExcessiveCognitiveComplexity": "warn"
+			},
+
+			"performance": {
+				"noReExportAll": "error"
+			},
+
 			"style": {
 				"noParameterAssign": "off",
-				"useExportType": "error"
+				"useExportType": "error",
+
+				"noDefaultExport": "error",
+				"noNamespace": "error",
+				"useConsistentArrayType": "error",
+				"useNamingConvention": "error",
+				"useFilenamingConvention": "error"
 			}
 		}
 	}

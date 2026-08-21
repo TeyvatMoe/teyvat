@@ -1,21 +1,21 @@
 import { type } from 'arktype';
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
-import { _hoyolab_headers } from './headers.ts';
+import { _hoyolabHeaders } from './headers.ts';
 
-export const schema_hoyolab_change_setting_response = type({
+export const schemaHoyolabChangeSettingResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: 'unknown',
 });
 
-export async function _enable_hoyolab_genshin_setting(client: TeyvatHttpClient, switch_id: number): Promise<void> {
+export async function _enableHoyolabGenshinSetting(client: TeyvatHttpClient, switchId: number): Promise<void> {
 	await client.request({
-		domain: TEYVAT_DOMAINS.hoyolab_card,
+		domain: TEYVAT_DOMAINS.hoyolabCard,
 		path: 'changeDataSwitch',
 		method: 'POST',
-		body: { switch_id, is_public: true, game_id: 2 },
-		schema: schema_hoyolab_change_setting_response,
-		headers: _hoyolab_headers(client.language),
+		body: { ['switch_id']: switchId, ['is_public']: true, ['game_id']: 2 },
+		schema: schemaHoyolabChangeSettingResponse,
+		headers: _hoyolabHeaders(client.language),
 	});
 }

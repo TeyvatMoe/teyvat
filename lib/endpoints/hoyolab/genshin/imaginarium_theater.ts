@@ -1,10 +1,10 @@
 import { type } from 'arktype';
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
-import { _hoyolab_headers } from '#/endpoints/hoyolab/headers.ts';
+import { _hoyolabHeaders } from '#/endpoints/hoyolab/headers.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
 
-const schema_character = type({
+const schemaCharacter = type({
 	'id?': 'number.integer',
 	'avatar_id?': 'number.integer',
 	'icon?': 'string',
@@ -14,87 +14,87 @@ const schema_character = type({
 	'avatar_type?': 'number.integer',
 });
 
-const schema_buff = type({
+const schemaBuff = type({
 	id: 'number.integer',
 	icon: 'string',
 	name: 'string',
 	desc: 'string',
-	is_enhanced: 'boolean',
+	['is_enhanced']: 'boolean',
 });
 
-const schema_ranked_character = type({
+const schemaRankedCharacter = type({
 	'avatar_id?': 'number.integer',
 	'avatar_icon?': 'string',
 	'rarity?': 'number.integer',
 	'value?': 'string | number',
 });
 
-const schema_battle_statistics = type({
-	max_defeat_avatar: schema_ranked_character.or('null'),
-	max_damage_avatar: schema_ranked_character.or('null'),
-	max_take_damage_avatar: schema_ranked_character.or('null'),
-	shortest_avatar_list: schema_ranked_character.array(),
-	total_use_time: 'number.integer',
+const schemaBattleStatistics = type({
+	['max_defeat_avatar']: schemaRankedCharacter.or('null'),
+	['max_damage_avatar']: schemaRankedCharacter.or('null'),
+	['max_take_damage_avatar']: schemaRankedCharacter.or('null'),
+	['shortest_avatar_list']: schemaRankedCharacter.array(),
+	['total_use_time']: 'number.integer',
 });
 
-const schema_act = type({
-	round_id: 'number.integer',
-	finish_time: 'number.integer',
-	is_get_medal: 'boolean',
+const schemaAct = type({
+	['round_id']: 'number.integer',
+	['finish_time']: 'number.integer',
+	['is_get_medal']: 'boolean',
 	'is_tarot?': 'boolean',
 	'tarot_serial_no?': 'number.integer | null',
-	avatars: schema_character.array(),
-	choice_cards: schema_buff.array(),
-	buffs: schema_buff.array(),
+	avatars: schemaCharacter.array(),
+	['choice_cards']: schemaBuff.array(),
+	buffs: schemaBuff.array(),
 });
 
-const schema_detail = type({
-	'rounds_data?': schema_act.array(),
-	'backup_avatars?': schema_character.array(),
-	'fight_statisic?': schema_battle_statistics.or('null'),
+const schemaDetail = type({
+	'rounds_data?': schemaAct.array(),
+	'backup_avatars?': schemaCharacter.array(),
+	'fight_statisic?': schemaBattleStatistics.or('null'),
 });
 
-const schema_season = type({
-	has_data: 'boolean',
-	has_detail_data: 'boolean',
+const schemaSeason = type({
+	['has_data']: 'boolean',
+	['has_detail_data']: 'boolean',
 	stat: {
-		difficulty_id: 'number.integer',
-		max_round_id: 'number.integer',
+		['difficulty_id']: 'number.integer',
+		['max_round_id']: 'number.integer',
 		heraldry: 'number.integer',
-		get_medal_round_list: 'boolean[]',
-		coin_num: 'number.integer',
-		avatar_bonus_num: 'number.integer',
-		rent_cnt: 'number.integer',
-		medal_num: 'number.integer',
+		['get_medal_round_list']: 'boolean[]',
+		['coin_num']: 'number.integer',
+		['avatar_bonus_num']: 'number.integer',
+		['rent_cnt']: 'number.integer',
+		['medal_num']: 'number.integer',
 	},
 	schedule: {
-		schedule_id: 'number.integer',
-		schedule_type: 'number.integer',
-		start_time: 'number.integer',
-		end_time: 'number.integer',
+		['schedule_id']: 'number.integer',
+		['schedule_type']: 'number.integer',
+		['start_time']: 'number.integer',
+		['end_time']: 'number.integer',
 	},
-	'detail?': schema_detail.or('null'),
+	'detail?': schemaDetail.or('null'),
 });
 
-export const schema_hoyolab_genshin_imaginarium_theater_response = type({
+export const schemaHoyolabGenshinImaginariumTheaterResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
-		is_unlock: 'boolean',
-		data: schema_season.array(),
+		['is_unlock']: 'boolean',
+		data: schemaSeason.array(),
 	},
 });
 
-export async function _get_hoyolab_genshin_imaginarium_theater(
+export async function _getHoyolabGenshinImaginariumTheater(
 	client: TeyvatHttpClient,
 	uid: number,
 	server: TeyvatServer,
 ) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.genshin_record,
+		domain: TEYVAT_DOMAINS.genshinRecord,
 		path: 'role_combat',
-		params: { role_id: uid, server, need_detail: 'true' },
-		schema: schema_hoyolab_genshin_imaginarium_theater_response,
-		headers: _hoyolab_headers(client.language),
+		params: { ['role_id']: uid, server, ['need_detail']: 'true' },
+		schema: schemaHoyolabGenshinImaginariumTheaterResponse,
+		headers: _hoyolabHeaders(client.language),
 	});
 }

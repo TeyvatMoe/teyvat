@@ -1,24 +1,24 @@
-import { _enable_account_feature } from '#/client/auto_enable.ts';
+import { _enableAccountFeature } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
-import { _get_http_client } from '#/client/request.ts';
-import { _get_hoyolab_genshin_imaginarium_theater } from '#/endpoints/hoyolab/genshin/imaginarium_theater.ts';
+import { _getHttpClient } from '#/client/request.ts';
+import { _getHoyolabGenshinImaginariumTheater } from '#/endpoints/hoyolab/genshin/imaginarium_theater.ts';
 import {
-	schema_teyvat_account_imaginarium_theater,
+	schemaTeyvatAccountImaginariumTheater,
 	type TeyvatAccountImaginariumTheater,
 	type TeyvatImaginariumTheaterCharacterRole,
 	type TeyvatImaginariumTheaterDifficulty,
 } from '#/types/account/imaginarium_theater.ts';
-import { _sleep, _unix_date } from '#/utils/misc.ts';
+import { _sleep, _unixDate } from '#/utils/misc.ts';
 import type { TeyvatAccount } from './index.ts';
 
 const ENDPOINT = '/event/game_record/genshin/api/role_combat';
 const ENABLE_RETRY_DELAYS = [250, 500, 1_000, 2_000] as const;
 
-function _is_imaginarium_theater_private(cause: unknown): cause is TeyvatApiError {
+function _isImaginariumTheaterPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
-function _imaginarium_theater_difficulty(value: number): TeyvatImaginariumTheaterDifficulty {
+function _imaginariumTheaterDifficulty(value: number): TeyvatImaginariumTheaterDifficulty {
 	if (value === 1) return 'easy';
 	if (value === 2) return 'normal';
 	if (value === 3) return 'hard';
@@ -27,14 +27,14 @@ function _imaginarium_theater_difficulty(value: number): TeyvatImaginariumTheate
 	return 'unknown';
 }
 
-function _imaginarium_theater_character_role(value?: number): TeyvatImaginariumTheaterCharacterRole {
+function _imaginariumTheaterCharacterRole(value?: number): TeyvatImaginariumTheaterCharacterRole {
 	if (value === 1) return 'normal';
 	if (value === 2) return 'trial';
 	if (value === 3) return 'support';
 	return 'unknown';
 }
 
-function _ranking_value(value: number | string): number {
+function _rankingValue(value: number | string): number {
 	if (value === '') return 0;
 	if (typeof value === 'string' && !/^\d+$/.test(value)) throw new TypeError('Theater ranking value must be numeric');
 	const numeric = Number(value);
@@ -43,125 +43,123 @@ function _ranking_value(value: number | string): number {
 	return numeric;
 }
 
-async function _request_imaginarium_theater(account: TeyvatAccount) {
-	return await _get_hoyolab_genshin_imaginarium_theater(_get_http_client(account.inst), account.uid, account.server);
+async function _requestImaginariumTheater(account: TeyvatAccount) {
+	return await _getHoyolabGenshinImaginariumTheater(_getHttpClient(account.inst), account.uid, account.server);
 }
 
-export async function _get_account_imaginarium_theater(
-	account: TeyvatAccount,
-): Promise<TeyvatAccountImaginariumTheater> {
-	let raw: Awaited<ReturnType<typeof _request_imaginarium_theater>>;
+export async function _getAccountImaginariumTheater(account: TeyvatAccount): Promise<TeyvatAccountImaginariumTheater> {
+	let raw: Awaited<ReturnType<typeof _requestImaginariumTheater>>;
 	try {
-		raw = await _request_imaginarium_theater(account);
+		raw = await _requestImaginariumTheater(account);
 	} catch (cause) {
-		if (!(account.inst.auto_enable && _is_imaginarium_theater_private(cause))) throw cause;
-		await _enable_account_feature(account, 'battle_chronicle', cause);
-		let retry_error: TeyvatApiError = cause;
-		let enabled_theater: Awaited<ReturnType<typeof _request_imaginarium_theater>> | undefined;
+		if (!(account.inst.autoEnable && _isImaginariumTheaterPrivate(cause))) throw cause;
+		await _enableAccountFeature(account, 'battle_chronicle', cause);
+		let retryError: TeyvatApiError = cause;
+		let enabledTheater: Awaited<ReturnType<typeof _requestImaginariumTheater>> | undefined;
 		for (const delay of ENABLE_RETRY_DELAYS) {
 			await _sleep(delay);
 			try {
-				enabled_theater = await _request_imaginarium_theater(account);
+				enabledTheater = await _requestImaginariumTheater(account);
 				break;
-			} catch (retry_cause) {
-				if (!_is_imaginarium_theater_private(retry_cause)) throw retry_cause;
-				retry_error = retry_cause;
+			} catch (retryCause) {
+				if (!_isImaginariumTheaterPrivate(retryCause)) throw retryCause;
+				retryError = retryCause;
 			}
 		}
-		if (!enabled_theater) throw retry_error;
-		raw = enabled_theater;
+		if (!enabledTheater) throw retryError;
+		raw = enabledTheater;
 	}
 
 	try {
 		const character = (item: {
 			id?: number;
-			avatar_id?: number;
+			avatarId?: number;
 			icon?: string;
-			avatar_icon?: string;
+			avatarIcon?: string;
 			rarity: number;
 			level?: number;
-			avatar_type?: number;
+			avatarType?: number;
 		}) => {
-			const id = item.id ?? item.avatar_id;
-			const icon = item.icon ?? item.avatar_icon;
+			const id = item.id ?? item.avatarId;
+			const icon = item.icon ?? item.avatarIcon;
 			if (id === undefined || icon === undefined) throw new TypeError('Theater character identity is incomplete');
 			return {
 				id,
 				icon,
 				rarity: item.rarity,
 				level: item.level ?? null,
-				role: _imaginarium_theater_character_role(item.avatar_type),
+				role: _imaginariumTheaterCharacterRole(item.avatarType),
 			};
 		};
-		const buff = (item: { id: number; icon: string; name: string; desc: string; is_enhanced: boolean }) => ({
+		const buff = (item: { id: number; icon: string; name: string; desc: string; ['is_enhanced']: boolean }) => ({
 			id: item.id,
 			icon: item.icon,
 			name: item.name,
 			description: item.desc,
-			received_audience_support: item.is_enhanced,
+			receivedAudienceSupport: item.is_enhanced,
 		});
-		const ranked_character = (
+		const rankedCharacter = (
 			item: {
-				avatar_id?: number;
-				avatar_icon?: string;
+				avatarId?: number;
+				avatarIcon?: string;
 				rarity?: number;
 				value?: number | string;
 			} | null,
 		) => {
-			if (!item?.avatar_id) return null;
-			if (item.avatar_icon === undefined || item.rarity === undefined || item.value === undefined)
+			if (!item?.avatarId) return null;
+			if (item.avatarIcon === undefined || item.rarity === undefined || item.value === undefined)
 				throw new TypeError('Theater ranking character is incomplete');
 			return {
-				id: item.avatar_id,
-				icon: item.avatar_icon,
+				id: item.avatarId,
+				icon: item.avatarIcon,
 				rarity: item.rarity,
-				value: _ranking_value(item.value),
+				value: _rankingValue(item.value),
 			};
 		};
 
-		return schema_teyvat_account_imaginarium_theater.assert({
+		return schemaTeyvatAccountImaginariumTheater.assert({
 			unlocked: raw.is_unlock,
 			seasons: raw.data.map((season) => {
 				const detail = season.detail;
-				const battle_statistics = detail?.fight_statisic;
+				const battleStatistics = detail?.fight_statisic;
 				return {
-					has_data: season.has_data,
-					has_detail_data: season.has_detail_data,
+					hasData: season.has_data,
+					hasDetailData: season.has_detail_data,
 					schedule: {
 						id: season.schedule.schedule_id,
 						type: season.schedule.schedule_type,
-						starts_at: _unix_date(season.schedule.start_time, 'schedule.start_time'),
-						ends_at: _unix_date(season.schedule.end_time, 'schedule.end_time'),
+						startsAt: _unixDate(season.schedule.start_time, 'schedule.start_time'),
+						endsAt: _unixDate(season.schedule.end_time, 'schedule.end_time'),
 					},
 					statistics: {
-						difficulty: _imaginarium_theater_difficulty(season.stat.difficulty_id),
-						best_act: season.stat.max_round_id,
+						difficulty: _imaginariumTheaterDifficulty(season.stat.difficulty_id),
+						bestAct: season.stat.max_round_id,
 						heraldry: season.stat.heraldry,
-						star_challenges: season.stat.get_medal_round_list,
-						fantasia_flowers_used: season.stat.coin_num,
-						audience_support_triggers: season.stat.avatar_bonus_num,
-						support_characters_shared: season.stat.rent_cnt,
+						starChallenges: season.stat.get_medal_round_list,
+						fantasiaFlowersUsed: season.stat.coin_num,
+						audienceSupportTriggers: season.stat.avatar_bonus_num,
+						supportCharactersShared: season.stat.rent_cnt,
 						medals: season.stat.medal_num,
 					},
 					acts: (detail?.rounds_data ?? []).map((act) => ({
 						number: act.round_id,
-						completed_at: _unix_date(act.finish_time, 'detail.rounds_data.finish_time'),
-						medal_obtained: act.is_get_medal,
+						completedAt: _unixDate(act.finish_time, 'detail.rounds_data.finish_time'),
+						medalObtained: act.is_get_medal,
 						arcana: { active: act.is_tarot ?? false, number: act.tarot_serial_no ?? null },
 						characters: act.avatars.map(character),
-						mystery_caches: act.choice_cards.map(buff),
-						wondrous_booms: act.buffs.map(buff),
+						mysteryCaches: act.choice_cards.map(buff),
+						wondrousBooms: act.buffs.map(buff),
 					})),
-					backup_characters: (detail?.backup_avatars ?? []).map(character),
-					battle_statistics: battle_statistics
+					backupCharacters: (detail?.backup_avatars ?? []).map(character),
+					battleStatistics: battleStatistics
 						? {
-								most_defeats: ranked_character(battle_statistics.max_defeat_avatar),
-								strongest_strike: ranked_character(battle_statistics.max_damage_avatar),
-								most_damage_taken: ranked_character(battle_statistics.max_take_damage_avatar),
-								fastest_casts: battle_statistics.shortest_avatar_list
-									.map(ranked_character)
+								mostDefeats: rankedCharacter(battleStatistics.max_defeat_avatar),
+								strongestStrike: rankedCharacter(battleStatistics.max_damage_avatar),
+								mostDamageTaken: rankedCharacter(battleStatistics.max_take_damage_avatar),
+								fastestCasts: battleStatistics.shortest_avatar_list
+									.map(rankedCharacter)
 									.filter((item) => item !== null),
-								total_cast_seconds: battle_statistics.total_use_time,
+								totalCastSeconds: battleStatistics.total_use_time,
 							}
 						: null,
 				};

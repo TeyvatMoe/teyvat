@@ -1,95 +1,95 @@
 import { type } from 'arktype';
 import type { TeyvatCharacterElement } from './character.ts';
 
-const schema_calculator_character = type({
+const schemaCalculatorCharacter = type({
 	id: 'number.integer > 0',
 	name: 'string',
 	icon: 'string',
 	rarity: 'number.integer >= 0',
 	element: type.enumerated('anemo', 'geo', 'electro', 'dendro', 'hydro', 'pyro', 'cryo'),
-	weapon_type: type.enumerated('sword', 'catalyst', 'claymore', 'bow', 'polearm'),
-	current_level: 'number.integer >= 0',
-	maximum_level: 'number.integer >= 0',
+	weaponType: type.enumerated('sword', 'catalyst', 'claymore', 'bow', 'polearm'),
+	currentLevel: 'number.integer >= 0',
+	maximumLevel: 'number.integer >= 0',
 });
 
-export const schema_teyvat_calculator_characters = schema_calculator_character.array();
+export const schemaTeyvatCalculatorCharacters = schemaCalculatorCharacter.array();
 
-const schema_calculator_weapon = type({
+const schemaCalculatorWeapon = type({
 	id: 'number.integer > 0',
 	name: 'string',
 	icon: 'string',
 	rarity: 'number.integer >= 0',
 	type: type.enumerated('sword', 'catalyst', 'claymore', 'bow', 'polearm'),
-	current_level: 'number.integer >= 0',
-	maximum_level: 'number.integer >= 0',
+	currentLevel: 'number.integer >= 0',
+	maximumLevel: 'number.integer >= 0',
 });
 
-const schema_calculator_talent = type({
+const schemaCalculatorTalent = type({
 	id: 'number.integer > 0',
 	name: 'string',
 	icon: 'string',
-	current_level: 'number.integer >= 0',
-	maximum_level: 'number.integer >= 0',
+	currentLevel: 'number.integer >= 0',
+	maximumLevel: 'number.integer >= 0',
 });
 
-const schema_calculator_artifact = type({
+const schemaCalculatorArtifact = type({
 	id: 'number.integer > 0',
 	name: 'string',
 	icon: 'string',
 	rarity: 'number.integer >= 0',
 	position: 'number.integer >= 0',
-	current_level: 'number.integer >= 0',
-	maximum_level: 'number.integer >= 0',
+	currentLevel: 'number.integer >= 0',
+	maximumLevel: 'number.integer >= 0',
 });
 
-export const schema_teyvat_calculator_character_details = type({
-	weapon: schema_calculator_weapon,
-	talents: schema_calculator_talent.array(),
-	artifacts: schema_calculator_artifact.array(),
+export const schemaTeyvatCalculatorCharacterDetails = type({
+	weapon: schemaCalculatorWeapon,
+	talents: schemaCalculatorTalent.array(),
+	artifacts: schemaCalculatorArtifact.array(),
 });
 
-const schema_calculator_material = type({
+const schemaCalculatorMaterial = type({
 	id: 'number.integer > 0',
 	name: 'string',
 	icon: 'string',
 	rarity: 'number.integer >= 0',
-	wiki_url: 'string | null',
+	wikiUrl: 'string | null',
 	required: 'number.integer >= 0',
 	owned: 'number.integer >= 0',
 	missing: 'number.integer >= 0',
 });
 
-const schema_calculator_talent_result = type({
+const schemaCalculatorTalentResult = type({
 	id: 'number.integer > 0',
-	current_level: 'number.integer >= 0',
-	target_level: 'number.integer >= 0',
-	materials: schema_calculator_material.array(),
+	currentLevel: 'number.integer >= 0',
+	targetLevel: 'number.integer >= 0',
+	materials: schemaCalculatorMaterial.array(),
 });
 
-const schema_calculator_artifact_result = type({
+const schemaCalculatorArtifactResult = type({
 	id: 'number.integer > 0',
-	materials: schema_calculator_material.array(),
+	materials: schemaCalculatorMaterial.array(),
 });
 
-export const schema_teyvat_calculator_result = type({
-	character: schema_calculator_material.array(),
-	weapon: schema_calculator_material.array(),
-	talents: schema_calculator_talent_result.array(),
-	artifacts: schema_calculator_artifact_result.array(),
-	total: schema_calculator_material.array(),
-	lineup_recommendation: 'string | null',
+export const schemaTeyvatCalculatorResult = type({
+	character: schemaCalculatorMaterial.array(),
+	weapon: schemaCalculatorMaterial.array(),
+	talents: schemaCalculatorTalentResult.array(),
+	artifacts: schemaCalculatorArtifactResult.array(),
+	total: schemaCalculatorMaterial.array(),
+	lineupRecommendation: 'string | null',
 });
 
 export interface TeyvatCalculatorOptions {
 	character: {
 		id: number;
-		current_level: number;
-		target_level: number;
+		currentLevel: number;
+		targetLevel: number;
 		element?: TeyvatCharacterElement;
 	};
-	weapon?: { id: number; current_level: number; target_level: number };
-	talents?: Array<{ id: number; current_level: number; target_level: number }>;
-	artifacts?: Array<{ id: number; current_level: number; target_level: number }>;
+	weapon?: { id: number; currentLevel: number; targetLevel: number };
+	talents?: Array<{ id: number; currentLevel: number; targetLevel: number }>;
+	artifacts?: Array<{ id: number; currentLevel: number; targetLevel: number }>;
 }
 
 /**
@@ -97,21 +97,21 @@ export interface TeyvatCalculatorOptions {
  * @useDeclaredType
  * @category Enhancement Calculator
  */
-export type TeyvatCalculatorCharacter = (typeof schema_teyvat_calculator_characters.infer)[number];
+export type TeyvatCalculatorCharacter = (typeof schemaTeyvatCalculatorCharacters.infer)[number];
 
 /**
  * @interface
  * @useDeclaredType
  * @category Enhancement Calculator
  */
-export type TeyvatCalculatorCharacterDetails = typeof schema_teyvat_calculator_character_details.infer;
+export type TeyvatCalculatorCharacterDetails = typeof schemaTeyvatCalculatorCharacterDetails.infer;
 
 /**
  * @interface
  * @useDeclaredType
  * @category Enhancement Calculator
  */
-export type TeyvatCalculatorResult = typeof schema_teyvat_calculator_result.infer;
+export type TeyvatCalculatorResult = typeof schemaTeyvatCalculatorResult.infer;
 
 /** @category Enhancement Calculator */
 export interface TeyvatCalculatorClient {

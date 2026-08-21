@@ -4,71 +4,71 @@ import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
 import type { TeyvatLanguage } from '#/types/language.ts';
 
-const schema_material_info = type.Record('string', 'number | string');
+const schemaMaterialInfo = type.Record('string', 'number | string');
 
-export const schema_hoyolab_genshin_inventory_response = type({
+export const schemaHoyolabGenshinInventoryResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
-		material_info: schema_material_info,
+		['material_info']: schemaMaterialInfo,
 	},
 });
 
-const schema_tree_item = type({
+const schemaTreeItem = type({
 	id: 'number.integer',
 	name: 'string',
 	icon: 'string',
-	item_id: 'number.integer',
+	['item_id']: 'number.integer',
 });
 
-const schema_tree_category = type({
+const schemaTreeCategory = type({
 	id: 'number.integer',
 	name: 'string',
-	children: schema_tree_item.array(),
+	children: schemaTreeItem.array(),
 });
 
-export const schema_hoyolab_teyvat_tree_response = type({
+export const schemaHoyolabTeyvatTreeResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: {
-		tree: schema_tree_category.array(),
+		tree: schemaTreeCategory.array(),
 	},
 });
 
-type TeyvatTree = (typeof schema_hoyolab_teyvat_tree_response.infer)['data']['tree'];
+type TeyvatTree = (typeof schemaHoyolabTeyvatTreeResponse.infer)['data']['tree'];
 
 const TREE_CACHE_TTL = 3_600_000;
 interface TeyvatTreeCache {
 	tree?: TeyvatTree;
-	updated_at: number;
+	updatedAt: number;
 	refresh?: Promise<TeyvatTree>;
 }
 
-const tree_caches = new Map<TeyvatLanguage, TeyvatTreeCache>();
+const treeCaches = new Map<TeyvatLanguage, TeyvatTreeCache>();
 
-function _tree_cache(language: TeyvatLanguage): TeyvatTreeCache {
-	const existing = tree_caches.get(language);
+function _treeCache(language: TeyvatLanguage): TeyvatTreeCache {
+	const existing = treeCaches.get(language);
 	if (existing) return existing;
-	const cache = { updated_at: 0 };
-	tree_caches.set(language, cache);
+	const cache = { updatedAt: 0 };
+	treeCaches.set(language, cache);
 	return cache;
 }
 
-function _refresh_teyvat_tree(client: TeyvatHttpClient, cache: TeyvatTreeCache): Promise<TeyvatTree> {
+function _refreshTeyvatTree(client: TeyvatHttpClient, cache: TeyvatTreeCache): Promise<TeyvatTree> {
 	if (cache.refresh) return cache.refresh;
 
 	const refresh = client
 		.request({
-			domain: TEYVAT_DOMAINS.hoyolab_map_static,
+			domain: TEYVAT_DOMAINS.hoyolabMapStatic,
 			path: 'tree',
-			params: { map_id: 2, app_sn: 'ys_obc', lang: client.language },
-			schema: schema_hoyolab_teyvat_tree_response,
-			skip_auth: true,
-			use_cookies: false,
+			params: { ['map_id']: 2, ['app_sn']: 'ys_obc', lang: client.language },
+			schema: schemaHoyolabTeyvatTreeResponse,
+			skipAuth: true,
+			useCookies: false,
 		})
 		.then((tree) => {
 			cache.tree = tree.tree;
-			cache.updated_at = Date.now();
+			cache.updatedAt = Date.now();
 			return tree.tree;
 		})
 		.finally(() => {
@@ -78,23 +78,22 @@ function _refresh_teyvat_tree(client: TeyvatHttpClient, cache: TeyvatTreeCache):
 	return refresh;
 }
 
-export async function _get_hoyolab_teyvat_tree(client: TeyvatHttpClient, force = false): Promise<TeyvatTree> {
-	const cache = _tree_cache(client.language);
-	if (force || !cache.tree) return await _refresh_teyvat_tree(client, cache);
-	if (Date.now() - cache.updated_at >= TREE_CACHE_TTL)
-		void _refresh_teyvat_tree(client, cache).catch(() => undefined);
+export async function _getHoyolabTeyvatTree(client: TeyvatHttpClient, force = false): Promise<TeyvatTree> {
+	const cache = _treeCache(client.language);
+	if (force || !cache.tree) return await _refreshTeyvatTree(client, cache);
+	if (Date.now() - cache.updatedAt >= TREE_CACHE_TTL) void _refreshTeyvatTree(client, cache).catch(() => undefined);
 	return cache.tree;
 }
 
-export async function _get_hoyolab_genshin_inventory(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
+export async function _getHoyolabGenshinInventory(client: TeyvatHttpClient, uid: number, server: TeyvatServer) {
 	return await client.request({
-		domain: TEYVAT_DOMAINS.hoyolab_map,
+		domain: TEYVAT_DOMAINS.hoyolabMap,
 		path: 'sync_game_material_info',
-		params: { map_id: 2, app_sn: 'ys_obc', lang: client.language, uid, region: server },
-		schema: schema_hoyolab_genshin_inventory_response,
+		params: { ['map_id']: 2, ['app_sn']: 'ys_obc', lang: client.language, uid, region: server },
+		schema: schemaHoyolabGenshinInventoryResponse,
 		headers: {
-			Origin: 'https://act.hoyolab.com',
-			Referer: 'https://act.hoyolab.com/ys/app/interactive-map/index.html#/map/2',
+			['Origin']: 'https://act.hoyolab.com',
+			['Referer']: 'https://act.hoyolab.com/ys/app/interactive-map/index.html#/map/2',
 			'x-rpc-platform': '4',
 			'x-rpc-view_source': '1',
 		},

@@ -22,23 +22,23 @@ const db = {
 		get: () => db.inst.get<TeyvatCookies>('cookies'),
 		set: (cookies: TeyvatCookies) => db.inst.set('cookies', cookies),
 	},
-	device_id: {
+	deviceId: {
 		get: () => db.inst.get<string>('device_id'),
-		set: (device_id: string) => db.inst.set('device_id', device_id),
+		set: (deviceId: string) => db.inst.set('device_id', deviceId),
 	},
 };
 
 const GEETEST_PORT = 5000;
 const GEETEST_V3_SCRIPT = 'https://static.geetest.com/static/js/gt.0.5.0.js';
 const GEETEST_V4_SCRIPT = 'https://static.geetest.com/v4/gt4.js';
-let geetest_round = 0;
+let geetestRound = 0;
 
-function auth_debug(message: string): void {
+function authDebug(message: string): void {
 	console.log(`[auth ${new Date().toISOString()}] ${message}`);
 }
 
-function geetest_page(captcha: TeyvatAuthCaptcha, round: number): string {
-	const serialized_captcha = JSON.stringify(captcha).replaceAll('<', '\\u003c');
+function geetestPage(captcha: TeyvatAuthCaptcha, round: number): string {
+	const serializedCaptcha = JSON.stringify(captcha).replaceAll('<', '\\u003c');
 	return `<!doctype html>
 <html lang="en">
 	<head>
@@ -61,7 +61,7 @@ function geetest_page(captcha: TeyvatAuthCaptcha, round: number): string {
 		</main>
 		<script src="/geetest.js?round=${round}"></script>
 		<script>
-			const captcha = ${serialized_captcha};
+			const captcha = ${serializedCaptcha};
 			const status = document.querySelector('#status');
 			let submitting = false;
 			const initialize = captcha.version === 'v3' ? window.initGeetest : window.initGeetest4;
@@ -69,16 +69,16 @@ function geetest_page(captcha: TeyvatAuthCaptcha, round: number): string {
 				? {
 					gt: captcha.gt,
 					challenge: captcha.challenge,
-					new_captcha: captcha.new_captcha,
+					new_captcha: captcha.newCaptcha,
 					api_server: 'api-na.geetest.com',
 					https: true,
 					product: 'bind',
 					lang: 'en',
 				}
 				: {
-					captchaId: captcha.captcha_id,
-					riskType: captcha.risk_type,
-					userInfo: JSON.stringify({ session_id: captcha.session_id }),
+					captchaId: captcha.captchaId,
+					riskType: captcha.riskType,
+					userInfo: JSON.stringify({ session_id: captcha.sessionId }),
 					apiServers: ['gcaptcha4.captchami.com'],
 					product: 'bind',
 					language: 'en',
@@ -97,8 +97,20 @@ function geetest_page(captcha: TeyvatAuthCaptcha, round: number): string {
 					try {
 						const validation = widget.getValidate();
 						const solution = captcha.version === 'v3'
-							? { version: 'v3', ...validation }
-							: { version: 'v4', captcha_id: captcha.captcha_id, ...validation };
+							? {
+								version: 'v3',
+								geetestChallenge: validation.geetest_challenge,
+								geetestValidate: validation.geetest_validate,
+								geetestSeccode: validation.geetest_seccode,
+							}
+							: {
+								version: 'v4',
+								captchaId: captcha.captchaId,
+								lotNumber: validation.lot_number,
+								passToken: validation.pass_token,
+								genTime: validation.gen_time,
+								captchaOutput: validation.captcha_output,
+							};
 						const response = await fetch('/solution?round=${round}', {
 							method: 'POST',
 							headers: { 'content-type': 'application/json' },
@@ -121,21 +133,21 @@ function geetest_page(captcha: TeyvatAuthCaptcha, round: number): string {
 </html>`;
 }
 
-async function solve_geetest(captcha: TeyvatAuthCaptcha): Promise<TeyvatAuthCaptchaSolution> {
-	const round = ++geetest_round;
+async function solveGeetest(captcha: TeyvatAuthCaptcha): Promise<TeyvatAuthCaptchaSolution> {
+	const round = ++geetestRound;
 	const port = GEETEST_PORT + round - 1;
-	auth_debug(`captcha round ${round}: preparing Geetest ${captcha.version}`);
-	let resolve_solution: (solution: TeyvatAuthCaptchaSolution) => void;
+	authDebug(`captcha round ${round}: preparing Geetest ${captcha.version}`);
+	let resolveSolution: (solution: TeyvatAuthCaptchaSolution) => void;
 	const solution = new Promise<TeyvatAuthCaptchaSolution>((resolve) => {
-		resolve_solution = resolve;
+		resolveSolution = resolve;
 	});
-	const script_url = captcha.version === 'v3' ? GEETEST_V3_SCRIPT : GEETEST_V4_SCRIPT;
+	const scriptUrl = captcha.version === 'v3' ? GEETEST_V3_SCRIPT : GEETEST_V4_SCRIPT;
 	let submitted = false;
 
 	const app = new Elysia()
 		.get('/', () => {
-			auth_debug(`captcha round ${round}: browser loaded the challenge page`);
-			return new Response(geetest_page(captcha, round), {
+			authDebug(`captcha round ${round}: browser loaded the challenge page`);
+			return new Response(geetestPage(captcha, round), {
 				headers: {
 					'cache-control': 'no-store',
 					'content-type': 'text/html; charset=utf-8',
@@ -143,45 +155,45 @@ async function solve_geetest(captcha: TeyvatAuthCaptcha): Promise<TeyvatAuthCapt
 			});
 		})
 		.get('/geetest.js', async () => {
-			auth_debug(`captcha round ${round}: proxying the Geetest script`);
-			const response = await fetch(script_url);
+			authDebug(`captcha round ${round}: proxying the Geetest script`);
+			const response = await fetch(scriptUrl);
 			return new Response(response.body, {
 				status: response.status,
 				headers: { 'content-type': 'text/javascript; charset=utf-8' },
 			});
 		})
 		.post('/solution', ({ body, set }) => {
-			auth_debug(`captcha round ${round}: received a browser submission`);
+			authDebug(`captcha round ${round}: received a browser submission`);
 			if (submitted) {
-				auth_debug(`captcha round ${round}: ignored a duplicate browser submission`);
+				authDebug(`captcha round ${round}: ignored a duplicate browser submission`);
 				return { accepted: false };
 			}
 			if (typeof body !== 'object' || body === null) {
-				auth_debug(`captcha round ${round}: rejected a non-object request body`);
+				authDebug(`captcha round ${round}: rejected a non-object request body`);
 				set.status = 400;
 				return { accepted: false, message: 'The submitted solution was not valid JSON' };
 			}
 			submitted = true;
-			auth_debug(`captcha round ${round}: accepted the submission and resolved the pending solver`);
-			resolve_solution(body as TeyvatAuthCaptchaSolution);
+			authDebug(`captcha round ${round}: accepted the submission and resolved the pending solver`);
+			resolveSolution(body as TeyvatAuthCaptchaSolution);
 			return { accepted: true };
 		})
 		.listen({ hostname: '127.0.0.1', port });
 
-	auth_debug(`captcha round ${round}: listening at http://127.0.0.1:${port}`);
+	authDebug(`captcha round ${round}: listening at http://127.0.0.1:${port}`);
 	try {
 		const result = await solution;
-		auth_debug(`captcha round ${round}: solver promise resolved`);
+		authDebug(`captcha round ${round}: solver promise resolved`);
 		await Bun.sleep(300);
 		return result;
 	} finally {
-		auth_debug(`captcha round ${round}: stopping the local server`);
+		authDebug(`captcha round ${round}: stopping the local server`);
 		await app.stop();
-		auth_debug(`captcha round ${round}: local server stopped`);
+		authDebug(`captcha round ${round}: local server stopped`);
 	}
 }
 
-async function prompt_for_email_code(): Promise<string> {
+async function promptForEmailCode(): Promise<string> {
 	const readline = createInterface({ input: process.stdin, output: process.stdout });
 	try {
 		return await readline.question('Enter the HoYoLAB email verification code: ');
@@ -198,37 +210,37 @@ async function login(): Promise<TeyvatCookies> {
 	const auth = Teyvat.auth({
 		account: env.TEST_USERNAME,
 		password: env.TEST_PASSWORD,
-		device_id: (await db.device_id.get()) ?? undefined,
+		deviceId: (await db.deviceId.get()) ?? undefined,
 	});
-	auth_debug('starting app login');
+	authDebug('starting app login');
 	let result: TeyvatAuthResult = await auth.login();
-	auth_debug(`app login returned status ${result.status}`);
+	authDebug(`app login returned status ${result.status}`);
 
 	while (result.status !== 'authenticated') {
 		if (result.status === 'captcha_required') {
-			const solution = await solve_geetest(result.captcha);
-			auth_debug(`captcha round ${geetest_round}: sending the solution to HoYoLAB`);
-			result = await auth.complete_captcha(solution);
-			auth_debug(`captcha round ${geetest_round}: HoYoLAB returned status ${result.status}`);
+			const solution = await solveGeetest(result.captcha);
+			authDebug(`captcha round ${geetestRound}: sending the solution to HoYoLAB`);
+			result = await auth.completeCaptcha(solution);
+			authDebug(`captcha round ${geetestRound}: HoYoLAB returned status ${result.status}`);
 		} else {
-			auth_debug('waiting for the email verification code');
-			result = await auth.complete_email(await prompt_for_email_code());
-			auth_debug(`email verification returned status ${result.status}`);
+			authDebug('waiting for the email verification code');
+			result = await auth.completeEmail(await promptForEmailCode());
+			authDebug(`email verification returned status ${result.status}`);
 		}
 	}
 
-	auth_debug('authentication completed; persisting the session');
-	await Promise.all([db.cookies.set(result.cookies), db.device_id.set(result.device_id)]);
-	auth_debug('authenticated session persisted');
+	authDebug('authentication completed; persisting the session');
+	await Promise.all([db.cookies.set(result.cookies), db.deviceId.set(result.deviceId)]);
+	authDebug('authenticated session persisted');
 	return result.cookies;
 }
 
 const cookies = (await db.cookies.get()) ?? (await login());
 const teyvat = new Teyvat({
 	cookies,
-	auto_enable: true,
-	on_cookies_update: async ({ cookies: updated_cookies }) => {
-		await db.cookies.set(updated_cookies);
+	autoEnable: true,
+	onCookiesUpdate: async ({ cookies: updatedCookies }) => {
+		await db.cookies.set(updatedCookies);
 	},
 });
 
@@ -236,7 +248,7 @@ const accounts = await teyvat.accounts();
 const account = accounts[0];
 if (!account) throw new Error('No overseas Genshin accounts are bound to these cookies');
 
-async function _calculator_result() {
+async function _calculatorResult() {
 	const characters = await account.calculator.characters();
 	const character = characters[0];
 	if (!character) return { characters, character: null, calculation: null };
@@ -244,14 +256,14 @@ async function _calculator_result() {
 	const calculation = await account.calculator.calculate({
 		character: {
 			id: character.id,
-			current_level: character.current_level,
-			target_level: character.maximum_level,
+			currentLevel: character.currentLevel,
+			targetLevel: character.maximumLevel,
 		},
 	});
 	return { characters, character: details, calculation };
 }
 
-function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
+function _makeTask<T extends string, R>(name: T, cb: () => Promise<R>) {
 	const file = Bun.file(join(import.meta.dir, 'results', `${name}.json`));
 
 	return async () => {
@@ -262,25 +274,25 @@ function _make_task<T extends string, R>(name: T, cb: () => Promise<R>) {
 }
 
 const tasks = [
-	_make_task('info', () => account.info()),
-	_make_task('achievements', () => account.achievements()),
-	_make_task('inventory', () => account.inventory()),
-	_make_task('current_spiral_abyss', () => account.spiral_abyss()),
-	_make_task('previous_spiral_abyss', () => account.spiral_abyss({ period: 'previous' })),
-	_make_task('characters', () => account.characters()),
-	_make_task('showcase', () => account.showcase()),
-	_make_task('daily_notes', () => account.daily_notes()),
-	_make_task('envisaged_echoes', () => account.envisaged_echoes()),
-	_make_task('imaginarium_theater', () => account.imaginarium_theater()),
-	_make_task('stygian_onslaught', () => account.stygian_onslaught()),
-	_make_task('traveler_diary', () => account.traveler_diary()),
-	_make_task('traveler_diary_primogems', () => account.traveler_diary_log().all()),
-	_make_task('traveler_diary_mora', () => account.traveler_diary_log({ currency: 'mora' }).all()),
-	_make_task('calendar', () => account.calendar()),
-	_make_task('calculator', _calculator_result),
-	_make_task('check_in', async () => ({
-		info: await teyvat.check_in.info(),
-		history: await teyvat.check_in.history().all(),
+	_makeTask('info', () => account.info()),
+	_makeTask('achievements', () => account.achievements()),
+	_makeTask('inventory', () => account.inventory()),
+	_makeTask('current_spiral_abyss', () => account.spiralAbyss()),
+	_makeTask('previous_spiral_abyss', () => account.spiralAbyss({ period: 'previous' })),
+	_makeTask('characters', () => account.characters()),
+	_makeTask('showcase', () => account.showcase()),
+	_makeTask('daily_notes', () => account.dailyNotes()),
+	_makeTask('envisaged_echoes', () => account.envisagedEchoes()),
+	_makeTask('imaginarium_theater', () => account.imaginariumTheater()),
+	_makeTask('stygian_onslaught', () => account.stygianOnslaught()),
+	_makeTask('traveler_diary', () => account.travelerDiary()),
+	_makeTask('traveler_diary_primogems', () => account.travelerDiaryLog().all()),
+	_makeTask('traveler_diary_mora', () => account.travelerDiaryLog({ currency: 'mora' }).all()),
+	_makeTask('calendar', () => account.calendar()),
+	_makeTask('calculator', _calculatorResult),
+	_makeTask('check_in', async () => ({
+		info: await teyvat.checkIn.info(),
+		history: await teyvat.checkIn.history().all(),
 	})),
 ];
 

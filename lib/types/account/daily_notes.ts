@@ -1,20 +1,20 @@
 import { type } from 'arktype';
 
-const schema_teyvat_expedition_status = type.enumerated('ongoing', 'finished', 'unknown');
+const schemaTeyvatExpeditionStatus = type.enumerated('ongoing', 'finished', 'unknown');
 /**
  * @useDeclaredType
  * @category Daily Notes
  */
-export type TeyvatExpeditionStatus = typeof schema_teyvat_expedition_status.infer;
+export type TeyvatExpeditionStatus = typeof schemaTeyvatExpeditionStatus.infer;
 
-const schema_teyvat_task_reward_status = type.enumerated('unfinished', 'finished', 'claimed', 'unknown');
+const schemaTeyvatTaskRewardStatus = type.enumerated('unfinished', 'finished', 'claimed', 'unknown');
 /**
  * @useDeclaredType
  * @category Daily Notes
  */
-export type TeyvatTaskRewardStatus = typeof schema_teyvat_task_reward_status.infer;
+export type TeyvatTaskRewardStatus = typeof schemaTeyvatTaskRewardStatus.infer;
 
-const schema_teyvat_attendance_reward_status = type.enumerated(
+const schemaTeyvatAttendanceRewardStatus = type.enumerated(
 	'available',
 	'claimed',
 	'forbidden',
@@ -25,83 +25,83 @@ const schema_teyvat_attendance_reward_status = type.enumerated(
  * @useDeclaredType
  * @category Daily Notes
  */
-export type TeyvatAttendanceRewardStatus = typeof schema_teyvat_attendance_reward_status.infer;
+export type TeyvatAttendanceRewardStatus = typeof schemaTeyvatAttendanceRewardStatus.infer;
 
-const schema_teyvat_archon_quest_status = type.enumerated('ongoing', 'not_open', 'unknown');
+const schemaTeyvatArchonQuestStatus = type.enumerated('ongoing', 'not_open', 'unknown');
 /**
  * @useDeclaredType
  * @category Daily Notes
  */
-export type TeyvatArchonQuestStatus = typeof schema_teyvat_archon_quest_status.infer;
+export type TeyvatArchonQuestStatus = typeof schemaTeyvatArchonQuestStatus.infer;
 
-const schema_teyvat_account_daily_notes_resource = type({
+const schemaTeyvatAccountDailyNotesResource = type({
 	current: 'number.integer',
 	maximum: 'number.integer',
-	fully_recovered_at: 'Date',
+	fullyRecoveredAt: 'Date',
 });
-const schema_teyvat_account_expedition = type({
-	character_icon: 'string',
-	status: schema_teyvat_expedition_status,
-	completes_at: 'Date',
+const schemaTeyvatAccountExpedition = type({
+	characterIcon: 'string',
+	status: schemaTeyvatExpeditionStatus,
+	completesAt: 'Date',
 });
-const schema_teyvat_account_transformer = type({
+const schemaTeyvatAccountTransformer = type({
 	obtained: 'boolean',
-	available_at: 'Date | null',
+	availableAt: 'Date | null',
 });
-const schema_teyvat_account_task_reward = type({
-	status: schema_teyvat_task_reward_status,
+const schemaTeyvatAccountTaskReward = type({
+	status: schemaTeyvatTaskRewardStatus,
 });
-const schema_teyvat_account_attendance_reward = type({
-	status: schema_teyvat_attendance_reward_status,
+const schemaTeyvatAccountAttendanceReward = type({
+	status: schemaTeyvatAttendanceRewardStatus,
 	progress: 'number.integer',
 });
-const schema_teyvat_account_daily_tasks = type({
+const schemaTeyvatAccountDailyTasks = type({
 	completed: 'number.integer',
 	total: 'number.integer',
-	reward_claimed: 'boolean',
-	task_rewards: schema_teyvat_account_task_reward.array(),
+	rewardClaimed: 'boolean',
+	taskRewards: schemaTeyvatAccountTaskReward.array(),
 	attendance: {
 		visible: 'boolean',
 		stored: 'number',
-		refreshes_at: 'Date | null',
-		rewards: schema_teyvat_account_attendance_reward.array(),
+		refreshesAt: 'Date | null',
+		rewards: schemaTeyvatAccountAttendanceReward.array(),
 	},
 });
-const schema_teyvat_account_archon_quest = type({
+const schemaTeyvatAccountArchonQuest = type({
 	id: 'number.integer',
-	status: schema_teyvat_archon_quest_status,
-	chapter_number: 'string',
+	status: schemaTeyvatArchonQuestStatus,
+	chapterNumber: 'string',
 	title: 'string',
 });
-const schema_teyvat_account_archon_quest_progress = type({
-	quests: schema_teyvat_account_archon_quest.array(),
-	all_mainlines_finished: 'boolean',
+const schemaTeyvatAccountArchonQuestProgress = type({
+	quests: schemaTeyvatAccountArchonQuest.array(),
+	allMainlinesFinished: 'boolean',
 	unlocked: 'boolean',
-	all_interchapters_finished: 'boolean',
+	allInterchaptersFinished: 'boolean',
 });
-export const schema_teyvat_account_daily_notes = type({
-	resin: schema_teyvat_account_daily_notes_resource,
-	realm_currency: schema_teyvat_account_daily_notes_resource,
+export const schemaTeyvatAccountDailyNotes = type({
+	resin: schemaTeyvatAccountDailyNotesResource,
+	realmCurrency: schemaTeyvatAccountDailyNotesResource,
 	commissions: {
 		completed: 'number.integer',
 		total: 'number.integer',
-		reward_claimed: 'boolean',
+		rewardClaimed: 'boolean',
 	},
-	weekly_boss_discounts: {
+	weeklyBossDiscounts: {
 		remaining: 'number.integer',
 		limit: 'number.integer',
 	},
 	expeditions: {
 		maximum: 'number.integer',
-		items: schema_teyvat_account_expedition.array(),
+		items: schemaTeyvatAccountExpedition.array(),
 	},
-	transformer: schema_teyvat_account_transformer,
-	daily_tasks: schema_teyvat_account_daily_tasks,
-	archon_quest_progress: schema_teyvat_account_archon_quest_progress,
+	transformer: schemaTeyvatAccountTransformer,
+	dailyTasks: schemaTeyvatAccountDailyTasks,
+	archonQuestProgress: schemaTeyvatAccountArchonQuestProgress,
 });
 /**
  * @interface
  * @useDeclaredType
  * @category Daily Notes
  */
-export type TeyvatAccountDailyNotes = typeof schema_teyvat_account_daily_notes.infer;
+export type TeyvatAccountDailyNotes = typeof schemaTeyvatAccountDailyNotes.infer;

@@ -1,4 +1,4 @@
-import { constants, publicEncrypt as public_encrypt } from 'node:crypto';
+import { constants, publicEncrypt } from 'node:crypto';
 
 const APP_LOGIN_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4PMS2JVMwBsOIrYWRluY
@@ -10,8 +10,8 @@ KSQP4sM0mZvQ1Sr4UcACVcYgYnCbTZMWhJTWkrNXqI8TMomekgny3y+d6NX/cFa6
 8QIDAQAB
 -----END PUBLIC KEY-----`;
 
-export function _encrypt_app_login_credential(value: string): string {
-	return public_encrypt(
+export function _encryptAppLoginCredential(value: string): string {
+	return publicEncrypt(
 		{
 			key: APP_LOGIN_PUBLIC_KEY,
 			padding: constants.RSA_PKCS1_PADDING,

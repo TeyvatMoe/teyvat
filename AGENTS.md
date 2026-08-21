@@ -21,7 +21,7 @@ Every upstream response must be parsed as JSON, checked for API errors, and vali
 
 One hidden HTTP client and cookie jar belong to each `Teyvat` instance. Account objects reuse that client and are cached by UID.
 
-Automatic HoYoLAB feature enabling is one client-wide, opt-in policy configured through `TeyvatOptions.auto_enable`; account methods must not add their own `auto_enable` options. Enable only the capability required by a recognized privacy or synchronization error, verify the UID is bound first, and deduplicate concurrent setting changes.
+Automatic HoYoLAB feature enabling is one client-wide, opt-in policy configured through `TeyvatOptions.autoEnable`; account methods must not add their own `autoEnable` options. Enable only the capability required by a recognized privacy or synchronization error, verify the UID is bound first, and deduplicate concurrent setting changes.
 
 Each cookie-backed, authkey-backed, or authentication client owns one immutable validated language, defaulting to `en-us`. Endpoint adapters read it from their HTTP client; public account methods do not accept language overrides. Shared localized caches must be keyed by language.
 
@@ -34,12 +34,12 @@ Genshin daily check-in is scoped to the HoYoLAB account, not an individual game 
 ## Naming and organization
 
 - Public classes and inferred types use `Teyvat` prefixes.
-- ArkType schema constants use `schema_teyvat_*` for public models and `schema_hoyolab_*` for private raw responses.
+- ArkType schema constants use `schemaTeyvat*` for public models and `schemaHoyolab*` for private raw responses.
 - Keep composition-only ArkType schemas file-local; export a schema from its module only when another module uses it, and expose only intentional boundary schemas from root barrels.
 - Root-export only complete consumer-facing models, meaningful unions, and reusable public options. Do not root-export composition subtypes merely because an implementation uses them.
 - Add `@useDeclaredType` to exported ArkType-inferred aliases so TypeDoc renders their public structure instead of ArkType internals. Also add `@interface` to object-shaped aliases; never add `@interface` to unions or enumerations.
 - Private functions use a leading underscore and remain outside root exports.
-- Teyvat-owned functions, variables, options, properties, and public model fields use `snake_case`, never `camelCase`. Class and type names remain PascalCase, and upstream wire keys retain their exact spelling.
+- Teyvat-owned functions, variables, options, properties, and public model fields use `camelCase`. Class and type names remain PascalCase. Upstream wire keys, cookie names, and protocol string values retain their exact spelling even when they use `snake_case`.
 - Reusable private helpers belong in `lib/utils/` and use a leading underscore.
 - Public models may group related upstream fields into clearer nested objects.
 - Use the `#/*` path alias for imports that cross out of the current directory. Keep same-directory imports and exports relative with `./`.

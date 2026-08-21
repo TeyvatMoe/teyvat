@@ -1,6 +1,6 @@
-import { _get_http_client } from '#/client/request.ts';
-import { _enable_hoyolab_calculator_sync } from '#/endpoints/hoyolab/genshin/calculator.ts';
-import { _enable_hoyolab_genshin_setting } from '#/endpoints/hoyolab/settings.ts';
+import { _getHttpClient } from '#/client/request.ts';
+import { _enableHoyolabCalculatorSync } from '#/endpoints/hoyolab/genshin/calculator.ts';
+import { _enableHoyolabGenshinSetting } from '#/endpoints/hoyolab/settings.ts';
 import type { TeyvatAccount } from './account/index.ts';
 import { TeyvatError } from './errors.ts';
 import type { Teyvat } from './teyvat.ts';
@@ -12,28 +12,28 @@ interface TeyvatAutoEnableState {
 	pending: Map<TeyvatAutoEnableFeature, Promise<void>>;
 }
 
-const feature_states = new WeakMap<Teyvat, TeyvatAutoEnableState>();
+const featureStates = new WeakMap<Teyvat, TeyvatAutoEnableState>();
 
-async function _enable_feature(account: TeyvatAccount, feature: TeyvatAutoEnableFeature): Promise<void> {
-	const client = _get_http_client(account.inst);
+async function _enableFeature(account: TeyvatAccount, feature: TeyvatAutoEnableFeature): Promise<void> {
+	const client = _getHttpClient(account.inst);
 	if (feature === 'battle_chronicle') {
-		await _enable_hoyolab_genshin_setting(client, 1);
+		await _enableHoyolabGenshinSetting(client, 1);
 		return;
 	}
 	if (feature === 'character_details') {
-		await _enable_account_feature(account, 'battle_chronicle');
-		await _enable_hoyolab_genshin_setting(client, 2);
+		await _enableAccountFeature(account, 'battle_chronicle');
+		await _enableHoyolabGenshinSetting(client, 2);
 		return;
 	}
 	if (feature === 'daily_notes') {
-		await _enable_account_feature(account, 'battle_chronicle');
-		await _enable_hoyolab_genshin_setting(client, 3);
+		await _enableAccountFeature(account, 'battle_chronicle');
+		await _enableHoyolabGenshinSetting(client, 3);
 		return;
 	}
-	await _enable_hoyolab_calculator_sync(client);
+	await _enableHoyolabCalculatorSync(client);
 }
 
-export async function _enable_account_feature(
+export async function _enableAccountFeature(
 	account: TeyvatAccount,
 	feature: TeyvatAutoEnableFeature,
 	cause?: unknown,
@@ -45,16 +45,16 @@ export async function _enable_account_feature(
 		});
 	}
 
-	let state = feature_states.get(account.inst);
+	let state = featureStates.get(account.inst);
 	if (!state) {
 		state = { enabled: new Set(), pending: new Map() };
-		feature_states.set(account.inst, state);
+		featureStates.set(account.inst, state);
 	}
 	if (state.enabled.has(feature)) return;
 	const pending = state.pending.get(feature);
 	if (pending) return await pending;
 
-	const enabling = _enable_feature(account, feature)
+	const enabling = _enableFeature(account, feature)
 		.then(() => {
 			state.enabled.add(feature);
 		})

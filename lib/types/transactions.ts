@@ -1,25 +1,25 @@
 import { type } from 'arktype';
 
-const schema_currency_type = type.enumerated('primogem', 'crystal', 'resin');
+const schemaCurrencyType = type.enumerated('primogem', 'crystal', 'resin');
 /**
  * @useDeclaredType
  * @category Transaction History
  */
-export type TeyvatCurrencyTransactionType = typeof schema_currency_type.infer;
+export type TeyvatCurrencyTransactionType = typeof schemaCurrencyType.infer;
 
-const schema_item_type = type.enumerated('artifact', 'weapon');
+const schemaItemType = type.enumerated('artifact', 'weapon');
 /**
  * @useDeclaredType
  * @category Transaction History
  */
-export type TeyvatItemTransactionType = typeof schema_item_type.infer;
+export type TeyvatItemTransactionType = typeof schemaItemType.infer;
 
-const schema_transaction_type = schema_currency_type.or(schema_item_type);
+const schemaTransactionType = schemaCurrencyType.or(schemaItemType);
 /**
  * @useDeclaredType
  * @category Transaction History
  */
-export type TeyvatTransactionType = typeof schema_transaction_type.infer;
+export type TeyvatTransactionType = typeof schemaTransactionType.infer;
 
 /** @category Transaction History */
 export interface TeyvatTransactionOptions<T extends TeyvatTransactionType = TeyvatTransactionType> {
@@ -27,30 +27,30 @@ export interface TeyvatTransactionOptions<T extends TeyvatTransactionType = Teyv
 	limit?: number;
 }
 
-export const schema_teyvat_currency_transaction = type({
+export const schemaTeyvatCurrencyTransaction = type({
 	id: 'string',
-	type: schema_currency_type,
+	type: schemaCurrencyType,
 	amount: 'number.integer',
 	reason: 'string',
-	transacted_at: 'Date',
+	transactedAt: 'Date',
 });
 
-export const schema_teyvat_item_transaction = type({
+export const schemaTeyvatItemTransaction = type({
 	id: 'string',
-	type: schema_item_type,
+	type: schemaItemType,
 	amount: 'number.integer',
 	reason: 'string',
-	transacted_at: 'Date',
+	transactedAt: 'Date',
 	item: {
 		name: 'string',
 		rarity: 'number.integer',
 	},
 });
 
-const schema_teyvat_transaction = schema_teyvat_currency_transaction.or(schema_teyvat_item_transaction);
+const schemaTeyvatTransaction = schemaTeyvatCurrencyTransaction.or(schemaTeyvatItemTransaction);
 
 /**
  * @useDeclaredType
  * @category Transaction History
  */
-export type TeyvatTransaction = typeof schema_teyvat_transaction.infer;
+export type TeyvatTransaction = typeof schemaTeyvatTransaction.infer;

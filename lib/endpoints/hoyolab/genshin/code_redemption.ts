@@ -3,11 +3,11 @@ import { TeyvatApiError, TeyvatCodeRedemptionError, TeyvatRequestError } from '#
 import type { TeyvatHttpClient } from '#/client/request.ts';
 import { TEYVAT_DOMAINS } from '#/consts/domains.ts';
 import type { TeyvatServer } from '#/types/account/server.ts';
-import { _short_language } from '#/utils/misc.ts';
+import { _shortLanguage } from '#/utils/misc.ts';
 
 const ENDPOINT = 'https://public-operation-hk4e.hoyoverse.com/common/apicdkey/api/webExchangeCdkey';
 
-const schema_hoyolab_code_redemption_response = type({
+const schemaHoyolabCodeRedemptionResponse = type({
 	retcode: '0',
 	message: 'string',
 	data: 'object | null',
@@ -28,7 +28,7 @@ const reasons = new Map<number, TeyvatCodeRedemptionError['reason']>([
 	[-2011, 'level_too_low'],
 ]);
 
-export async function _redeem_hoyolab_genshin_code(
+export async function _redeemHoyolabGenshinCode(
 	client: TeyvatHttpClient,
 	uid: number,
 	server: TeyvatServer,
@@ -36,21 +36,21 @@ export async function _redeem_hoyolab_genshin_code(
 ): Promise<void> {
 	try {
 		await client.request({
-			domain: TEYVAT_DOMAINS.genshin_redemption,
+			domain: TEYVAT_DOMAINS.genshinRedemption,
 			path: 'webExchangeCdkey',
 			params: {
 				uid,
 				region: server,
-				lang: _short_language(client.language),
+				lang: _shortLanguage(client.language),
 				cdkey: code,
-				game_biz: 'hk4e_global',
+				['game_biz']: 'hk4e_global',
 			},
 			headers: {
-				Origin: 'https://genshin.hoyoverse.com',
-				Referer: 'https://genshin.hoyoverse.com/',
+				['Origin']: 'https://genshin.hoyoverse.com',
+				['Referer']: 'https://genshin.hoyoverse.com/',
 			},
-			replay_auth: false,
-			schema: schema_hoyolab_code_redemption_response,
+			replayAuth: false,
+			schema: schemaHoyolabCodeRedemptionResponse,
 		});
 	} catch (cause) {
 		if (cause instanceof TeyvatApiError) {
