@@ -4,6 +4,7 @@
 	"plugin": ["typedoc-github-theme", "./typedoc-plugin.mjs"],
 	"excludeInternal": true,
 	"excludeExternals": true,
+	"cname": "lib.teyvat.moe",
 	"externalSymbolLinkMappings": {
 		"bun-types": {
 			"*": "https://bun.sh/docs"

@@ -2,6 +2,9 @@
 
 A type-safe TypeScript library for Genshin Impact.
 
+<a href="https://www.npmjs.com/package/teyvat"><img src="https://img.shields.io/npm/v/teyvat?maxAge=3600" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/teyvat"><img src="https://img.shields.io/npm/dt/teyvat.svg?maxAge=3600" alt="npm downloads" /></a>
+
 Teyvat turns HoYoLAB's raw APIs into a clean interface for reading and managing Genshin accounts. It handles cookies, authentication, response validation, pagination, and the usual upstream quirks for you.
 
 Teyvat currently supports overseas Genshin accounts only.
