@@ -5,6 +5,6 @@ dist/
 !.envrc
 .direnv/
 
-tests/
-!tests/index.ts
+/tests/
+!/tests/index.ts
 .tmp/

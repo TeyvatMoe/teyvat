@@ -46,6 +46,8 @@ Genshin daily check-in is scoped to the HoYoLAB account, not an individual game 
 
 ## Testing
 
+Deterministic tests live under `lib/tests/`, with public-boundary smoke tests in `lib/index.test.ts`, and run through `bun test`. They must use injected or mocked fetch implementations and must never read `.env`, contact HoYoLAB, or mutate a real account.
+
 The manual live integration entrypoint is `tests/index.ts` and uses locally persisted authentication plus credentials supplied through `.env`. Run `bun dev` only when the feature can be exercised by the available saved session and the user has permitted a live request. Do not add authkey-dependent wish or transaction calls because no test authkey is available. Edit the manual integration file only when the task explicitly requests coverage there.
 
 After every implementation, run `bun check`, `bun check --fix`, a final `bun check`, and `bun run build`. The build includes the library declarations and tracked TypeDoc output. Treat warnings as issues to investigate rather than declaring success from the exit code alone.

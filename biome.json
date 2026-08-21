@@ -56,7 +56,8 @@
 			},
 
 			"complexity": {
-				"noExcessiveCognitiveComplexity": "warn"
+				"noExcessiveCognitiveComplexity": "warn",
+				"useLiteralKeys": "off"
 			},
 
 			"performance": {
