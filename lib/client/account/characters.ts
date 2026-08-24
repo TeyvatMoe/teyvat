@@ -1,10 +1,7 @@
 import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
 import { TeyvatApiError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient } from '#/client/request.ts';
-import {
-	_getHoyolabGenshinCharacterDetails,
-	_getHoyolabGenshinCharacterList,
-} from '#/endpoints/hoyolab/genshin/characters.ts';
+import { _getHoyolabGenshinCharacterDetails } from '#/endpoints/hoyolab/genshin/characters.ts';
 import {
 	schemaTeyvatAccountCharacter,
 	type TeyvatAccountCharacter,
@@ -19,12 +16,9 @@ function _isCharacterDetailsPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
-async function _requestCharacters(account: TeyvatAccount, ids?: number[]) {
+async function _requestCharacters(account: TeyvatAccount, ids: number[]) {
 	const client = _getHttpClient(_getAccountOwner(account));
-	const characterIds =
-		ids ?? (await _getHoyolabGenshinCharacterList(client, account.uid, account.server)).list.map(({ id }) => id);
-	if (characterIds.length === 0) return undefined;
-	return await _getHoyolabGenshinCharacterDetails(client, account.uid, account.server, characterIds);
+	return await _getHoyolabGenshinCharacterDetails(client, account.uid, account.server, ids);
 }
 
 export async function _getAccountCharacters(
@@ -33,15 +27,18 @@ export async function _getAccountCharacters(
 ): Promise<TeyvatAccountCharacter[]> {
 	const ids = options.ids === undefined ? undefined : _characterIds(options.ids);
 	if (ids?.length === 0) return [];
+	const calculatorCharacters = await account.calculator.characters();
+	const ascensions = new Map(calculatorCharacters.map((character) => [character.id, character.ascension]));
+	const characterIds = ids ?? calculatorCharacters.map((character) => character.id);
+	if (characterIds.length === 0) return [];
 
 	const raw = await _requestWithAutoEnable(
 		account,
 		'character_details',
-		() => _requestCharacters(account, ids),
+		() => _requestCharacters(account, characterIds),
 		_isCharacterDetailsPrivate,
 	);
 
-	if (!raw) return [];
 	try {
 		const propertyInfo = (propertyType: number) => {
 			const info = raw.property_map[String(propertyType)];
@@ -67,6 +64,9 @@ export async function _getAccountCharacters(
 
 		return raw.list.map((character) => {
 			const base = character.base;
+			const ascension = ascensions.get(base.id);
+			if (ascension === undefined)
+				throw new TypeError(`Missing calculator ascension data for character ${base.id}`);
 			const rarity = base.rarity > 100 ? base.rarity - 100 : base.rarity;
 			const setCounts = new Map<number, number>();
 			for (const artifact of character.relics)
@@ -82,6 +82,7 @@ export async function _getAccountCharacters(
 				sideIcon: base.side_icon,
 				displayImage: base.image,
 				level: base.level,
+				ascension,
 				friendship: base.fetter,
 				activeConstellations: base.actived_constellation_num,
 				selected: base.is_chosen,

@@ -110,6 +110,7 @@ export const schemaTeyvatAccountCharacter = type({
 	sideIcon: 'string',
 	displayImage: 'string',
 	level: 'number.integer',
+	ascension: 'number.integer >= 0',
 	friendship: 'number.integer',
 	activeConstellations: 'number.integer',
 	selected: 'boolean',

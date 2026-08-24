@@ -10,6 +10,7 @@ const schemaCalculatorCharacter = type({
 	weaponType: type.enumerated('sword', 'catalyst', 'claymore', 'bow', 'polearm'),
 	currentLevel: 'number.integer >= 0',
 	maximumLevel: 'number.integer >= 0',
+	ascension: 'number.integer >= 0',
 });
 
 export const schemaTeyvatCalculatorCharacters = schemaCalculatorCharacter.array();

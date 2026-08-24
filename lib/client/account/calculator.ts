@@ -114,6 +114,7 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 					weaponType: _weaponType(character.weapon_cat_id),
 					currentLevel: character.level_current,
 					maximumLevel: character.max_level,
+					ascension: character.promote_level,
 				})),
 			);
 		} catch (cause) {

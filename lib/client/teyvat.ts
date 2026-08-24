@@ -12,6 +12,7 @@ import type {
 } from '#/types/index.ts';
 import { _hoyolabIdFromCookies, _parseCookies } from '#/utils/cookies.ts';
 import { _recognizeGenshinServer } from '#/utils/uid.ts';
+import pkgInfo from '../../package.json';
 import { _createTeyvatAccount, type TeyvatAccount } from './account/index.ts';
 import { _getAccounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';
@@ -32,6 +33,9 @@ export class Teyvat {
 	readonly language: TeyvatLanguage;
 	readonly autoEnable: boolean;
 	readonly checkIn: TeyvatCheckInClient;
+
+	/** The current version of Teyvat. */
+	static readonly version = pkgInfo.version;
 
 	static auth(options: TeyvatAuthOptions): TeyvatAuthSession {
 		return new _TeyvatAuthSession(options);

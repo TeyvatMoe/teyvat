@@ -13,6 +13,7 @@ const schemaCalculatorCharacter = type({
 	['weapon_cat_id']: 'number.integer',
 	['level_current']: 'number.integer',
 	['max_level']: 'number.integer',
+	['promote_level']: 'number.integer >= 0',
 });
 
 const schemaCalculatorWeapon = type({
