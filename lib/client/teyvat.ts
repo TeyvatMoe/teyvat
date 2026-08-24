@@ -7,6 +7,8 @@ import type {
 	TeyvatCookies,
 	TeyvatLanguage,
 	TeyvatOptions,
+	TeyvatProfile,
+	TeyvatProfileOptions,
 	TeyvatWishClient,
 	TeyvatWishesOptions,
 } from '#/types/index.ts';
@@ -18,17 +20,22 @@ import { _getAccounts } from './accounts.ts';
 import { _TeyvatAuthSession } from './auth.ts';
 import { _TeyvatCheckInClient } from './check_in.ts';
 import { TeyvatError } from './errors.ts';
+import { _getProfile } from './profile.ts';
 import { _getHttpClient, _initializeHttpClient } from './request.ts';
 import { _TeyvatWishClient } from './wishes.ts';
 
 /** @category Core */
 export class Teyvat {
+	static readonly #profileCacheTtl = 3_600_000;
 	#accounts = new Map<number, TeyvatAccount>();
 	#accountsCache?: TeyvatAccount[];
 	#accountsCacheUpdatedAt = 0;
 	#accountsRefresh?: Promise<TeyvatAccount[]>;
 	readonly #accountsCacheTtl: number;
 	#cookiesCompletion?: Promise<boolean>;
+	#profile?: TeyvatProfile;
+	#profileCacheUpdatedAt = 0;
+	#profileRefresh?: Promise<TeyvatProfile>;
 	readonly hoyolabId: string;
 	readonly language: TeyvatLanguage;
 	readonly autoEnable: boolean;
@@ -76,6 +83,17 @@ export class Teyvat {
 		return _getHttpClient(this).cookies.toJson();
 	}
 
+	/** Returns the authenticated user's HoYoLAB profile. */
+	async info(options: TeyvatProfileOptions = {}): Promise<TeyvatProfile> {
+		if (!this.#profile || options.update) return structuredClone(await this.#refreshProfile());
+
+		if (Date.now() - this.#profileCacheUpdatedAt >= Teyvat.#profileCacheTtl) {
+			void this.#refreshProfile().catch(() => undefined);
+		}
+
+		return structuredClone(this.#profile);
+	}
+
 	async accounts(options: TeyvatAccountsOptions = {}): Promise<TeyvatAccount[]> {
 		if (!this.#accountsCache || options.update) return await this.#refreshAccounts();
 
@@ -106,6 +124,22 @@ export class Teyvat {
 				if (this.#accountsRefresh === refresh) this.#accountsRefresh = undefined;
 			});
 		this.#accountsRefresh = refresh;
+		return refresh;
+	}
+
+	#refreshProfile(): Promise<TeyvatProfile> {
+		if (this.#profileRefresh) return this.#profileRefresh;
+
+		const refresh = _getProfile(this)
+			.then((profile) => {
+				this.#profile = profile;
+				this.#profileCacheUpdatedAt = Date.now();
+				return profile;
+			})
+			.finally(() => {
+				if (this.#profileRefresh === refresh) this.#profileRefresh = undefined;
+			});
+		this.#profileRefresh = refresh;
 		return refresh;
 	}
 

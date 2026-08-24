@@ -1,8 +1,10 @@
+import { parseCookie, parseSetCookie, stringifyCookie } from 'cookie';
 import type { TeyvatCookies } from '#/types/cookies.ts';
 
 export type CookieInput = TeyvatCookies | string;
 
 const COOKIE_NAME = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+const IDENTITY = (value: string) => value;
 
 function _hasInvalidCookieValueCharacter(value: string): boolean {
 	for (const character of value) {
@@ -15,6 +17,11 @@ function _hasInvalidCookieValueCharacter(value: string): boolean {
 function _assertCookiePair(name: string, value: string): void {
 	if (!COOKIE_NAME.test(name)) throw new TypeError(`Invalid cookie name: ${name || '<empty>'}`);
 	if (_hasInvalidCookieValueCharacter(value)) throw new TypeError(`Invalid value for cookie ${name}`);
+	try {
+		stringifyCookie({ [name]: value }, { encode: IDENTITY });
+	} catch {
+		throw new TypeError(`Invalid value for cookie ${name}`);
+	}
 }
 
 export function _parseCookieHeader(header: string): TeyvatCookies {
@@ -27,8 +34,10 @@ export function _parseCookieHeader(header: string): TeyvatCookies {
 		const separator = cookie.indexOf('=');
 		if (separator === -1) throw new TypeError(`Invalid cookie pair: ${cookie}`);
 
-		const name = cookie.slice(0, separator).trim();
-		const value = cookie.slice(separator + 1).trim();
+		const parsed = parseCookie(cookie, { decode: IDENTITY });
+		const entry = Object.entries(parsed).find((item): item is [string, string] => item[1] !== undefined);
+		if (!entry) throw new TypeError(`Invalid cookie pair: ${cookie}`);
+		const [name, value] = entry;
 		_assertCookiePair(name, value);
 		cookies[name] = value;
 	}
@@ -48,33 +57,19 @@ function _getSetCookieHeaders(headers: Headers): string[] {
 	return combined ? _splitSetCookieHeader(combined) : [];
 }
 
-interface ParsedSetCookie {
-	name: string;
-	value: string;
-	shouldDelete: boolean;
-}
-
-function _deletesCookie(attributes: string[], now: number): boolean {
-	return attributes.some((attribute) => {
-		const separator = attribute.indexOf('=');
-		const name = (separator === -1 ? attribute : attribute.slice(0, separator)).trim().toLowerCase();
-		const value = separator === -1 ? '' : attribute.slice(separator + 1).trim();
-		if (name === 'max-age') return Number(value) <= 0;
-		if (name !== 'expires') return false;
-		const expiresAt = Date.parse(value);
-		return !Number.isNaN(expiresAt) && expiresAt <= now;
-	});
-}
-
-function _parseSetCookie(header: string, now: number): ParsedSetCookie | undefined {
-	const [pair, ...attributes] = header.split(';').map((segment) => segment.trim());
-	if (!pair) return undefined;
-	const separator = pair.indexOf('=');
-	if (separator <= 0) return undefined;
-	const name = pair.slice(0, separator).trim();
-	const value = pair.slice(separator + 1).trim();
-	if (!COOKIE_NAME.test(name) || _hasInvalidCookieValueCharacter(value)) return undefined;
-	return { name, value, shouldDelete: _deletesCookie(attributes, now) };
+function _parseResponseCookie(header: string, now: number) {
+	try {
+		const parsed = parseSetCookie(header, { decode: IDENTITY });
+		if (parsed.value === undefined) return;
+		_assertCookiePair(parsed.name, parsed.value);
+		const shouldDelete =
+			parsed.maxAge !== undefined
+				? parsed.maxAge <= 0
+				: parsed.expires !== undefined && parsed.expires.getTime() <= now;
+		return { name: parsed.name, value: parsed.value, shouldDelete };
+	} catch {
+		return;
+	}
 }
 
 export class CookieJar {
@@ -128,13 +123,13 @@ export class CookieJar {
 			_assertCookiePair(name, value);
 			cookies.set(name, value);
 		}
-		return [...cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+		return stringifyCookie(Object.fromEntries(cookies), { encode: IDENTITY });
 	}
 
 	updateFromResponse(headers: Headers, now = Date.now()): void {
 		let changed = false;
 		for (const header of _getSetCookieHeaders(headers)) {
-			const parsed = _parseSetCookie(header, now);
+			const parsed = _parseResponseCookie(header, now);
 			if (!parsed) continue;
 			if (parsed.shouldDelete) changed = this.#cookies.delete(parsed.name) || changed;
 			else if (this.#cookies.get(parsed.name) !== parsed.value) {

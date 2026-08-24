@@ -65,6 +65,8 @@ export type { TeyvatCookies } from './cookies.ts';
 /** @category Core */
 export type { TeyvatLanguage } from './language.ts';
 export type { TeyvatPaginator } from './paginator.ts';
+/** @category HoYoLAB Profile */
+export type { TeyvatProfile, TeyvatProfileGender, TeyvatProfileOptions } from './profile.ts';
 /** @category Transaction History */
 export type {
 	TeyvatTransaction,

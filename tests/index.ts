@@ -274,6 +274,7 @@ function _makeTask<T extends string, R>(name: T, cb: () => Promise<R>) {
 }
 
 const tasks = [
+	_makeTask('profile', () => teyvat.info()),
 	_makeTask('info', () => account.info()),
 	_makeTask('achievements', () => account.achievements()),
 	_makeTask('inventory', () => account.inventory()),
