@@ -9,6 +9,7 @@ const schemaTeyvatAccountOculi = type({
 	hydro: 'number.integer',
 	pyro: 'number.integer',
 	lunar: 'number.integer',
+	cryo: 'number.integer',
 });
 
 const schemaTeyvatAccountChests = type({

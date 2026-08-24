@@ -106,6 +106,7 @@ export async function _getAccountInfo(account: TeyvatAccount): Promise<TeyvatAcc
 					hydro: raw.stats.hydroculus_number,
 					pyro: raw.stats.pyroculus_number,
 					lunar: raw.stats.moonoculus_number,
+					cryo: raw.stats.iceculus_number,
 				},
 				chests: {
 					common: raw.stats.common_chest_number,

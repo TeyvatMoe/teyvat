@@ -80,6 +80,7 @@ const schemaHoyolabGenshinInfoResponse = type({
 			['hydroculus_number']: 'number.integer',
 			['pyroculus_number']: 'number.integer',
 			['moonoculus_number']: 'number.integer',
+			['iceculus_number']: 'number.integer >= 0',
 			['common_chest_number']: 'number.integer',
 			['exquisite_chest_number']: 'number.integer',
 			['precious_chest_number']: 'number.integer',
