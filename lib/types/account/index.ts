@@ -4,6 +4,7 @@ export type { TeyvatAccountAchievements } from './achievements.ts';
 export type {
 	TeyvatCalculatorCharacter,
 	TeyvatCalculatorCharacterDetails,
+	TeyvatCalculatorCharactersOptions,
 	TeyvatCalculatorClient,
 	TeyvatCalculatorOptions,
 	TeyvatCalculatorResult,

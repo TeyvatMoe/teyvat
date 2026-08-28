@@ -9,6 +9,7 @@ describe('public package boundary', () => {
 			'TeyvatApiError',
 			'TeyvatCodeRedemptionError',
 			'TeyvatError',
+			'TeyvatRateLimitError',
 			'TeyvatRequestError',
 			'TeyvatResponseValidationError',
 		]);

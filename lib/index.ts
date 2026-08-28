@@ -5,6 +5,7 @@ export {
 	TeyvatApiError,
 	TeyvatCodeRedemptionError,
 	TeyvatError,
+	TeyvatRateLimitError,
 	TeyvatRequestError,
 	TeyvatResponseValidationError,
 } from './client/index.ts';
@@ -31,6 +32,7 @@ export type {
 	TeyvatAuthSession,
 	TeyvatCalculatorCharacter,
 	TeyvatCalculatorCharacterDetails,
+	TeyvatCalculatorCharactersOptions,
 	TeyvatCalculatorClient,
 	TeyvatCalculatorOptions,
 	TeyvatCalculatorResult,

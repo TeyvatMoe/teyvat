@@ -1,5 +1,5 @@
 import { _requestWithAutoEnable } from '#/client/auto_enable.ts';
-import { TeyvatApiError, TeyvatError, TeyvatResponseValidationError } from '#/client/errors.ts';
+import { TeyvatApiError, TeyvatError, TeyvatRateLimitError, TeyvatResponseValidationError } from '#/client/errors.ts';
 import { _getHttpClient, type TeyvatHttpClient } from '#/client/request.ts';
 import {
 	_calculateHoyolabProgression,
@@ -12,6 +12,7 @@ import {
 	schemaTeyvatCalculatorResult,
 	type TeyvatCalculatorCharacter,
 	type TeyvatCalculatorCharacterDetails,
+	type TeyvatCalculatorCharactersOptions,
 	type TeyvatCalculatorClient,
 	type TeyvatCalculatorOptions,
 	type TeyvatCalculatorResult,
@@ -22,6 +23,8 @@ import { _getAccountOwner, type TeyvatAccount } from './index.ts';
 const LIST_ENDPOINT = '/event/e20200928calculate/v1/sync/avatar/list';
 const DETAIL_ENDPOINT = '/event/e20200928calculate/v1/sync/avatar/detail';
 const CALCULATE_ENDPOINT = '/event/e20200928calculate/v3/batch_compute';
+const CHARACTERS_CACHE_TTL = 15 * 60 * 1000;
+const RATE_LIMIT_COOLDOWN = 60 * 1000;
 
 type LevelInput = { id: number; currentLevel: number; targetLevel: number };
 
@@ -93,13 +96,30 @@ function _uniqueInputs(values: LevelInput[] | undefined, name: string): LevelInp
 export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 	readonly #account: TeyvatAccount;
 	readonly #client: TeyvatHttpClient;
+	#characters?: TeyvatCalculatorCharacter[];
+	#charactersUpdatedAt = 0;
+	#charactersRefresh?: Promise<TeyvatCalculatorCharacter[]>;
+	#rateLimitRetryAt = 0;
+	#rateLimitMessage = '';
+	#rateLimitMethod = 'POST';
+	#rateLimitEndpoint = LIST_ENDPOINT;
 
 	constructor(account: TeyvatAccount) {
 		this.#account = account;
 		this.#client = _getHttpClient(_getAccountOwner(account));
 	}
 
-	async characters(): Promise<TeyvatCalculatorCharacter[]> {
+	async characters(options: TeyvatCalculatorCharactersOptions = {}): Promise<TeyvatCalculatorCharacter[]> {
+		if (!this.#characters || options.update) return _copyCharacters(await this.#refreshCharacters());
+
+		if (Date.now() - this.#charactersUpdatedAt >= CHARACTERS_CACHE_TTL && !this.#isRateLimited()) {
+			void this.#refreshCharacters().catch(() => undefined);
+		}
+
+		return _copyCharacters(this.#characters);
+	}
+
+	async #requestCharacters(): Promise<TeyvatCalculatorCharacter[]> {
 		const raw = await this.#withSync(
 			async () => await _getHoyolabCalculatorCharacters(this.#client, this.#account.uid, this.#account.server),
 		);
@@ -120,6 +140,49 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 		} catch (cause) {
 			throw _mappingError('POST', LIST_ENDPOINT, cause);
 		}
+	}
+
+	#refreshCharacters(): Promise<TeyvatCalculatorCharacter[]> {
+		if (this.#charactersRefresh) return this.#charactersRefresh;
+		if (this.#isRateLimited()) return Promise.reject(this.#rateLimitError());
+
+		const refresh = this.#requestCharacters()
+			.then((characters) => {
+				this.#characters = _copyCharacters(characters);
+				this.#charactersUpdatedAt = Date.now();
+				this.#rateLimitRetryAt = 0;
+				this.#rateLimitMessage = '';
+				return characters;
+			})
+			.catch((cause: unknown) => {
+				if (cause instanceof TeyvatApiError && cause.retcode === -500004) {
+					this.#rateLimitRetryAt = Date.now() + RATE_LIMIT_COOLDOWN;
+					this.#rateLimitMessage = cause.upstreamMessage;
+					this.#rateLimitMethod = cause.method;
+					this.#rateLimitEndpoint = cause.endpoint;
+					throw this.#rateLimitError();
+				}
+				throw cause;
+			})
+			.finally(() => {
+				if (this.#charactersRefresh === refresh) this.#charactersRefresh = undefined;
+			});
+		this.#charactersRefresh = refresh;
+		return refresh;
+	}
+
+	#isRateLimited(): boolean {
+		return Date.now() < this.#rateLimitRetryAt;
+	}
+
+	#rateLimitError(): TeyvatRateLimitError {
+		return new TeyvatRateLimitError(
+			-500004,
+			this.#rateLimitMessage,
+			this.#rateLimitMethod,
+			this.#rateLimitEndpoint,
+			new Date(this.#rateLimitRetryAt),
+		);
 	}
 
 	async character(id: number): Promise<TeyvatCalculatorCharacterDetails> {
@@ -244,4 +307,8 @@ export class _TeyvatCalculatorClient implements TeyvatCalculatorClient {
 			(cause): cause is TeyvatApiError => cause instanceof TeyvatApiError && cause.retcode === -502002,
 		);
 	}
+}
+
+function _copyCharacters(characters: TeyvatCalculatorCharacter[]): TeyvatCalculatorCharacter[] {
+	return structuredClone(characters);
 }

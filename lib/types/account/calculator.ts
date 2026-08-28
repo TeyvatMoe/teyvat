@@ -94,6 +94,11 @@ export interface TeyvatCalculatorOptions {
 	artifacts?: Array<{ id: number; currentLevel: number; targetLevel: number }>;
 }
 
+/** @category Enhancement Calculator */
+export interface TeyvatCalculatorCharactersOptions {
+	update?: boolean;
+}
+
 /**
  * @interface
  * @useDeclaredType
@@ -117,7 +122,7 @@ export type TeyvatCalculatorResult = typeof schemaTeyvatCalculatorResult.infer;
 
 /** @category Enhancement Calculator */
 export interface TeyvatCalculatorClient {
-	characters(): Promise<TeyvatCalculatorCharacter[]>;
+	characters(options?: TeyvatCalculatorCharactersOptions): Promise<TeyvatCalculatorCharacter[]>;
 	character(id: number): Promise<TeyvatCalculatorCharacterDetails>;
 	calculate(options: TeyvatCalculatorOptions): Promise<TeyvatCalculatorResult>;
 }

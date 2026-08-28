@@ -19,6 +19,7 @@ export type {
 	TeyvatAttendanceRewardStatus,
 	TeyvatCalculatorCharacter,
 	TeyvatCalculatorCharacterDetails,
+	TeyvatCalculatorCharactersOptions,
 	TeyvatCalculatorClient,
 	TeyvatCalculatorOptions,
 	TeyvatCalculatorResult,

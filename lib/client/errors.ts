@@ -47,6 +47,17 @@ export class TeyvatApiError extends TeyvatError {
 	}
 }
 
+/** @category Errors */
+export class TeyvatRateLimitError extends TeyvatApiError {
+	/** The earliest time Teyvat will locally attempt the request again. */
+	readonly retryAt: Date;
+
+	constructor(retcode: number, upstreamMessage: string, method: string, endpoint: string, retryAt: Date) {
+		super(retcode, upstreamMessage, method, endpoint);
+		this.retryAt = new Date(retryAt);
+	}
+}
+
 /** @category Code Redemption */
 export class TeyvatCodeRedemptionError extends TeyvatApiError {
 	readonly reason:

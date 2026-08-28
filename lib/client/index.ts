@@ -4,6 +4,7 @@ export {
 	TeyvatApiError,
 	TeyvatCodeRedemptionError,
 	TeyvatError,
+	TeyvatRateLimitError,
 	TeyvatRequestError,
 	TeyvatResponseValidationError,
 } from './errors.ts';

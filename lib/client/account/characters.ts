@@ -27,7 +27,7 @@ export async function _getAccountCharacters(
 ): Promise<TeyvatAccountCharacter[]> {
 	const ids = options.ids === undefined ? undefined : _characterIds(options.ids);
 	if (ids?.length === 0) return [];
-	const calculatorCharacters = await account.calculator.characters();
+	const calculatorCharacters = await account.calculator.characters({ update: options.update });
 	const ascensions = new Map(calculatorCharacters.map((character) => [character.id, character.ascension]));
 	const characterIds = ids ?? calculatorCharacters.map((character) => character.id);
 	if (characterIds.length === 0) return [];
