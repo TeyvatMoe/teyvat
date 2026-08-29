@@ -8,6 +8,7 @@ const schemaOffering = type({
 	name: 'string',
 	level: 'number.integer',
 	'icon?': 'string',
+	'open_state?': 'string',
 });
 
 const schemaExploration = type({
@@ -22,6 +23,7 @@ const schemaExploration = type({
 	['background_image']: 'string',
 	cover: 'string',
 	['map_url']: 'string',
+	['seven_statue_level']: 'number.integer >= 0',
 	'offerings?': schemaOffering.array(),
 	'boss_list?': type({ name: 'string', ['kill_num']: 'number.integer' }).array(),
 	'area_exploration_list?': type({ name: 'string', ['exploration_percentage']: 'number.integer' }).array(),

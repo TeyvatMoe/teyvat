@@ -60,6 +60,7 @@ const schemaTeyvatExplorationOffering = type({
 	name: 'string',
 	level: 'number.integer',
 	icon: 'string',
+	status: type.enumerated('locked', 'unlocked', 'unknown'),
 });
 
 const schemaTeyvatExplorationArea = type({
@@ -85,6 +86,7 @@ const schemaTeyvatAccountExploration = type({
 	parentId: 'number.integer',
 	name: 'string',
 	explored: 'number >= 0',
+	sevenStatueLevel: 'number.integer >= 0',
 	visuals: schemaTeyvatExplorationVisuals,
 	offerings: schemaTeyvatExplorationOffering.array(),
 	areas: schemaTeyvatExplorationArea.array(),

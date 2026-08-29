@@ -18,6 +18,12 @@ function _explored(rawPercentage: number): number {
 	return rawPercentage / 10;
 }
 
+function _offeringStatus(value: string | undefined): 'locked' | 'unlocked' | 'unknown' {
+	if (value === 'OfferingOpenStateLocked') return 'locked';
+	if (value === 'OfferingOpenStateUnlocked') return 'unlocked';
+	return 'unknown';
+}
+
 async function _requestInfo(account: TeyvatAccount) {
 	return await _getHoyolabGenshinInfo(_getHttpClient(_getAccountOwner(account)), account.uid, account.server);
 }
@@ -38,15 +44,17 @@ export async function _getAccountInfo(account: TeyvatAccount): Promise<TeyvatAcc
 				name: offering.name,
 				level: offering.level,
 				icon: offering.icon ?? '',
+				status: _offeringStatus(offering.open_state),
 			}));
 			if (exploration.type === 'Reputation' && !offerings.some((offering) => offering.name === 'Reputation'))
-				offerings.unshift({ name: 'Reputation', level: exploration.level, icon: '' });
+				offerings.unshift({ name: 'Reputation', level: exploration.level, icon: '', status: 'unknown' });
 
 			return {
 				id: exploration.id,
 				parentId: exploration.parent_id,
 				name: exploration.name,
 				explored: _explored(exploration.exploration_percentage),
+				sevenStatueLevel: exploration.seven_statue_level,
 				visuals: {
 					icon: exploration.icon,
 					innerIcon: exploration.inner_icon,

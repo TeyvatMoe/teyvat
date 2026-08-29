@@ -8,7 +8,7 @@ afterEach(() => {
 	globalThis.fetch = originalFetch;
 });
 
-function _infoResponse(): Response {
+function _infoResponse(worldExplorations: unknown[] = []): Response {
 	return Response.json({
 		retcode: 0,
 		message: 'OK',
@@ -53,7 +53,7 @@ function _infoResponse(): Response {
 					['has_data']: false,
 				},
 			},
-			['world_explorations']: [],
+			['world_explorations']: worldExplorations,
 			homes: null,
 		},
 	});
@@ -74,5 +74,62 @@ describe('account information', () => {
 			lunar: 10,
 			cryo: 11,
 		});
+	});
+
+	test('maps statue levels and normalizes offering availability', async () => {
+		const exploration = (
+			id: number,
+			type: string,
+			offerings: Record<string, unknown>[],
+			sevenStatueLevel: number,
+		) => ({
+			id,
+			['parent_id']: 0,
+			name: `Region ${id}`,
+			['exploration_percentage']: 123,
+			type,
+			level: 4,
+			icon: 'icon.png',
+			['inner_icon']: 'inner.png',
+			['background_image']: 'background.png',
+			cover: 'cover.png',
+			['map_url']: 'https://example.com/map',
+			['strategy_url']: 'https://example.com/strategy',
+			['seven_statue_level']: sevenStatueLevel,
+			offerings,
+			['is_hot']: true,
+			['index_active']: true,
+			['detail_active']: true,
+			['world_type']: 2,
+		});
+		const offering = (name: string, openState?: string) => ({
+			name,
+			level: 1,
+			icon: 'offering.png',
+			...(openState ? { ['open_state']: openState } : {}),
+		});
+		globalThis.fetch = (async () =>
+			_infoResponse([
+				exploration(1, 'Offering', [offering('Locked', 'OfferingOpenStateLocked')], 8),
+				exploration(2, 'Offering', [offering('Unlocked', 'OfferingOpenStateUnlocked')], 7),
+				exploration(3, 'Offering', [offering('Unknown', 'OfferingOpenStateUnknow')], 6),
+				exploration(4, 'Offering', [offering('Future', 'OfferingOpenStateFuture')], 5),
+				exploration(5, 'Reputation', [], 4),
+			])) as unknown as typeof fetch;
+		const account = new Teyvat({ cookies: { ['account_id_v2']: '123' } }).account(UID);
+		const explorations = (await account.info()).explorations;
+
+		expect(explorations.map((value) => value.sevenStatueLevel)).toEqual([8, 7, 6, 5, 4]);
+		expect(explorations.map((value) => value.explored)).toEqual([12.3, 12.3, 12.3, 12.3, 12.3]);
+		expect(explorations.map((value) => value.offerings[0]?.status)).toEqual([
+			'locked',
+			'unlocked',
+			'unknown',
+			'unknown',
+			'unknown',
+		]);
+		expect(explorations[4]?.offerings[0]?.name).toBe('Reputation');
+		expect(explorations[0]).not.toHaveProperty('strategyUrl');
+		expect(explorations[0]).not.toHaveProperty('worldType');
 	});
 });
