@@ -119,6 +119,72 @@ describe('account behavior', () => {
 		expect(entries[0]).not.toHaveProperty('uid');
 	});
 
+	test('accepts suffixed Geetest v3 challenges for daily check-in', async () => {
+		let infoCalls = 0;
+		const submittedChallenges: string[] = [];
+		const infoResponse = () => {
+			const signedIn = infoCalls++ === 2;
+			return Response.json({
+				retcode: 0,
+				message: 'OK',
+				data: { ['is_sign']: signedIn, ['total_sign_day']: signedIn ? 1 : 0 },
+			});
+		};
+		const signResponse = (init?: RequestInit) => {
+			const headers = new Headers(init?.headers);
+			const submittedChallenge = headers.get('x-rpc-challenge');
+			if (submittedChallenge) {
+				submittedChallenges.push(submittedChallenge);
+				return Response.json({ retcode: 0, message: 'OK', data: null });
+			}
+			return Response.json({
+				retcode: 0,
+				message: 'OK',
+				data: { ['risk_code']: 1, gt: 'gt', challenge: 'challenge', success: 1 },
+			});
+		};
+		_setFetch(async (input, init) => {
+			const path = new URL(String(input)).pathname;
+			if (path.endsWith('/info')) return infoResponse();
+			if (path.endsWith('/sign')) return signResponse(init);
+			if (path.endsWith('/home'))
+				return Response.json({
+					retcode: 0,
+					message: 'OK',
+					data: { awards: [{ name: 'Primogem', cnt: 20, icon: 'icon' }] },
+				});
+			throw new Error(`Unexpected request to ${path}`);
+		});
+		const checkIn = _teyvat().checkIn;
+		expect(await checkIn.claim()).toMatchObject({
+			status: 'captcha_required',
+			captcha: { challenge: 'challenge' },
+		});
+		for (const geetestChallenge of ['different', 'challenge4', 'challenge478']) {
+			await expect(
+				checkIn.claim({
+					captchaSolution: {
+						version: 'v3',
+						geetestChallenge,
+						geetestValidate: 'validate',
+						geetestSeccode: 'seccode',
+					},
+				}),
+			).rejects.toThrow('does not match');
+		}
+		expect(
+			await checkIn.claim({
+				captchaSolution: {
+					version: 'v3',
+					geetestChallenge: 'challenge47',
+					geetestValidate: 'validate',
+					geetestSeccode: 'seccode',
+				},
+			}),
+		).toMatchObject({ status: 'claimed', claimedDays: 1 });
+		expect(submittedChallenges).toEqual(['challenge47']);
+	});
+
 	test('keeps redemption codes out of API errors', async () => {
 		const code = 'SECRET-CODE';
 		_setFetch(async () => Response.json({ retcode: -9999, message: `invalid ${code}`, data: null }));

@@ -125,7 +125,7 @@ Treat cookies, authkeys, passwords, and captcha solutions like any other account
 
 ## Acknowledgements
 
-Thanks to the developers of [genshin.py](https://github.com/thesadru/genshin.py). Their work documenting HoYoLAB's APIs was a big help during Teyvat's early development.
+Thanks to the developers of [genshin.py](https://github.com/seriaati/genshin.py). Their work documenting HoYoLAB's APIs was a big help during Teyvat's early development.
 
 ## License
 

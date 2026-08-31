@@ -156,9 +156,19 @@ describe('authentication session', () => {
 				geetestSeccode: 'seccode',
 			}),
 		).rejects.toThrow('does not match');
+		for (const geetestChallenge of ['challeng', 'challenge4', 'challenge478']) {
+			await expect(
+				auth.completeCaptcha({
+					version: 'v3',
+					geetestChallenge,
+					geetestValidate: 'validate',
+					geetestSeccode: 'seccode',
+				}),
+			).rejects.toThrow('does not match');
+		}
 		const result = await auth.completeCaptcha({
 			version: 'v3',
-			geetestChallenge: 'challenge',
+			geetestChallenge: 'challenge47',
 			geetestValidate: 'validate',
 			geetestSeccode: 'seccode',
 		});
@@ -169,7 +179,7 @@ describe('authentication session', () => {
 			cookies: { stoken: 'stoken', ['ltuid_v2']: '123', ['ltmid_v2']: '456' },
 		});
 		expect(_aigisData(requestHeaders[1])).toEqual({
-			['geetest_challenge']: 'challenge',
+			['geetest_challenge']: 'challenge47',
 			['geetest_validate']: 'validate',
 			['geetest_seccode']: 'seccode',
 		});

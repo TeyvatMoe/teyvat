@@ -19,6 +19,7 @@ import {
 	type TeyvatCheckInResult,
 } from '#/types/check_in.ts';
 import type { TeyvatPaginator } from '#/types/paginator.ts';
+import { _matchesGeetestV3Challenge } from '#/utils/captcha.ts';
 import { _currentUtcOffsetDay, _hoyolabDatetime } from '#/utils/misc.ts';
 import { TeyvatError, TeyvatResponseValidationError } from './errors.ts';
 import { _TeyvatPaginator } from './paginator.ts';
@@ -145,7 +146,7 @@ export class _TeyvatCheckInClient implements TeyvatCheckInClient {
 		} catch {
 			throw new TeyvatError('Invalid daily check-in captcha solution');
 		}
-		if (solution.geetestChallenge !== this.#pendingCaptcha.challenge)
+		if (!_matchesGeetestV3Challenge(solution.geetestChallenge, this.#pendingCaptcha.challenge))
 			throw new TeyvatError('Captcha solution does not match the pending daily check-in challenge');
 		return solution;
 	}

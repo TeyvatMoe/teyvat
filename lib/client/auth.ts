@@ -18,6 +18,7 @@ import {
 	type TeyvatAuthSession,
 } from '#/types/auth.ts';
 import type { TeyvatLanguage } from '#/types/language.ts';
+import { _matchesGeetestV3Challenge } from '#/utils/captcha.ts';
 import { _hoyolabIdFromCookies } from '#/utils/cookies.ts';
 import { TeyvatError } from './errors.ts';
 import { TeyvatHttpClient } from './request.ts';
@@ -105,7 +106,11 @@ export class _TeyvatAuthSession implements TeyvatAuthSession {
 		}
 		if (validated.version !== captcha.version)
 			throw new TeyvatError(`Expected a ${captcha.version} captcha solution`);
-		if (validated.version === 'v3' && validated.geetestChallenge !== captcha.challenge)
+		if (
+			validated.version === 'v3' &&
+			(captcha.challenge === undefined ||
+				!_matchesGeetestV3Challenge(validated.geetestChallenge, captcha.challenge))
+		)
 			throw new TeyvatError('Captcha solution does not match the pending challenge');
 		if (validated.version === 'v4' && validated.captchaId !== captcha.gt)
 			throw new TeyvatError('Captcha solution does not match the pending challenge');
