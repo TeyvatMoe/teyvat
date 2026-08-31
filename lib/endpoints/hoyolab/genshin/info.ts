@@ -38,6 +38,16 @@ const schemaExploration = type({
 	}).or('null'),
 });
 
+const schemaExplorationDisplay = type({
+	['exploration_id']: 'number.integer',
+	group: {
+		items: type({
+			['area_ids']: 'number.integer[]',
+			['exploration_percentage']: 'number.integer',
+		}).array(),
+	},
+});
+
 const schemaHome = type({
 	name: 'string',
 	icon: 'string',
@@ -105,6 +115,7 @@ const schemaHoyolabGenshinInfoResponse = type({
 			},
 		},
 		['world_explorations']: schemaExploration.array(),
+		['world_exploration_display']: schemaExplorationDisplay.array(),
 		homes: schemaHome.array().or(schemaHomesObject).or('null'),
 	},
 });

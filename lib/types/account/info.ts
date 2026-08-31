@@ -81,9 +81,8 @@ const schemaTeyvatExplorationNatlanTribe = type({
 	image: 'string',
 });
 
-const schemaTeyvatAccountExploration = type({
+const schemaTeyvatAccountSpecialRegion = type({
 	id: 'number.integer',
-	parentId: 'number.integer',
 	name: 'string',
 	explored: 'number >= 0',
 	sevenStatueLevel: 'number.integer >= 0',
@@ -93,6 +92,10 @@ const schemaTeyvatAccountExploration = type({
 	bosses: schemaTeyvatExplorationBoss.array(),
 	natlanTribes: schemaTeyvatExplorationNatlanTribe.array(),
 });
+
+const schemaTeyvatAccountExploration = schemaTeyvatAccountSpecialRegion.and(
+	type({ specialRegions: schemaTeyvatAccountSpecialRegion.array() }),
+);
 
 const schemaTeyvatTeapotRealm = type({
 	name: 'string',

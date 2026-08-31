@@ -28,6 +28,117 @@ async function _requestInfo(account: TeyvatAccount) {
 	return await _getHoyolabGenshinInfo(_getHttpClient(_getAccountOwner(account)), account.uid, account.server);
 }
 
+type RawInfo = Awaited<ReturnType<typeof _requestInfo>>;
+type RawExploration = RawInfo['world_explorations'][number];
+
+function _offerings(exploration: RawExploration) {
+	const offerings = (exploration.offerings ?? []).map((offering) => ({
+		name: offering.name,
+		level: offering.level,
+		icon: offering.icon ?? '',
+		status: _offeringStatus(offering.open_state),
+	}));
+	if (exploration.type === 'Reputation' && !offerings.some((offering) => offering.name === 'Reputation'))
+		offerings.unshift({ name: 'Reputation', level: exploration.level, icon: '', status: 'unknown' });
+	return offerings;
+}
+
+function _exploration(exploration: RawExploration) {
+	return {
+		id: exploration.id,
+		name: exploration.name,
+		explored: _explored(exploration.exploration_percentage),
+		sevenStatueLevel: exploration.seven_statue_level,
+		visuals: {
+			icon: exploration.icon,
+			innerIcon: exploration.inner_icon,
+			backgroundImage: exploration.background_image,
+			cover: exploration.cover,
+			mapUrl: exploration.map_url,
+		},
+		offerings: _offerings(exploration),
+		areas: (exploration.area_exploration_list ?? []).map((area) => ({
+			name: area.name,
+			explored: _explored(area.exploration_percentage),
+		})),
+		bosses: (exploration.boss_list ?? []).map((boss) => ({ name: boss.name, kills: boss.kill_num })),
+		natlanTribes: (exploration.natan_reputation?.tribal_list ?? []).map((tribe) => ({
+			id: tribe.id,
+			name: tribe.name,
+			level: tribe.level,
+			icon: tribe.icon,
+			image: tribe.image,
+		})),
+	};
+}
+
+function _uniqueBy<T>(values: T[], key: (value: T) => string | number): T[] {
+	const seen = new Set<string | number>();
+	return values.filter((value) => {
+		const identity = key(value);
+		if (seen.has(identity)) return false;
+		seen.add(identity);
+		return true;
+	});
+}
+
+function _specialRegion(explorations: RawExploration[], explorationPercentage: number) {
+	const root = explorations[0];
+	if (!root) throw new TypeError('special region must reference at least one exploration');
+	const mapped = explorations.map(_exploration);
+	const areas = explorations.flatMap((exploration, index) => [
+		...(index > 0 || exploration.exploration_percentage > 0
+			? [{ name: exploration.name, explored: _explored(exploration.exploration_percentage) }]
+			: []),
+		...(exploration.area_exploration_list ?? []).map((area) => ({
+			name: area.name,
+			explored: _explored(area.exploration_percentage),
+		})),
+	]);
+
+	return {
+		..._exploration(root),
+		explored: _explored(explorationPercentage),
+		offerings: _uniqueBy(
+			mapped.flatMap((exploration) => exploration.offerings),
+			(offering) => offering.name,
+		),
+		areas: _uniqueBy(areas, (area) => area.name),
+		bosses: _uniqueBy(
+			mapped.flatMap((exploration) => exploration.bosses),
+			(boss) => boss.name,
+		),
+		natlanTribes: _uniqueBy(
+			mapped.flatMap((exploration) => exploration.natlanTribes),
+			(tribe) => tribe.id,
+		),
+	};
+}
+
+function _explorations(raw: RawInfo) {
+	const byId = new Map<number, RawExploration>();
+	for (const exploration of raw.world_explorations) {
+		if (byId.has(exploration.id)) throw new TypeError(`duplicate exploration id ${exploration.id}`);
+		byId.set(exploration.id, exploration);
+	}
+
+	const referenced = new Set<number>();
+	const resolve = (id: number) => {
+		if (referenced.has(id)) throw new TypeError(`exploration id ${id} is referenced more than once`);
+		const exploration = byId.get(id);
+		if (!exploration) throw new TypeError(`exploration id ${id} is missing`);
+		referenced.add(id);
+		return exploration;
+	};
+
+	return raw.world_exploration_display.map((display) => ({
+		..._exploration(resolve(display.exploration_id)),
+		specialRegions: display.group.items.map((group) =>
+			_specialRegion(group.area_ids.map(resolve), group.exploration_percentage),
+		),
+	}));
+}
+
 export async function _getAccountInfo(account: TeyvatAccount): Promise<TeyvatAccountInfo> {
 	const server = _recognizeGenshinServer(account.uid);
 	const raw = await _requestWithAutoEnable(account, 'battle_chronicle', () => _requestInfo(account), _isInfoPrivate);
@@ -39,44 +150,7 @@ export async function _getAccountInfo(account: TeyvatAccount): Promise<TeyvatAcc
 	}
 
 	try {
-		const explorations = raw.world_explorations.map((exploration) => {
-			const offerings = (exploration.offerings ?? []).map((offering) => ({
-				name: offering.name,
-				level: offering.level,
-				icon: offering.icon ?? '',
-				status: _offeringStatus(offering.open_state),
-			}));
-			if (exploration.type === 'Reputation' && !offerings.some((offering) => offering.name === 'Reputation'))
-				offerings.unshift({ name: 'Reputation', level: exploration.level, icon: '', status: 'unknown' });
-
-			return {
-				id: exploration.id,
-				parentId: exploration.parent_id,
-				name: exploration.name,
-				explored: _explored(exploration.exploration_percentage),
-				sevenStatueLevel: exploration.seven_statue_level,
-				visuals: {
-					icon: exploration.icon,
-					innerIcon: exploration.inner_icon,
-					backgroundImage: exploration.background_image,
-					cover: exploration.cover,
-					mapUrl: exploration.map_url,
-				},
-				offerings,
-				areas: (exploration.area_exploration_list ?? []).map((area) => ({
-					name: area.name,
-					explored: _explored(area.exploration_percentage),
-				})),
-				bosses: (exploration.boss_list ?? []).map((boss) => ({ name: boss.name, kills: boss.kill_num })),
-				natlanTribes: (exploration.natan_reputation?.tribal_list ?? []).map((tribe) => ({
-					id: tribe.id,
-					name: tribe.name,
-					level: tribe.level,
-					icon: tribe.icon,
-					image: tribe.image,
-				})),
-			};
-		});
+		const explorations = _explorations(raw);
 
 		const homes = raw.homes;
 		const home = Array.isArray(homes) ? homes[0] : homes;
