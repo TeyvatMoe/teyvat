@@ -16,9 +16,36 @@ function _isCharacterDetailsPrivate(cause: unknown): cause is TeyvatApiError {
 	return cause instanceof TeyvatApiError && cause.retcode === 10102;
 }
 
+function _unavailableCharacterId(cause: unknown, characterIds: number[]): number | undefined {
+	if (!(cause instanceof TeyvatApiError) || cause.retcode !== -1) return undefined;
+	const match = /^character id:(\d+) is not exists$/.exec(cause.upstreamMessage);
+	if (!match) return undefined;
+	const id = Number(match[1]);
+	return Number.isSafeInteger(id) && id > 0 && characterIds.includes(id) ? id : undefined;
+}
+
 async function _requestCharacters(account: TeyvatAccount, ids: number[]) {
 	const client = _getHttpClient(_getAccountOwner(account));
 	return await _getHoyolabGenshinCharacterDetails(client, account.uid, account.server, ids);
+}
+
+async function _requestAvailableCharacters(account: TeyvatAccount, characterIds: number[]) {
+	let availableIds = [...characterIds];
+	while (availableIds.length > 0) {
+		try {
+			return await _requestWithAutoEnable(
+				account,
+				'character_details',
+				() => _requestCharacters(account, availableIds),
+				_isCharacterDetailsPrivate,
+			);
+		} catch (cause) {
+			const unavailableId = _unavailableCharacterId(cause, availableIds);
+			if (unavailableId === undefined) throw cause;
+			availableIds = availableIds.filter((id) => id !== unavailableId);
+		}
+	}
+	return undefined;
 }
 
 export async function _getAccountCharacters(
@@ -32,12 +59,8 @@ export async function _getAccountCharacters(
 	const characterIds = ids ?? calculatorCharacters.map((character) => character.id);
 	if (characterIds.length === 0) return [];
 
-	const raw = await _requestWithAutoEnable(
-		account,
-		'character_details',
-		() => _requestCharacters(account, characterIds),
-		_isCharacterDetailsPrivate,
-	);
+	const raw = await _requestAvailableCharacters(account, characterIds);
+	if (!raw) return [];
 
 	try {
 		const propertyInfo = (propertyType: number) => {

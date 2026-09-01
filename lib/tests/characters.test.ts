@@ -97,6 +97,10 @@ function _detailResponse(id = CHARACTER_ID): Response {
 	});
 }
 
+function _missingCharacterResponse(id: number, message = `character id:${id} is not exists`): Response {
+	return Response.json({ retcode: -1, message, data: null });
+}
+
 function _account() {
 	return new Teyvat({
 		cookies: { ['account_id_v2']: '123', ['cookie_token_v2']: 'cookie', ['ltoken_v2']: 'ltoken' },
@@ -132,6 +136,80 @@ describe('character ascension', () => {
 		const characters = await _account().characters({ ids: [CHARACTER_ID, CHARACTER_ID] });
 		expect(detailBody.character_ids).toEqual([CHARACTER_ID]);
 		expect(characters.map((character) => character.id)).toEqual([CHARACTER_ID]);
+	});
+
+	test('omits a calculator character that is temporarily unavailable from character details', async () => {
+		const unavailableId = 100_000_079;
+		let calculatorCalls = 0;
+		const detailRequests: number[][] = [];
+		_setFetch(async (input, init) => {
+			const path = new URL(String(input)).pathname;
+			if (path.endsWith('/sync/avatar/list')) {
+				calculatorCalls++;
+				return _calculatorResponse([_calculatorCharacter(), _calculatorCharacter(unavailableId)]);
+			}
+			const body = JSON.parse(String(init?.body)) as { ['character_ids']: number[] };
+			detailRequests.push(body.character_ids);
+			return detailRequests.length === 1 ? _missingCharacterResponse(unavailableId) : _detailResponse();
+		});
+
+		expect((await _account().characters()).map((character) => character.id)).toEqual([CHARACTER_ID]);
+		expect(calculatorCalls).toBe(1);
+		expect(detailRequests).toEqual([[CHARACTER_ID, unavailableId], [CHARACTER_ID]]);
+	});
+
+	test('omits multiple unavailable characters and returns an empty collection when none remain', async () => {
+		const firstUnavailableId = CHARACTER_ID + 1;
+		const secondUnavailableId = CHARACTER_ID + 2;
+		const detailRequests: number[][] = [];
+		_setFetch(async (input, init) => {
+			const path = new URL(String(input)).pathname;
+			if (path.endsWith('/sync/avatar/list')) {
+				return _calculatorResponse([
+					_calculatorCharacter(firstUnavailableId),
+					_calculatorCharacter(secondUnavailableId),
+				]);
+			}
+			const body = JSON.parse(String(init?.body)) as { ['character_ids']: number[] };
+			detailRequests.push(body.character_ids);
+			return _missingCharacterResponse(body.character_ids[0] as number);
+		});
+
+		expect(await _account().characters()).toEqual([]);
+		expect(detailRequests).toEqual([[firstUnavailableId, secondUnavailableId], [secondUnavailableId]]);
+	});
+
+	test('omits unavailable explicit IDs', async () => {
+		_setFetch(async (input) => {
+			const path = new URL(String(input)).pathname;
+			return path.endsWith('/sync/avatar/list')
+				? _calculatorResponse([_calculatorCharacter()])
+				: _missingCharacterResponse(CHARACTER_ID);
+		});
+		expect(await _account().characters({ ids: [CHARACTER_ID] })).toEqual([]);
+	});
+
+	test('does not suppress unrelated or unsafe character-detail errors', async () => {
+		const cases = [
+			{ retcode: -2, message: `character id:${CHARACTER_ID} is not exists` },
+			{ retcode: -1, message: `character id:${CHARACTER_ID} does not exist` },
+			{ retcode: -1, message: 'character id:not-a-number is not exists' },
+			{ retcode: -1, message: `character id:${CHARACTER_ID + 1} is not exists` },
+		];
+		for (const testCase of cases) {
+			let detailCalls = 0;
+			_setFetch(async (input) => {
+				const path = new URL(String(input)).pathname;
+				if (path.endsWith('/sync/avatar/list')) return _calculatorResponse([_calculatorCharacter()]);
+				detailCalls++;
+				return Response.json({ ...testCase, data: null });
+			});
+			await expect(_account().characters()).rejects.toMatchObject({
+				retcode: testCase.retcode,
+				upstreamMessage: testCase.message,
+			});
+			expect(detailCalls).toBe(1);
+		}
 	});
 
 	test('returns immediately for explicit empty IDs and avoids detail requests for empty accounts', async () => {
